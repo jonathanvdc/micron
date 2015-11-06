@@ -28,6 +28,16 @@ type TokenType =
 | Colon
 | LParen
 | RParen
+/// The "if" keyword.
+| IfKeyword
+/// The "else" keyword.
+| ElseKeyword
+/// The "data" keyword.
+| DataKeyword
+/// The "let" keyword.
+| LetKeyword
+/// The "in" keyword.
+| InKeyword
 
 /// A single token is a structure consisting of a source
 /// string, a token type, and a location in the source document,

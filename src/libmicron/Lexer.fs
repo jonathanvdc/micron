@@ -9,15 +9,20 @@ module Lexer =
         /// The source code this source stream is parsing.
         source : string
         /// The source stream's source document.
-        document : SourceDocument
+        document : ISourceDocument
         /// The current position in the source stream.
         pos : int
     }
 
     /// Moves the given source stream's position forward
+    /// by the given number of characters.
+    let seek (offset : int) (stream : SourceStream) : SourceStream =
+        { stream with pos = stream.pos + offset }
+
+    /// Moves the given source stream's position forward
     /// by one character.
     let next (stream : SourceStream) : SourceStream =
-        { stream with pos = stream.pos + 1 }
+        seek 1 stream
 
     /// Tells if the given source stream is "empty", i.e.
     /// its position has exceeded the length of its underlying
@@ -49,6 +54,41 @@ module Lexer =
           sourceLocation = SourceLocation(stream.document, startPos, stream.pos)
           preTrivia = [] }
 
+    /// A map of strings that have a 1:1 mapping
+    /// to their associated token.
+    let private staticTokens = 
+        Map.ofList [
+                       ",", TokenType.Comma
+                       ";", TokenType.Semicolon
+                       ":", TokenType.Colon
+                       "(", TokenType.LParen
+                       ")", TokenType.RParen
+                       "if", TokenType.IfKeyword
+                       "else", TokenType.ElseKeyword
+                       "data", TokenType.DataKeyword
+                       "let", TokenType.LetKeyword
+                       "in", TokenType.InKeyword
+                   ]
+
+    /// Tries to read a static token from the source stream.
+    let tryReadStaticToken (stream : SourceStream) : (Token * SourceStream) option =
+        let sliceStream (KeyValue(k : string, v : TokenType)) : Token * SourceStream =
+            let startPos = stream.pos
+            let stream = seek k.Length stream
+            sliceToken startPos stream v, stream
+
+        staticTokens |> Seq.tryFind (fun (KeyValue(k, v)) -> stream.source.Substring(stream.pos, k.Length) = k)
+                     |> Option.map sliceStream
+
+    /// Reads a token of an unknown type from the source stream.
+    let readUnknownToken (stream : SourceStream) : Token * SourceStream =
+        // We have no idea what kind of token this is.
+        // Just return an "Unknown" token and let the parser
+        // choke on it.
+        let startPos = stream.pos
+        let stream = next stream
+        sliceToken startPos stream TokenType.Unknown, stream
+
     /// Reads a single token from the given source stream.
     let readToken (stream : SourceStream) : Token * SourceStream =
         if isEmpty stream then
@@ -58,9 +98,19 @@ module Lexer =
               sourceLocation = SourceLocation(stream.document)
               preTrivia = [] }, stream
         else
-            // We have no idea what kind of token this is.
-            // Just return an "Unknown" token and let the parser
-            // choke on it.
-            let startPos = stream.pos
-            let stream = next stream
-            sliceToken startPos stream TokenType.Unknown, stream
+            tryReadStaticToken stream |> OptionHelpers.coalesce (lazy readUnknownToken stream)
+
+
+    /// Reads all remaining tokens from the given source stream.
+    let rec readTokensToEnd (stream : SourceStream) : Token list =
+        let tok, stream = readToken stream
+        match tok.tokenType with
+        | TokenType.EndOfStream -> []
+        | _ -> tok :: readTokensToEnd stream
+
+    /// Lexes the entirety of the given source document.
+    let lex (doc : ISourceDocument) : Token list =
+        let stream = { source = doc.Source
+                       document = doc
+                       pos = 0 }
+        readTokensToEnd stream

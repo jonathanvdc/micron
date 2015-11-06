@@ -49,18 +49,35 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="OptionHelpers.fs" />
+    <Compile Include="Token.fs" />
     <Compile Include="Lexer.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Flame">
+      <HintPath>..\..\libs\Flame\Flame.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Compiler">
+      <HintPath>..\..\libs\Flame\Flame.Compiler.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.Data">
       <HintPath>..\packages\FSharp.Data.2.2.5\lib\net40\FSharp.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="libcontextfree">
+      <HintPath>..\..\libs\libcontextfree\libcontextfree.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Syntax">
+      <HintPath>..\..\libs\Flame\Loyc.Syntax.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Pixie">
+      <HintPath>..\..\libs\Flame\Pixie.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
