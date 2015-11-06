@@ -50,6 +50,8 @@ type Token = {
     /// The token's location in the source document.
     /// This only applies to this token's direct contents,
     /// and does not include the trivia this token manages.
+    /// Note: SourceLocation is really a Flame.Compiler.SourceLocation.
+    ///       This makes it easier to provide pretty diagnostics.
     sourceLocation : SourceLocation
     /// All trivia tokens that directly precede this token.
     preTrivia : Token list 

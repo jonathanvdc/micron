@@ -9,6 +9,8 @@ module Lexer =
         /// The source code this source stream is parsing.
         source : string
         /// The source stream's source document.
+        /// Note: ISourceDocument is really Flame.Compiler.ISourceDocument.
+        ///       This makes it easier to provide pretty diagnostics.
         document : ISourceDocument
         /// The current position in the source stream.
         pos : int
