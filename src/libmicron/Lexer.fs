@@ -88,6 +88,7 @@ module Lexer =
                        ":", TokenType.Colon
                        "(", TokenType.LParen
                        ")", TokenType.RParen
+                       "_", TokenType.Underscore
                        "if", TokenType.IfKeyword
                        "else", TokenType.ElseKeyword
                        "data", TokenType.DataKeyword
@@ -148,9 +149,35 @@ module Lexer =
             None
 
     /// Tries to read a delimited range of code, such as a
-    /// string or character literal.
+    /// string or character literal. This function allows
+    /// the delimiter character to be escaped in the token
+    /// by placing a backslash in front of it.
     let tryReadDelimitedToken (delim : char) (tokType : TokenType) (stream : SourceStream) 
                               : (Token * SourceStream) option =
+        let startPos = stream.pos
+        match tryReadChar ((=) delim) stream with
+        | Some(_, stream) ->
+            // This function reads characters from the given source stream until a delimiter
+            // is encountered and the escaped flag is set to false.
+            let rec readToTrailingDelim (stream : SourceStream) (escaped : bool) : SourceStream =
+                match current stream with
+                | Some c when not escaped && c = delim -> stream
+                | Some c when c = '\\' -> readToTrailingDelim (next stream) (not escaped)
+                | Some c -> readToTrailingDelim (next stream) false
+                | None -> stream
+
+            let stream = readToTrailingDelim stream false
+
+            match tryReadChar ((=) delim) stream with
+            | Some (_, stream) ->
+                // Found a leading and a trailing delimiter. Awesome!
+                Some (sliceToken startPos stream tokType, stream)
+            | None ->
+                // Alas, couldn't find a trailing delimiter.
+                None
+        | None ->
+            // No leading delimiter found.
+            None
 
     /// A list of functions that are succesively applied
     /// to a source stream whenever a token is to be read.
@@ -158,6 +185,8 @@ module Lexer =
         [
             tryReadRangeToken System.Char.IsWhiteSpace TokenType.Whitespace
             tryReadRangeToken System.Char.IsDigit TokenType.Integer
+            tryReadDelimitedToken '"' TokenType.String
+            tryReadDelimitedToken '\'' TokenType.Char
             tryReadIdentifier
             tryReadStaticToken
         ]
