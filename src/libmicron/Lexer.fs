@@ -64,6 +64,14 @@ module Lexer =
           sourceLocation = SourceLocation(stream.document, startPos, stream.pos)
           preTrivia = [] }
 
+    /// Reads a range of source code from the given source stream
+    /// by consuming characters from the stream as long as 
+    /// they satisfy the given predicate
+    let rec readRange (pred : char -> bool) (stream : SourceStream) : SourceStream =
+        match current stream with
+        | Some c when pred c -> readRange pred (next stream)
+        | _ -> stream
+
     /// A map of strings that have a 1:1 mapping
     /// to their associated token.
     let private staticTokens = 
@@ -103,13 +111,8 @@ module Lexer =
     /// source stream as long as they satisfy the given predicate
     /// function.
     let tryReadRangeToken (pred : char -> bool) (tokType : TokenType) (stream : SourceStream) : (Token * SourceStream) option =
-        let rec readRange (stream : SourceStream) : SourceStream =
-            match current stream with
-            | Some c when pred c -> readRange (next stream)
-            | _ -> stream
-
         let startPos = stream.pos
-        let stream = readRange stream
+        let stream = readRange pred stream
         if stream.pos = startPos then
             None
         else
