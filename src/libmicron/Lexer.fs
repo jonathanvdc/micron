@@ -212,7 +212,7 @@ module Lexer =
                         // other than a digit. This is not an exponent.
                         stream
                 | Some c when System.Char.IsDigit c ->
-                    // 'e' or 'E+' followed by some digit. 
+                    // 'e' or 'E' followed by some digit. 
                     // That'll work just fine.
                     readRange System.Char.IsDigit newStream
                 | _ ->
