@@ -142,13 +142,19 @@ module Lexer =
             let nextPos = stream.pos
             let stream = readRange bodyPred stream
             if nextPos = stream.pos then
+                // We read nothing but an underscore. This results in an 
+                // underscore token.
                 Some (sliceToken startPos stream TokenType.Underscore, stream)
             else
+                // We read an underscore followed by a nonempty string.
+                // That means we really just read an identifier.
                 Some (sliceToken startPos stream TokenType.Identifier, stream)
         | Some(_, stream) ->
+            // This is an identifier no matter what.
             let stream = readRange bodyPred stream
             Some (sliceToken startPos stream TokenType.Identifier, stream)
         | None ->
+            // There's no way this thing is an identifier.
             None
 
     /// Tries to read a delimited range of code, such as a
