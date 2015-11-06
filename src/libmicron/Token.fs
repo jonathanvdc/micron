@@ -3,14 +3,28 @@
 open Flame.Compiler
 
 /// Defines a list of all possible token types.
+[<RequireQualifiedAccess>]
 type TokenType =
+/// An unknown token.
 | Unknown
+/// An identifier.
 | Identifier
+/// An integer literal.
 | Integer
+/// A string literal.
 | String
+/// A character literal.
+| Char
+/// A whitespace symbol.
 | Whitespace
+/// A special token type that
+/// signifies the end of the token stream.
+| EndOfStream
+/// A comma.
 | Comma
+/// A semicolon.
 | Semicolon
+/// A colon.
 | Colon
 | LParen
 | RParen
@@ -49,7 +63,8 @@ module TokenHelpers =
     /// Finds out if the given token type is a trivia token type,
     /// i.e. it should be skipped when parsing.
     let isTrivia : TokenType -> bool = function
-    | Whitespace -> true
+    | TokenType.Whitespace 
+    | TokenType.EndOfStream -> true
     | _ -> false
 
     /// Transforms the given list of tokens into another list
