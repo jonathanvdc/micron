@@ -26,6 +26,8 @@ type TokenType =
 | Semicolon
 /// A colon.
 | Colon
+/// An underscore.
+| Underscore
 | LParen
 | RParen
 /// The "if" keyword.

@@ -66,9 +66,9 @@ module Lexer =
 
     /// Tries to read a single character from the given input stream, provided
     /// it matched the given predicate function.
-    let tryReadChar (pred : char -> bool) (stream : SourceStream) : SourceStream option =
+    let tryReadChar (pred : char -> bool) (stream : SourceStream) : (char * SourceStream) option =
         match current stream with
-        | Some c when pred c -> Some (next stream)
+        | Some c when pred c -> Some (c, next stream)
         | _ -> None
 
     /// Reads a range of source code from the given source stream
@@ -76,7 +76,7 @@ module Lexer =
     /// they satisfy the given predicate
     let rec readRange (pred : char -> bool) (stream : SourceStream) : SourceStream =
         match tryReadChar pred stream with
-        | Some stream -> readRange pred (next stream)
+        | Some(_, stream) -> readRange pred (next stream)
         | _ -> stream
 
     /// A map of strings that have a 1:1 mapping
@@ -127,20 +127,30 @@ module Lexer =
         else
             Some (sliceToken startPos stream tokType, stream)
 
-    /// Tries to read a token by consuming characters from the given
-    /// source stream as long as they satisfy the given predicate
-    /// function. A different predicate is applied to the first
-    /// character of the token. This makes sense for identifiers.
-    let tryReadInitRangeToken (initPred : char -> bool) (bodyPred : char -> bool) 
-                              (tokType : TokenType) (stream : SourceStream) 
-                              : (Token * SourceStream) option =
+    /// Tries to read an identifier token from the given source stream.
+    let tryReadIdentifier (stream : SourceStream) : (Token * SourceStream) option =
+        let initPred c = System.Char.IsLetter c || c = '_'
+        let bodyPred c = System.Char.IsLetter c || System.Char.IsDigit c || c = '_'
+
         let startPos = stream.pos
         match tryReadChar initPred stream with
-        | Some stream ->
+        | Some(c, stream) when c = '_' ->
+            let nextPos = stream.pos
             let stream = readRange bodyPred stream
-            Some (sliceToken startPos stream tokType, stream)
+            if nextPos = stream.pos then
+                Some (sliceToken startPos stream TokenType.Underscore, stream)
+            else
+                Some (sliceToken startPos stream TokenType.Identifier, stream)
+        | Some(_, stream) ->
+            let stream = readRange bodyPred stream
+            Some (sliceToken startPos stream TokenType.Identifier, stream)
         | None ->
             None
+
+    /// Tries to read a delimited range of code, such as a
+    /// string or character literal.
+    let tryReadDelimitedToken (delim : char) (tokType : TokenType) (stream : SourceStream) 
+                              : (Token * SourceStream) option =
 
     /// A list of functions that are succesively applied
     /// to a source stream whenever a token is to be read.
@@ -148,9 +158,7 @@ module Lexer =
         [
             tryReadRangeToken System.Char.IsWhiteSpace TokenType.Whitespace
             tryReadRangeToken System.Char.IsDigit TokenType.Integer
-            tryReadInitRangeToken (fun c -> System.Char.IsLetter c || c = '_') 
-                                  (fun c -> System.Char.IsLetter c || System.Char.IsDigit c || c = '_') 
-                                  TokenType.Identifier
+            tryReadIdentifier
             tryReadStaticToken
         ]
 
