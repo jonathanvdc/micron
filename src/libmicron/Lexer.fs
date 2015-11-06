@@ -32,6 +32,14 @@ module Lexer =
     let isEmpty (stream : SourceStream) : bool =
         stream.pos > stream.source.Length
 
+    /// Gets the current character in the source stream.
+    /// If the source stream is empty, nothing is returned.
+    let current (stream : SourceStream) : char option =
+        if isEmpty stream then
+            None
+        else
+            Some stream.source.[stream.pos]
+
     /// "Slices" the given source stream from a starting
     /// position to its current position. A string is returned
     /// that represents the code inbetween these two positions.
@@ -91,6 +99,31 @@ module Lexer =
         let stream = next stream
         sliceToken startPos stream TokenType.Unknown, stream
 
+    /// Tries to read a token by consuming characters from the given
+    /// source stream as long as they satisfy the given predicate
+    /// function.
+    let tryReadRangeToken (pred : char -> bool) (tokType : TokenType) (stream : SourceStream) : (Token * SourceStream) option =
+        let rec readRange (stream : SourceStream) : SourceStream =
+            match current stream with
+            | Some c when pred c -> readRange (next stream)
+            | _ -> stream
+
+        let startPos = stream.pos
+        let stream = readRange stream
+        if stream.pos = startPos then
+            None
+        else
+            Some (sliceToken startPos stream tokType, stream)
+
+    /// A list of functions that are succesively applied
+    /// to a source stream whenever a token is to be read.
+    let private lexerFunctions = 
+        [
+            tryReadRangeToken System.Char.IsWhiteSpace TokenType.Whitespace
+            tryReadRangeToken System.Char.IsDigit TokenType.Integer
+            tryReadStaticToken
+        ]
+
     /// Reads a single token from the given source stream.
     let readToken (stream : SourceStream) : Token * SourceStream =
         if isEmpty stream then
@@ -100,7 +133,8 @@ module Lexer =
               sourceLocation = SourceLocation(stream.document)
               preTrivia = [] }, stream
         else
-            tryReadStaticToken stream |> OptionHelpers.coalesce (lazy readUnknownToken stream)
+            lexerFunctions |> List.tryPick ((|>) stream) 
+                           |> OptionHelpers.coalesce (lazy readUnknownToken stream)
 
 
     /// Reads all remaining tokens from the given source stream.
