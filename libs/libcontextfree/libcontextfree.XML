@@ -1,0 +1,1524 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>libcontextfree</name></assembly>
+<members>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalCfg`2">
+<summary>
+ A fully CNF-converted context-free grammar.
+
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalRule`2">
+<summary>
+ A production rule in a fully CNF-converted context-free grammar.
+
+ The right-hand side of a production rule in a CFG in Chomsky normal form
+ may never contain the starting symbol. To enforce this, our alphabet of
+ nonterminals is the type `&apos;nt option`, and the starting symbol S0 is
+ encoded as `None`. The right hand sides are then of the type `(&apos;nt * &apos;nt)`
+ instead of `(&apos;nt option * &apos;nt option).`
+
+ When implementing the algorithms, translate
+
+   * &quot;a nonterminal V&quot;               to     &apos;nt option
+   * &quot;a nonterminal V ... where      
+      V is not the start symbol&quot;     to     &apos;nt
+
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="P:libcontextfree.ContextFreeGrammar`2.V">
+<summary>
+ Gets the set of nonterminals that occur in this context-free grammar.
+</summary>
+</member>
+<member name="P:libcontextfree.ContextFreeGrammar`2.T">
+<summary>
+ Gets the set of nonterminals that occur in this context-free grammar.
+</summary>
+</member>
+<member name="P:libcontextfree.ContextFreeGrammar`2.S">
+<summary>
+ Gets this context-free grammar&apos;s start symbol.
+</summary>
+</member>
+<member name="P:libcontextfree.ContextFreeGrammar`2.P">
+<summary>
+ Gets this context-free grammar&apos;s set of production rules.
+</summary>
+</member>
+<member name="T:libcontextfree.ContextFreeGrammar`2">
+<summary>
+ Defines a formal context-free grammar as a quadruple (V, T, P, S) of
+ nonterminals, terminals, production rules, and the starting symbol.
+ 
+ V and T are not stored in the context-free grammar itself. Rather, they
+ are inferred from the production rules and start symbol.
+ They can be accessed either through usage of the `V` and `T` members of
+ the grammar, or by using the `(|CFG|)` active pattern.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.LTerminal`1">
+<summary>
+ A terminal type for parsers that use lookahead,
+ such as LL(k) and LR(k) parsers.
+</summary>
+</member>
+<member name="T:libcontextfree.ParseTree`2.ProductionNode">
+<summary>
+ Defines a production rule node, which is identified by a nonterminal and a 
+ list of child nodes.
+</summary>
+</member>
+<member name="T:libcontextfree.ParseTree`2.TerminalLeaf">
+<summary>
+ Defines a terminal leaf, which is a type of parse tree that 
+ contains only a single terminal.
+</summary>
+</member>
+<member name="T:libcontextfree.ParseTree`2">
+<summary>
+ Defines a parse tree type, based on a nonterminal and a terminal type.
+</summary>
+</member>
+<member name="T:libcontextfree.ProductionRule`2.ProductionRule">
+<summary>
+ A production rule is a tuple of a nonterminal - the rule&apos;s head -
+ and a list of nonterminals and terminals - the rule&apos;s body.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ProductionRule`2">
+<summary>
+ Defines a production rule.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.PushdownAutomaton`3">
+<summary>
+ Defines a formal Pushdown automaton as a 7-tuple (Q, Σ, Γ, δ, q0, Z0, F), where:
+
+   * Q is the set of states.            : Set&lt;&apos;Q&gt;
+   * Σ is the set of input symbols.     : Set&lt;&apos;Σ&gt;
+   * Γ is the set of stack symbols.     : Set&lt;&apos;Γ&gt;
+   * δ is the transition map.           : Transition&lt;&apos;Q, &apos;Σ, &apos;Γ&gt;
+   * q0 is the initial state.           : &apos;Q
+   * Z0 is the initial stack symbol.    : &apos;Γ
+   * F is the set of accepting states.  : Set&lt;&apos;Q&gt;
+
+ However, Q, Σ, and Γ can be derived from the representation of δ as a set. As such,
+ our PDAs only consist of (δ, q0, Z0, F), and the remaining sets are computed.
+
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.Result`1">
+<summary>
+ Result&lt;&apos;a&gt; is like &apos;a option, but the &quot;None&quot; value contains an error message.
+</summary>
+</member>
+<member name="T:libcontextfree.Symbol`2.Terminal">
+<summary>
+ Defines a terminal symbol.
+</summary>
+</member>
+<member name="T:libcontextfree.Symbol`2.Nonterminal">
+<summary>
+ Defines a nonterminal symbol.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.Symbol`2">
+<summary>
+ A generic union type which combines two types representing nonterminal and terminal symbols.
+</summary>
+</member>
+<member name="T:libcontextfree.Transition`3">
+<summary>
+ The type of the transition map δ in a PushdownAutomaton&lt;&apos;Q, &apos;Σ, &apos;Γ&gt;.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:libcontextfree.AsciiBox.display(System.String[0:,0:])">
+<summary>
+ Turn a rectangular array of strings like
+
+     array2D [| [| &quot;abc&quot;; &quot;d\ne&quot; |]; [| &quot;f\ngg\nh&quot;; &quot;ij&quot; |] |]
+
+ into a fitted ASCII art box representation like:
+
+     ┌───┬──┐
+     │abc│d │
+     │   │e │
+     ├───┼──┤
+     │f  │ij│
+     │gg │  │
+     │h  │  │
+     └───┴──┘
+
+</summary>
+</member>
+<member name="M:libcontextfree.AsciiBox.makeBox(System.String)">
+<summary>
+ Split a string over newlines and arrange the lines in a rectangular array of characters.
+</summary>
+</member>
+<member name="T:libcontextfree.AsciiBox">
+
+</member>
+<member name="M:libcontextfree.CYKParser.cykParse``2(libcontextfree.ChomskyNormalCfg{``0,``1},System.Collections.Generic.IEnumerable{``1})">
+<summary>
+ Determine whether this grammar can generate the given string using
+ the Cocke-Younger-Kasami (CYK) algorithm.
+</summary>
+</member>
+<member name="T:libcontextfree.CYKParser">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.DelCfg`2">
+<summary>
+ A context-free grammar, after the DEL step in the CNF conversion.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.DelRule`2">
+<summary>
+ A production rule, after the DEL step in the CNF conversion.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.BinCfg`2">
+<summary>
+ A context-free grammar, after the BIN step in the CNF conversion.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.BinRule`2">
+<summary>
+ A production rule, after the BIN step in the CNF conversion.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.TermCfg`2">
+<summary>
+ A context-free grammar, after the TERM step in the CNF conversion.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.TermRule`2">
+<summary>
+ A production rule, after the TERM step in the CNF conversion.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.StartCfg`2">
+<summary>
+ A context-free grammar, after the START step in the CNF conversion.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm.StartRule`2">
+<summary>
+ A production rule, after the START step in the CNF conversion.
+</summary>
+</member>
+<member name="P:libcontextfree.ChomskyNormalForm.p150Example">
+<summary>
+ An example CNF grammar from the slides on the CYK algorithm.
+</summary>
+</member>
+<member name="P:libcontextfree.ChomskyNormalForm.convertAndShowRules">
+<summary>
+ Convert a CFG over characters to Chomsky normal form and show its rules.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.showRules(libcontextfree.ChomskyNormalCfg{System.Char,System.Char})">
+<summary>
+ Show the rules of a CNF grammar over characters.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.toCharacterCNF``1(libcontextfree.ChomskyNormalCfg{``0,System.Char})">
+<summary>
+ Remap the nonterminals in the given CNF grammar to single letters.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.mapNonterminals``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.ChomskyNormalCfg{``0,``2})">
+<summary>
+ Map a function φ over the stack symbols of a CNF grammar. φ should be injective.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.cnfBinaryProductions``2(libcontextfree.ChomskyNormalCfg{``0,``1})">
+<summary>
+ Return a set of all binary productions in the given Chomsky-normal context-free grammar.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.cnfUnitProductions``2(libcontextfree.ChomskyNormalCfg{``0,``1})">
+<summary>
+ Return a set of all unit productions in the given Chomsky-normal context-free grammar.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.cnfNonterminals``2(libcontextfree.ChomskyNormalCfg{``0,``1})">
+<summary>
+ Return a set of all nonterminals in the given Chomsky-normal context-free grammar.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.chomskyNormalForm``2">
+<summary>
+ Convert the given context-free grammar to Chomsky normal form.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.unitStep``2(libcontextfree.ChomskyNormalForm.DelCfg{``0,``1})">
+<summary>
+ Step five in the CNF transformation: delete unit rules.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.delStep``2(libcontextfree.ChomskyNormalForm.BinCfg{``0,``1})">
+<summary>
+ Step four in the CNF transformation: delete ε-rules.
+ First, we find all the nullable states using a breadth-first
+ search. Then, we &quot;inline&quot; the found ε-rules wherever they occur
+ in other rules&apos; bodies.
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.binStep``2(libcontextfree.ChomskyNormalForm.TermCfg{``0,``1})">
+<summary>
+ Step three in the CNF transformation: make rules binary.
+ The new nonterminal type has an additional &quot;index&quot;, letting us
+ turn a nonterminal N into many nonterminals (N,0), (N,1), ...
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.termStep``2(libcontextfree.ChomskyNormalForm.StartCfg{``0,``1})">
+<summary>
+ Step two in the CNF transformation: split into terminal and nonterminal rules.
+ The resulting nonterminal type is Symbol&lt;&apos;nt, &apos;t&gt;, where
+
+     * Nonterminal nt   corresponds to a nonterminal from the old &apos;nt type
+     * Terminal t       corresponds to the terminals N_t introduced in this step.
+
+</summary>
+</member>
+<member name="M:libcontextfree.ChomskyNormalForm.startStep``2(libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Step one in the CNF transformation: add a new start symbol.
+ (The new start symbol is None; S is no longer the start symbol.)
+</summary>
+</member>
+<member name="T:libcontextfree.ChomskyNormalForm">
+
+</member>
+<member name="M:libcontextfree.ContextFreeGrammar.showStartSymbol(libcontextfree.ContextFreeGrammar{System.Char,System.Char})">
+<summary>
+ Show the start symbol of a given context-free grammar.
+</summary>
+</member>
+<member name="M:libcontextfree.ContextFreeGrammar.showRules(libcontextfree.ContextFreeGrammar{System.Char,System.Char})">
+<summary>
+ Show the rules of a given context-free grammar as a new-line seperated list.
+</summary>
+</member>
+<member name="M:libcontextfree.ContextFreeGrammar.showTerminals(libcontextfree.ContextFreeGrammar{System.Char,System.Char})">
+<summary>
+ Show the terminals of a given context-free grammar as a new-line seperated list.
+</summary>
+</member>
+<member name="M:libcontextfree.ContextFreeGrammar.showNonterminals(libcontextfree.ContextFreeGrammar{System.Char,System.Char})">
+<summary>
+ Show the nonterminals of a given context-free grammar as a new-line seperated list.
+</summary>
+</member>
+<member name="P:libcontextfree.ContextFreeGrammar.toBracketCfg">
+<summary>
+ Converting a PushdownAutomaton&lt;string, string&gt; will result in a
+ ContextFreeGrammar&lt;(string * string * string) option, string&gt;. This will
+ turn that into a ContextFreeGrammar using brackets to name nonterminals.
+</summary>
+</member>
+<member name="M:libcontextfree.ContextFreeGrammar.toCharacterGrammar(libcontextfree.ContextFreeGrammar{System.String,System.String})">
+<summary>
+ Tries to convert the given grammar, which operates on strings, to an
+ equivalent grammar that operates on characters.
+ Nonterminals may have their name changed, but terminals will never be modified.
+ If the given grammar uses a terminal of any length other than one, the algorithm will
+ fail, and None is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.ContextFreeGrammar.mapSymbols``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``3},libcontextfree.ContextFreeGrammar{``0,``2})">
+<summary>
+ Applies the given nonterminal and terminal mapping functions to the given grammar.
+</summary>
+</member>
+<member name="M:libcontextfree.ContextFreeGrammar.ofParseTree``2(libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Tries to infer the context-free grammar required to construct
+ the given parse tree. This can be done iff the head of the parse
+ tree is a production node. Otherwise, None is returned.
+</summary>
+</member>
+<member name="T:libcontextfree.ContextFreeGrammar">
+
+</member>
+<member name="M:libcontextfree.ContextFreeGrammarOps.|CFG|``2(libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ An active pattern that matches context-free grammars,
+ including their sets of nonterminals and terminals.
+
+ Usage:
+     match x with
+     | CFG(V, T, P, S) -&gt; ...
+
+</summary>
+</member>
+<member name="T:libcontextfree.ContextFreeGrammarOps">
+
+</member>
+<member name="T:libcontextfree.EarleyParser.EarleyState`3">
+<summary>
+ Defines a state in the Earley parsing algorithm
+ as:
+  * the production currently being matched (X → α β)
+  * our current position in that production (represented by the dot and encapsulated in the PartialRule type)
+  * the position i in the input at which the matching of this production began: 
+    the origin position
+</summary>
+</member>
+<member name="T:libcontextfree.EarleyParser.PartialRule`3.PartialRule">
+<summary>
+ A partially parsed production rule is a tuple of a nonterminal - the rule&apos;s head -,
+ a list of parsed token and nonterminal nodes, and a list of
+ unparsed nonterminals and terminals.
+ Note: the list of parsed terminal and nonterminal nodes is stored
+       *in reverse order* for performance reasons, and must later be
+       reversed again.
+</summary>
+</member>
+<member name="T:libcontextfree.EarleyParser.PartialRule`3">
+<summary>
+ Defines a partially parsed production rule.
+</summary>
+</member>
+<member name="M:libcontextfree.EarleyParser.parse``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.ContextFreeGrammar{``2,``1},System.Collections.Generic.IEnumerable{``0})">
+<summary>
+ Parses the given terminal string with the given grammar.
+ All possible parse trees are returned.
+</summary>
+</member>
+<member name="M:libcontextfree.EarleyParser.worklistSet``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,Microsoft.FSharp.Collections.FSharpSet{``0}},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Collections.FSharpSet{``0}}},Microsoft.FSharp.Collections.FSharpSet{``0})">
+<summary>
+ Executes a &quot;worklist&quot; algorithm that operates on the given
+ seed set. A single item is transformed into a set of new values by a function.
+ Said function is never applied to the same value twice.
+</summary>
+</member>
+<member name="M:libcontextfree.EarleyParser.complete``3(Microsoft.FSharp.Core.FSharpFunc{System.Int32,Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.EarleyParser.PartialRule{``0,``1,``2},System.Int32}}},libcontextfree.EarleyParser.PartialRule{``0,``1,``2},System.Int32)">
+<summary>
+ Completion: For every state in S(k) of the form (X → γ •, j), 
+ find states in S(j) of the form (Y → α • X β, i) and 
+ add (Y → α X • β, i) to S(k).
+</summary>
+</member>
+<member name="M:libcontextfree.EarleyParser.scan``3(``0,``1,libcontextfree.EarleyParser.PartialRule{``2,``0,``1},System.Int32)">
+<summary>
+ Scanning: If a is the next symbol in the input stream, 
+ for every state in S(k) of the form (X → α • a β, j), 
+ add (X → α a • β, j) to S(k + 1).
+</summary>
+</member>
+<member name="M:libcontextfree.EarleyParser.predict``3(libcontextfree.ContextFreeGrammar{``0,``1},System.Int32,libcontextfree.EarleyParser.PartialRule{``0,``2,``1},System.Int32)">
+<summary>
+ Prediction: For every state in S(k) of the form (X → α • Y β, j) 
+ (where j is the origin position as above), add (Y → • γ, k) to S(k) 
+ for every production in the grammar with Y on the left-hand side (Y → γ).
+</summary>
+</member>
+<member name="M:libcontextfree.EarleyParser.createStates``3(libcontextfree.ContextFreeGrammar{``0,``1},System.Int32,``0)">
+<summary>
+ Creates Earley states with partial rules whose left-hand side is 
+ the given nonterminal, and which do not have any parsed children yet.
+ Their origin index is equal to the state index.
+</summary>
+</member>
+<member name="T:libcontextfree.EarleyParser">
+<summary>
+ Implements an Earley parser, as defined by:
+ https://en.wikipedia.org/wiki/Earley_parser
+</summary>
+</member>
+<member name="M:libcontextfree.FunctionHelpers.ofMapWithDefault``2(``0,Microsoft.FSharp.Collections.FSharpMap{``1,``0},``1)">
+<summary>
+ Creates a function that wraps map access.
+ If a key is not associated with a value by the 
+ specified map, the given default value is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.FunctionHelpers.ofMapOption``2(Microsoft.FSharp.Collections.FSharpMap{``0,``1},``0)">
+<summary>
+ Creates a function that wraps map access.
+ If the map does not contain a given key,
+ None is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.FunctionHelpers.ofMap``2(Microsoft.FSharp.Collections.FSharpMap{``0,``1},``0)">
+<summary>
+ Creates a function that wraps map access.
+</summary>
+</member>
+<member name="M:libcontextfree.FunctionHelpers.fix``1(Microsoft.FSharp.Core.FSharpFunc{``0,``0},``0)">
+<summary>
+ Applies the specified function to the given value 
+ until the resulting value is equal to its previous value.
+</summary>
+</member>
+<member name="M:libcontextfree.FunctionHelpers.memoize2``3(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``1,``2}})">
+<summary>
+ Memoizes the given function&apos;s application to two arguments.
+</summary>
+</member>
+<member name="M:libcontextfree.FunctionHelpers.memoize``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1})">
+<summary>
+ Memoizes the given function&apos;s application to a single argument.
+</summary>
+</member>
+<member name="T:libcontextfree.FunctionHelpers">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.GraphvizHandler.GraphvizGraph">
+<summary>
+ Defines a graphviz graph as a graph name and a
+ list of nodes.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.GraphvizHandler.GraphvizEdge">
+<summary>
+ Defines an edge in a graphviz graph.
+ Every edge has a target, as well
+ as a label, which may be empty.
+ Edges can optionally be directed.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.GraphvizHandler.GraphvizNode">
+<summary>
+ Defines a single node in a graphviz graph.
+ A node consists of a label, a shape and
+ a set of edges.
+</summary>
+</member>
+<member name="T:libcontextfree.GraphvizHandler.GraphvizShape.DoubleCircleShape">
+<summary>
+ A shape that consists of two circles.
+</summary>
+</member>
+<member name="T:libcontextfree.GraphvizHandler.GraphvizShape.CircleShape">
+<summary>
+ A circular shape.
+</summary>
+</member>
+<member name="T:libcontextfree.GraphvizHandler.GraphvizShape.NoneShape">
+<summary>
+ The &quot;none&quot; shape. This is named `NoShape`
+ to avoid conflicts and confusion with
+ `Option.None`.
+</summary>
+</member>
+<member name="T:libcontextfree.GraphvizHandler.GraphvizShape">
+<summary>
+ Defines a graphviz node&apos;s shape.
+</summary>
+</member>
+<member name="M:libcontextfree.GraphvizHandler.writePushdownAutomatonGraph``1(System.IO.TextWriter,libcontextfree.PushdownAutomaton{``0,System.String,System.String})">
+<summary>
+ Write the pushdown automaton to the given TextWriter in Graphviz format.
+</summary>
+</member>
+<member name="M:libcontextfree.GraphvizHandler.writeParseTreeGraph(System.IO.TextWriter,libcontextfree.ParseTree{System.String,System.String})">
+<summary>
+ Write the parse tree to the given TextWriter in Graphviz format.
+</summary>
+</member>
+<member name="M:libcontextfree.GraphvizHandler.createPushdownAutomatonGraph``1(libcontextfree.PushdownAutomaton{``0,System.String,System.String})">
+<summary>
+ Construct a Graphviz graph from a pushdown automaton over strings.
+</summary>
+</member>
+<member name="M:libcontextfree.GraphvizHandler.createParseTreeGraph(libcontextfree.ParseTree{System.String,System.String})">
+<summary>
+ Creates a graphviz graph from the given parse tree.
+</summary>
+</member>
+<member name="M:libcontextfree.GraphvizHandler.writeGraph(System.IO.TextWriter,libcontextfree.GraphvizHandler.GraphvizGraph)">
+<summary>
+ Writes the given graph to the given text writer.
+</summary>
+</member>
+<member name="T:libcontextfree.GraphvizHandler">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:libcontextfree.IOHelpers.readConditional(Microsoft.FSharp.Core.FSharpFunc{System.Char,System.Boolean},System.IO.TextReader)">
+<summary>
+ Reads a single character from the given text reader only if it
+ satisfies the given predicate.
+</summary>
+</member>
+<member name="M:libcontextfree.IOHelpers.peekSatisfies(Microsoft.FSharp.Core.FSharpFunc{System.Char,System.Boolean},System.IO.TextReader)">
+<summary>
+ Peeks a character from the given text reader, and determines whether
+ it satisfies the given predicate.
+</summary>
+</member>
+<member name="M:libcontextfree.IOHelpers.readChar(System.IO.TextReader)">
+<summary>
+ Reads a single character from the given text reader.
+</summary>
+</member>
+<member name="T:libcontextfree.IOHelpers">
+
+</member>
+<member name="M:libcontextfree.LLParser.showLL``2(Microsoft.FSharp.Collections.FSharpMap{System.Tuple{``0,libcontextfree.LTerminal{``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.Symbol{``0,``1}}})">
+<summary>
+ Creates a string representation for the given LL(1) table.
+</summary>
+</member>
+<member name="M:libcontextfree.LLParser.createLLTable``2(libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Creates an LL(1) table from the given grammar.
+</summary>
+</member>
+<member name="M:libcontextfree.LLParser.followSets``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{libcontextfree.Symbol{``0,``1}},Microsoft.FSharp.Collections.FSharpSet{Microsoft.FSharp.Core.FSharpOption{``1}}},libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Computes a map that maps every nonterminal A in the given grammar to
+ its follow set FOLLOW(A).
+</summary>
+</member>
+<member name="M:libcontextfree.LLParser.firstSets``2(libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Computes a map that maps every nonterminal A in the given grammar
+ to their FIRST(A) set.
+ FIRST(A) is the set of terminals which can appear as the first element
+ of any chain of rules matching nonterminal A.
+
+ FIRST(A) is used when building LL(1) and LR(1) tables.
+</summary>
+</member>
+<member name="M:libcontextfree.LLParser.first``2(Microsoft.FSharp.Collections.FSharpMap{``0,Microsoft.FSharp.Collections.FSharpSet{Microsoft.FSharp.Core.FSharpOption{``1}}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.Symbol{``0,``1}})">
+<summary>
+ Computes the FIRST set for the given terminal/nonterminal string.
+</summary>
+</member>
+<member name="M:libcontextfree.LLParser.parse``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,Microsoft.FSharp.Core.FSharpFunc{libcontextfree.LTerminal{``1},Microsoft.FSharp.Core.FSharpOption{Microsoft.FSharp.Collections.FSharpList{libcontextfree.Symbol{``2,``1}}}}},libcontextfree.Symbol{``2,``1},Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Applies the LL(1) parsing algorithm to the given 
+ expected symbol and list of tokens.
+</summary>
+</member>
+<member name="M:libcontextfree.LLParser.peekTerminal``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Peeks a terminal from the given token list.
+</summary>
+</member>
+<member name="T:libcontextfree.LLParser">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.LRParser.LR1Item`2">
+<summary>
+ An LR(1) item is defined as a pair of a generic LR item
+ and a single terminal of lookahead.
+</summary>
+</member>
+<member name="T:libcontextfree.LRParser.LR0Item`2">
+<summary>
+ An LR(0) item is defined as a pair of a a generic LR item
+ and zero terminals of lookahead.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="P:libcontextfree.LRParser.LRItem`2.Rule">
+<summary>
+ Gets the production rule associated with this LR item.
+</summary>
+</member>
+<member name="P:libcontextfree.LRParser.LRItem`2.NextSymbol">
+<summary>
+ Gets the symbol directly after the dot.
+</summary>
+</member>
+<member name="P:libcontextfree.LRParser.LRItem`2.NextItem">
+<summary>
+ Gets the item obtained by moving
+ the dot one symbol toward the right.
+</summary>
+</member>
+<member name="P:libcontextfree.LRParser.LRItem`2.Head">
+<summary>
+ Gets the production rule&apos;s head for this LR item&apos;s
+ associated production rule.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.LRParser.LRItem`2">
+<summary>
+ Defines LR(0) items, which are grammar rules with a special dot added somewhere in the right-hand side. 
+ The &apos;dot&apos; is represented by storing the rule&apos;s body in two lists.
+
+ For example the rule E → E + B has the following four corresponding items:
+     E → • E + B
+     E → E • + B
+     E → E + • B
+     E → E + B •
+
+ Note: because of how lists work in F#, this body on the left-hand
+       side of the dot is stored in reverse order.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.LRParser.LRAction`2.Fail">
+<summary>
+ Indicates that the LR parser could not parse the input string.
+</summary>
+</member>
+<member name="T:libcontextfree.LRParser.LRAction`2.Accept">
+<summary>
+ Indicates that the LR parser has successfully parsed the input string.
+</summary>
+</member>
+<member name="T:libcontextfree.LRParser.LRAction`2.Reduce">
+<summary>
+ Indicates that a reduction with the given grammar rule should be performed.
+</summary>
+</member>
+<member name="T:libcontextfree.LRParser.LRAction`2.Shift">
+<summary>
+ Indicates that the next state is n.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:libcontextfree.LRParser.showLR``2(Microsoft.FSharp.Collections.FSharpMap{System.Tuple{System.Int32,libcontextfree.LTerminal{``0}},libcontextfree.LRParser.LRAction{``1,``0}},Microsoft.FSharp.Collections.FSharpMap{System.Tuple{System.Int32,``1},System.Int32},System.Tuple{``1,System.Int32})">
+<summary>
+ Gets a string representation for the given LR parser triple.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.toFunctionalParser``2(Microsoft.FSharp.Collections.FSharpMap{System.Tuple{System.Int32,libcontextfree.LTerminal{``0}},libcontextfree.LRParser.LRAction{``1,``0}},Microsoft.FSharp.Collections.FSharpMap{System.Tuple{System.Int32,``1},System.Int32},System.Tuple{``1,System.Int32})">
+<summary>
+ Converts the given parser, which has a
+ map-based action and goto table, to a parser
+ that uses a function-based action and goto table.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.createLR1``2(libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Creates an LR(1) parser from the given grammar.
+ If this cannot be done, an error message is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.createLR0``2(libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Creates an LR(0) parser from the given grammar.
+ If this cannot be done, an error message is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.createLR``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Core.FSharpFunc{libcontextfree.Symbol{``0,``1},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}}},Microsoft.FSharp.Core.FSharpFunc{``2,Microsoft.FSharp.Collections.FSharpSet{libcontextfree.LTerminal{``1}}},``2,libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Creates an LR(k) parser, which is a triple of an action table, a goto table,
+ and an initial state. If this cannot be done, an error message is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.closureLR1``2(Microsoft.FSharp.Collections.FSharpMap{``0,Microsoft.FSharp.Collections.FSharpSet{Microsoft.FSharp.Core.FSharpOption{``1}}},Microsoft.FSharp.Collections.FSharpMap{``0,Microsoft.FSharp.Collections.FSharpSet{libcontextfree.LTerminal{``1}}},libcontextfree.ContextFreeGrammar{``0,``1},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},libcontextfree.LTerminal{``1}}})">
+<summary>
+ A specialization of the closure function for LR(1) items.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.follow``2(Microsoft.FSharp.Collections.FSharpMap{``0,Microsoft.FSharp.Collections.FSharpSet{libcontextfree.LTerminal{``1}}},Microsoft.FSharp.Collections.FSharpSet{libcontextfree.LRParser.LRItem{``0,``1}},``0)">
+<summary>
+ Given the precomputed map of FIRST sets, computes FOLLOW(k, B), where 
+ k is a set of LR items, and B is a nonterminal.
+
+ FOLLOW(I) of an Item I [A → α • B β, x] is the set of terminals that can appear 
+ immediately after nonterminal B, where α, β are arbitrary symbol strings, 
+ and x is an arbitrary lookahead terminal.
+
+ FOLLOW(k, B) of an item set k and a nonterminal B is the union of the 
+ follow sets of all items in k where &apos;•&apos; is followed by B.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.closureLR0``2(libcontextfree.ContextFreeGrammar{``0,``1},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},Microsoft.FSharp.Core.Unit}})">
+<summary>
+ A specialization of the closure function for LR(0) items.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.goto``3(Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},libcontextfree.Symbol{``0,``1})">
+<summary>
+ Defines a goto function for LR(k) items: all items in the specified set whose
+ next symbol is the given label are taken, and their dot is shifted one position
+ to the right.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.gotoTable``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Core.FSharpFunc{libcontextfree.Symbol{``0,``1},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}}},Microsoft.FSharp.Collections.FSharpSet{``0},Microsoft.FSharp.Collections.FSharpMap{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},System.Int32})">
+<summary>
+ Creates a goto table from the given closure and goto functions, set of nonterminals,
+ and set of states.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.getAction``2(Microsoft.FSharp.Collections.FSharpMap{System.Tuple{System.Int32,libcontextfree.LTerminal{``0}},libcontextfree.LRParser.LRAction{``1,``0}},System.Int32,libcontextfree.LTerminal{``0})">
+<summary>
+ Gets the action at the given state/terminal cell in the LR table.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.actionTable``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Core.FSharpFunc{libcontextfree.Symbol{``0,``1},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}}},Microsoft.FSharp.Core.FSharpFunc{``2,Microsoft.FSharp.Collections.FSharpSet{libcontextfree.LTerminal{``1}}},``0,Microsoft.FSharp.Collections.FSharpMap{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},System.Int32})">
+<summary>
+ Creates an action table from the given closure, goto and follow functions,
+ the grammar&apos;s starting symbol, and the set of states.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.states``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}},Microsoft.FSharp.Core.FSharpFunc{libcontextfree.Symbol{``0,``1},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}}}},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}})">
+<summary>
+ Computes the set of states, given a closure and goto function and 
+ an initial item.
+ A state is nothing more than a set of items.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.closure``3(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{libcontextfree.LRParser.LRItem{``0,``1}},Microsoft.FSharp.Core.FSharpFunc{libcontextfree.LRParser.LRItem{``0,``1},Microsoft.FSharp.Collections.FSharpSet{``2}}},libcontextfree.ContextFreeGrammar{``0,``1},Microsoft.FSharp.Collections.FSharpSet{System.Tuple{libcontextfree.LRParser.LRItem{``0,``1},``2}})">
+<summary>
+ Any set of items can be extended by recursively adding all 
+ the appropriate items until all nonterminals preceded by dots are accounted for. 
+ The minimal extension is called the closure of an item set and written as closure(I) where I is an item set. 
+ It is these closed item sets that are taken as the states of the parser, 
+ although only the ones that are actually reachable from the begin state will be included in the tables.
+
+ In this closure implementation, a context-free grammar and an item-creating function are passes as arguments:
+ said function takes an old item and a rule for the next item, and uses them to generate a 
+ set of new items.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.parse``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{System.Int32,Microsoft.FSharp.Core.FSharpFunc{libcontextfree.LTerminal{``1},libcontextfree.LRParser.LRAction{``2,``1}}},Microsoft.FSharp.Core.FSharpFunc{System.Int32,Microsoft.FSharp.Core.FSharpFunc{``2,System.Int32}},``2,System.Int32,Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Parses a terminal string based on the given LR table components.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.parseLR``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{System.Int32,Microsoft.FSharp.Core.FSharpFunc{libcontextfree.LTerminal{``1},libcontextfree.LRParser.LRAction{``2,``1}}},Microsoft.FSharp.Core.FSharpFunc{System.Int32,Microsoft.FSharp.Core.FSharpFunc{``2,System.Int32}},``2,System.Int32,Microsoft.FSharp.Collections.FSharpList{``0},Microsoft.FSharp.Collections.FSharpList{System.Tuple{libcontextfree.ParseTree{``2,libcontextfree.LTerminal{``0}},System.Int32}})">
+<summary>
+ Applies the LR parsing algorithm recursively to the given action table, goto table and state.
+ A parse tree is returned if the parsing algorithm was successful. Otherwise,
+ the list of remaining input terminals is returned (this may be useful for diagnostic purposes).
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.normalizeLRTree``2(libcontextfree.ParseTree{``0,libcontextfree.LTerminal{``1}})">
+<summary>
+ &quot;Normalizes&quot; the given LR parser tree: end-of-input leaves are discarded recursively.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.reduce``3(Microsoft.FSharp.Core.FSharpFunc{System.Int32,Microsoft.FSharp.Core.FSharpFunc{``0,System.Int32}},System.Int32,libcontextfree.ProductionRule{``0,``1},Microsoft.FSharp.Collections.FSharpList{``2},Microsoft.FSharp.Collections.FSharpList{System.Tuple{libcontextfree.ParseTree{``0,libcontextfree.LTerminal{``2}},System.Int32}})">
+<summary>
+ Remove the matched topmost L symbols (and parse trees and associated state numbers) from the parse stack.
+ This exposes a prior state p that was expecting an instance of the Lhs symbol.
+ Join the L parse trees together as one parse tree with new root symbol Lhs.
+ Lookup the next state n from row p and column Lhs of the LHS Goto table.
+ Push the symbol and tree for Lhs onto the parse stack.
+ Push next state n onto the parse stack as the new current state.
+ The lookahead and input stream remain unchanged.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.peekStack``2(``0,Microsoft.FSharp.Collections.FSharpList{System.Tuple{``1,``0}})">
+<summary>
+ Peeks a single item from the stack.
+</summary>
+</member>
+<member name="M:libcontextfree.LRParser.shift``2(System.Int32,Microsoft.FSharp.Collections.FSharpList{``1},Microsoft.FSharp.Collections.FSharpList{System.Tuple{libcontextfree.ParseTree{``0,libcontextfree.LTerminal{``1}},System.Int32}})">
+<summary>
+ Shift the matched terminal t onto the parse stack and scan the next input symbol into the lookahead buffer.
+ Push next state n onto the parse stack as the new current state.
+</summary>
+</member>
+<member name="T:libcontextfree.LRParser">
+
+</member>
+<member name="M:libcontextfree.ListHelpers.suffixes``1(Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Computes all suffixes of the given list.
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.zip3Truncate``3(Microsoft.FSharp.Collections.FSharpList{``0},Microsoft.FSharp.Collections.FSharpList{``1},Microsoft.FSharp.Collections.FSharpList{``2})">
+<summary>
+ Combines the three lists into a list of triples. The result is
+ truncated whenever any of the lists is empty.
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.cartesianProduct3``6(``0,``2,``4)">
+<summary>
+ The Cartesian product of three lists: all triples of items from
+ the given lists are computed.
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.cartesianProduct``4(``0,``2)">
+<summary>
+ The Cartesian product of two lists: all pairs of items from
+ the given lists are computed.
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.cartesianPower``1(System.Int32,Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ The Cartesian nth power of a list, i.e. l × l × ... × l. (Be careful:
+ this computes a list containing |l|^n elements, which can be large.)
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.splitAtIndex``1(System.Int32,Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Splits the given list into two lists at the given index.
+
+ For example:
+
+     splitAtIndex 2 [1; 2; 3; 4; 5]
+     = [1; 2], [3; 4; 5]
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.splitAtLast``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{``1}},Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Splits a list at the last element where the given function argument
+ returns a `Some` value. A tuple containing the preceding list of input
+ items, the resulting value, and the succeeding list of input items, is returned
+ if this operation could be performed. Otherwise, None is returned.
+
+ For example:
+
+     let safeSqrt x = if x &gt;= 0.0 then Some (sqrt x, -sqrt x) else None
+     
+     splitAtLast safeSqrt [-7.1; 9.3; 4.7; -1.2; 2.8; -5.1]
+     = Some ([-7.1; 9.3; 4.7; -1.2], (1.673320053, -1.673320053), [-5.1])
+     
+     splitAtLast safeSqrt [-1.1; -2.2; -3.3]
+     = None
+
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.splitAtFirst``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{``1}},Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ Splits a list at the first element where the given function argument
+ returns a `Some` value. A tuple containing the preceding list of input
+ items, the resulting value, and the succeeding list of input items, is returned
+ if this operation could be performed. Otherwise, None is returned.
+
+ For example:
+
+     let safeSqrt x = if x &gt;= 0.0 then Some (sqrt x, -sqrt x) else None
+     
+     splitAtFirst safeSqrt [-7.1; 9.3; 4.7; -1.2; 2.8; -5.1]
+     = Some ([-7.1], (3.049590136, -3.049590136), [4.7; -1.2; 2.8; -5.1])
+     
+     splitAtFirst safeSqrt [-1.1; -2.2; -3.3]
+     = None
+
+</summary>
+</member>
+<member name="M:libcontextfree.ListHelpers.splitAtFirstOrder``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{System.Tuple{System.Int32,``0}},Microsoft.FSharp.Collections.FSharpList{System.Tuple{System.Int32,``0}}},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpOption{``1}},Microsoft.FSharp.Collections.FSharpList{``0})">
+<summary>
+ A generic function that `splitAtFirst` and `splitAtLast` are both
+ based on, which allows you to pass any &quot;order&quot; function that specifies
+ which order to search the enumerated list in.
+</summary>
+</member>
+<member name="T:libcontextfree.ListHelpers">
+<summary>
+ Defines a number of list helper functions.
+</summary>
+</member>
+<member name="M:libcontextfree.MapHelpers.showTable``3(Microsoft.FSharp.Core.FSharpFunc{``0,System.String},Microsoft.FSharp.Core.FSharpFunc{``1,System.String},Microsoft.FSharp.Core.FSharpFunc{``2,System.String},System.Collections.Generic.IEnumerable{``0},System.Collections.Generic.IEnumerable{``1},Microsoft.FSharp.Collections.FSharpMap{System.Tuple{``0,``1},``2})">
+<summary>
+ Creates a string representation for the given table.
+</summary>
+</member>
+<member name="M:libcontextfree.MapHelpers.emptySetMap``2(Microsoft.FSharp.Collections.FSharpSet{``0})">
+<summary>
+ Creates a map of keys to empty sets from the given set.
+</summary>
+</member>
+<member name="M:libcontextfree.MapHelpers.groupFstSet``2(System.Collections.Generic.IEnumerable{System.Tuple{``0,``1}})">
+<summary>
+ Group a sequence of (K, V) tuples into sets of V using the K values as keys.
+</summary>
+</member>
+<member name="M:libcontextfree.MapHelpers.groupFst``2(System.Collections.Generic.IEnumerable{System.Tuple{``0,``1}})">
+<summary>
+ Group a sequence of (K, V) tuples into lists of V using the K values as keys.
+</summary>
+</member>
+<member name="M:libcontextfree.MapHelpers.mergeWith``2(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{``0,``0}},Microsoft.FSharp.Collections.FSharpMap{``1,``0},Microsoft.FSharp.Collections.FSharpMap{``1,``0})">
+<summary>
+ Merge two Map&lt;&apos;k, &apos;v&gt; objects, using a given function that handles collisions.
+</summary>
+</member>
+<member name="T:libcontextfree.MapHelpers">
+<summary>
+ Defines a number of map helper functions.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.allNodes``2(libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Return a list of all nodes in the tree.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.children``2(libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Return a list of all immediate children of this node.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.showProductionRules``2(libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Gets a string representation of the set of production rules that are used in this parse tree.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.showRightmostDerivationSequence``2">
+<summary>
+ Gets a string representation for the given tree&apos;s entire rightmost derivation 
+ sequence, including the input tree itself. 
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.showLeftmostDerivationSequence``2">
+<summary>
+ Gets a string representation for the given tree&apos;s entire leftmost derivation 
+ sequence, including the input tree itself. 
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.showDerivationSequence``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{libcontextfree.ParseTree{``0,``1},Microsoft.FSharp.Core.FSharpOption{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Core.FSharpOption{System.Tuple{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}}}},libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Gets a string representation for the given tree&apos;s entire derivation 
+ sequence, including the input tree itself. 
+ Nonterminal nodes are replaced by the given split-at function.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.showTreeYield``2">
+<summary>
+ Get a string representation for the yield of a parse tree.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.showTreeHead``2">
+<summary>
+ Gets a string representation for a parse tree&apos;s &quot;head&quot;, 
+ i.e. the terminal or nonterminal in the root node.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.productionRules``2(libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Gets the set of production rules that are used in this parse tree.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.derivationSequence``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{libcontextfree.ParseTree{``0,``1},Microsoft.FSharp.Core.FSharpOption{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Core.FSharpOption{System.Tuple{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}}}},libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Gets the given tree&apos;s entire derivation 
+ sequence, including the input tree itself. 
+ Nonterminal nodes are replaced by the given split-at function.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.derivation``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{libcontextfree.ParseTree{``0,``1},Microsoft.FSharp.Core.FSharpOption{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Core.FSharpOption{System.Tuple{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}}}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}})">
+<summary>
+ Creates a list of node lists that is obtained by starting
+ with a single node list, and then deriving one nonterminal
+ at a time until only a list of terminal leaves remain. 
+ Said nonterminal is selected by the given split-at function.
+ The input node list is not included in the result list.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.derive``2(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.FSharpFunc{libcontextfree.ParseTree{``0,``1},Microsoft.FSharp.Core.FSharpOption{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}},Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Core.FSharpOption{System.Tuple{Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}}}}}},Microsoft.FSharp.Collections.FSharpList{libcontextfree.ParseTree{``0,``1}})">
+<summary>
+ Performs a single derivation: a single nonterminal node (selected from the node list by the `splitAt` function)
+ is replaced by its children.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.treeHead``2(libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Gets a parse tree&apos;s &quot;head&quot;, i.e. the terminal or nonterminal
+ in the root node.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.treeYield``2(libcontextfree.ParseTree{``0,``1})">
+<summary>
+ Computes the yield of a parse tree, which is a list of terminals.
+</summary>
+</member>
+<member name="M:libcontextfree.ParseTree.map``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},Microsoft.FSharp.Core.FSharpFunc{``2,``3},libcontextfree.ParseTree{``0,``2})">
+<summary>
+ Applies the given mapping functions to a 
+ parse tree.
+</summary>
+</member>
+<member name="T:libcontextfree.ParseTree">
+
+</member>
+<member name="M:libcontextfree.ProductionRules.show``2(System.Collections.Generic.IEnumerable{libcontextfree.ProductionRule{``0,``1}})">
+<summary>
+ Shows the given sequence of production rules as a numbered list.
+</summary>
+</member>
+<member name="T:libcontextfree.ProductionRules">
+
+</member>
+<member name="P:libcontextfree.PushdownAutomaton.ifElseAutomaton">
+<summary>
+ A hard-coded if-else grammar automaton, stolen from Slide 69, for testing purposes.
+</summary>
+</member>
+<member name="P:libcontextfree.PushdownAutomaton.toStringPda">
+<summary>
+ Converting a ContextFreeGrammar&lt;char, char&gt; will result in a
+ PushdownAutomaton&lt;unit, char, Symbol&lt;char, char&gt;&gt;. This will
+ turn that into a PushdownAutomaton over strings.
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.toCfg``3(libcontextfree.PushdownAutomaton{``0,``1,``2})">
+<summary>
+ Convert a context-free grammar to a pushdown automaton. (Slide 82)
+ The nonterminals correspond to the notation in the slide as follows:
+
+     S        &lt;=&gt; None
+     [pXq]    &lt;=&gt; Some (p, X, q)
+
+ TODO: tests!
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.ofCfg``2(libcontextfree.ContextFreeGrammar{``0,``1})">
+<summary>
+ Convert a context-free grammar to a pushdown automaton. (Slide 75)
+ TODO: tests!
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.finalStateToEmptyStack``3(libcontextfree.PushdownAutomaton{``0,``1,``2})">
+<summary>
+ Convert a pushdown automaton that accepts L in its final states
+ to one that accepts L on an empty stack. (Slide 71)
+ TODO: tests!
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.emptyStackToFinalState``3(libcontextfree.PushdownAutomaton{``0,``1,``2})">
+<summary>
+ Convert a pushdown automaton that accepts L on an empty stack
+ to one that accepts L in its final states. (Slide 67)
+ TODO: tests!
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.enumerate``3(libcontextfree.PushdownAutomaton{``0,``1,``2})">
+<summary>
+ Rename the states in a PDA to 0, 1, 2...
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.mapStackSymbols``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.PushdownAutomaton{``2,``3,``0})">
+<summary>
+ Map a function φ over the stack symbols of a PDA. φ should be injective.
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.mapInputSymbols``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.PushdownAutomaton{``2,``0,``3})">
+<summary>
+ Map a function φ over the input symbols of a PDA. φ should be injective.
+</summary>
+</member>
+<member name="M:libcontextfree.PushdownAutomaton.mapStates``4(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.PushdownAutomaton{``0,``2,``3})">
+<summary>
+ Map a function φ over the states of a PDA. φ should be injective.
+</summary>
+</member>
+<member name="T:libcontextfree.PushdownAutomaton">
+
+</member>
+<member name="M:libcontextfree.PushdownAutomatonOps.|PDA|``3(libcontextfree.PushdownAutomaton{``0,``1,``2})">
+<summary>
+ An active pattern that matches push-down automata,
+ including their sets of states, input symbols, and stack symbols.
+
+ Usage:
+     match x with
+     | PDA(Q, Σ, Γ, δ, q0, Z0, F) -&gt; ...
+
+</summary>
+</member>
+<member name="T:libcontextfree.PushdownAutomatonOps">
+
+</member>
+<member name="M:libcontextfree.Result.eprintf(libcontextfree.Result{Microsoft.FSharp.Core.Unit})">
+<summary>
+ Print an Error to stderr, or do nothing for Success ().
+</summary>
+</member>
+<member name="P:libcontextfree.Result.print">
+<summary>
+ Print an Error, or the Success value.
+ Success and Error values are printed to stdout and stderr, respectively;
+ in both cases, a newline is appended.
+</summary>
+</member>
+<member name="M:libcontextfree.Result.printWith``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.String},libcontextfree.Result{``0})">
+<summary>
+ Print an Error, or the result of applying a function to a Success value.
+ Success and Error values are printed to stdout and stderr, respectively;
+ in both cases, a newline is appended.
+</summary>
+</member>
+<member name="M:libcontextfree.Result.sequence``2(``0)">
+<summary>
+ Return a list of all given results, if they are all Successes; otherwise,
+ return the first error in the list.
+</summary>
+</member>
+<member name="M:libcontextfree.Result.map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.Result{``0})">
+<summary>
+ Map a function over a Success value.
+</summary>
+</member>
+<member name="M:libcontextfree.Result.bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,libcontextfree.Result{``1}},libcontextfree.Result{``0})">
+<summary>
+ Chain computations that might fail.
+</summary>
+</member>
+<member name="M:libcontextfree.Result.isError``1(libcontextfree.Result{``0})">
+<summary>
+ Determines if the given result was unsuccessful.
+</summary>
+</member>
+<member name="M:libcontextfree.Result.isSuccess``1(libcontextfree.Result{``0})">
+<summary>
+ Finds out if the given result value indicates success.
+</summary>
+</member>
+<member name="T:libcontextfree.Result">
+
+</member>
+<member name="M:libcontextfree.SetHelpers.toIndexedMap``1(System.Collections.Generic.IEnumerable{``0})">
+<summary>
+ Converts the given sequence to a map where every
+ item in the set has been assigned a unique index.
+ (The assigned indices are 0..n-1, where n equals the
+ number of items in the sequence.)
+</summary>
+</member>
+<member name="M:libcontextfree.SetHelpers.closure``1(Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Collections.FSharpSet{``0}},Microsoft.FSharp.Collections.FSharpSet{``0})">
+<summary>
+ Computes the closure of a basis set by recursively applying 
+ the given induction function to every element in the closure set,
+ starting with a given basis set.
+
+ For example:
+
+     closure (fun _ -&gt; Set.empty) (set [1; 2; 3])
+     = set [1; 2; 3]
+
+     closure (fun x -&gt; if x &gt; 5 then Set.empty else Set.singleton (x + 1)) (set [1])
+     = set [1; 2; 3; 4; 5; 6]
+</summary>
+</member>
+<member name="M:libcontextfree.SetHelpers.closure2``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpSet{``0},Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Collections.FSharpSet{``0}}},Microsoft.FSharp.Collections.FSharpSet{``0})">
+<summary>
+ Like closure, but provides the preliminary set of results to the
+ induction function.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.SetHelpers">
+<summary>
+ Defines a number of set helper functions.
+</summary>
+</member>
+<member name="P:libcontextfree.StringHelpers.letters">
+<summary>
+ A collection of meaning-free letters that can be used for remapping
+ nonterminal names to single characters. Letters like S and ε, which
+ usually have some special meaning in a grammar, are avoided.
+</summary>
+</member>
+<member name="P:libcontextfree.StringHelpers.dotEscape">
+<summary>
+ Escape a string for output in a Graphviz .dot file.
+</summary>
+</member>
+<member name="P:libcontextfree.StringHelpers.concatLines">
+<summary>
+ Concatenate a list of strings using newlines.
+</summary>
+</member>
+<member name="M:libcontextfree.StringHelpers.splitLines(System.String)">
+<summary>
+ Split a string into an array of lines.
+</summary>
+</member>
+<member name="T:libcontextfree.StringHelpers">
+<summary>
+ Defines a number of string helper functions.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.Symbol">
+
+</member>
+<member name="M:libcontextfree.TreeHandler.writeTree(System.IO.TextWriter,libcontextfree.ParseTree{System.String,System.String})">
+<summary>
+ Writes a string representation of the given parse tree to the given text writer.
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.escapeSexp(System.String)">
+<summary>
+ Escape S-expression-special characters (parentheses and backslashes) in a string.
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.isSpecialSexp(System.Char)">
+<summary>
+ Is the given character special (i.e. should it be escaped) in an S-expression?
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.readNodes(System.IO.TextReader)">
+<summary>
+ Reads a list of parse tree nodes from the given text reader.
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.readNode(System.IO.TextReader)">
+<summary>
+ Tries to read a parse tree node from the given text reader.
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.skipWhitespace(System.IO.TextReader)">
+<summary>
+ Skips all leading whitespace in the text reader.
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.readAtom(System.IO.TextReader)">
+<summary>
+ Reads an atom as a string.
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.readAtomAsList(System.IO.TextReader)">
+<summary>
+ Reads a word as a list of characters.
+</summary>
+</member>
+<member name="M:libcontextfree.TreeHandler.isAtomChar(System.Char)">
+<summary>
+ Checks if the given character belongs to an atom in a parse tree file.
+</summary>
+</member>
+<member name="T:libcontextfree.TreeHandler">
+
+</member>
+<member name="M:libcontextfree.TuringMachine.run``2(libcontextfree.TuringMachine{``0,``1},Microsoft.FSharp.Collections.FSharpList{``1})">
+<summary>
+ Run a Turing machine over some input string, and return whether
+ or not the TM accepts this string.
+</summary>
+</member>
+<member name="M:libcontextfree.TuringMachine.runStep``2(libcontextfree.TuringMachine{``0,``1},``0,Microsoft.FSharp.Collections.FSharpMap{System.Int32,``1},System.Int32)">
+<summary>
+ Advance the Turing machine by one step, or return a result if we&apos;re done.
+</summary>
+</member>
+<member name="T:libcontextfree.TuringMachine">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="M:libcontextfree.XmlHandler.toPda(FSharp.Data.Runtime.BaseTypes.XmlElement)">
+<summary>
+ Tries to convert the given PDA XML node to a pushdown automaton.
+ If this cannot be done, an Error value is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.XmlHandler.ofPda(libcontextfree.PushdownAutomaton{System.String,System.String,System.String})">
+<summary>
+ Creates a PDA XML node from the given pushdown automaton.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="M:libcontextfree.XmlHandler.toCfg(FSharp.Data.Runtime.BaseTypes.XmlElement)">
+<summary>
+ Tries to convert the given CFG XML node to a context-free grammar.
+ If this cannot be done, an Error value is returned.
+</summary>
+</member>
+<member name="M:libcontextfree.XmlHandler.ofCfg(libcontextfree.ContextFreeGrammar{System.Char,System.Char})">
+<summary>
+ Creates a CFG XML node from the given context-free grammar.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.XmlHandler">
+
+</member>
+</members>
+</doc>
