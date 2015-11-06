@@ -28,6 +28,8 @@ type TokenType =
 | Colon
 /// An underscore.
 | Underscore
+/// An equals (`=`) sign.
+| Equals
 | LParen
 | RParen
 /// The "if" keyword.

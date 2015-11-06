@@ -30,7 +30,7 @@ module Lexer =
     /// its position has exceeded the length of its underlying
     /// source code string.
     let isEmpty (stream : SourceStream) : bool =
-        stream.pos > stream.source.Length
+        stream.pos >= stream.source.Length
 
     /// Gets the current character in the source stream.
     /// If the source stream is empty, nothing is returned.
@@ -76,19 +76,22 @@ module Lexer =
     /// they satisfy the given predicate
     let rec readRange (pred : char -> bool) (stream : SourceStream) : SourceStream =
         match tryReadChar pred stream with
-        | Some(_, stream) -> readRange pred (next stream)
+        | Some(_, stream) -> readRange pred stream
         | _ -> stream
 
     /// A map of strings that have a 1:1 mapping
     /// to their associated token.
     let private staticTokens = 
         Map.ofList [
+                       // Don't insert `"_", TokenType.Underscore` here:
+                       // the identifier lexer takes care of that 
+                       // (it's a precedence thing)
                        ",", TokenType.Comma
                        ";", TokenType.Semicolon
                        ":", TokenType.Colon
                        "(", TokenType.LParen
                        ")", TokenType.RParen
-                       "_", TokenType.Underscore
+                       "=", TokenType.Equals
                        "if", TokenType.IfKeyword
                        "else", TokenType.ElseKeyword
                        "data", TokenType.DataKeyword
@@ -103,7 +106,7 @@ module Lexer =
             let stream = seek k.Length stream
             sliceToken startPos stream v, stream
 
-        staticTokens |> Seq.tryFind (fun (KeyValue(k, v)) -> stream.source.Substring(stream.pos, k.Length) = k)
+        staticTokens |> Seq.tryFind (fun (KeyValue(k, v)) -> slice stream.pos (seek k.Length stream) = k)
                      |> Option.map sliceStream
 
     /// Reads a token of an unknown type from the source stream.
@@ -187,8 +190,8 @@ module Lexer =
             tryReadRangeToken System.Char.IsDigit TokenType.Integer
             tryReadDelimitedToken '"' TokenType.String
             tryReadDelimitedToken '\'' TokenType.Char
-            tryReadIdentifier
             tryReadStaticToken
+            tryReadIdentifier
         ]
 
     /// Reads a single token from the given source stream.
