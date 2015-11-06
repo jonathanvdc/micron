@@ -15,6 +15,9 @@ type TokenType =
 | String
 /// A character literal.
 | Char
+/// A double-precision floating-point
+/// literal.
+| Double
 /// A whitespace symbol.
 | Whitespace
 /// A special token type that

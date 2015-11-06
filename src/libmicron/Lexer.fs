@@ -188,11 +188,77 @@ module Lexer =
             // No leading delimiter found.
             None
 
+    /// Parses a floating point number from the given source stream.
+    let tryReadFloatingPoint (stream : SourceStream) : SourceStream option =
+        let startPos = stream.pos
+        let stream = readRange System.Char.IsDigit stream
+        // Parses an exponent from the given stream.
+        let parseExponent stream =
+            match current stream with
+            | Some 'e'
+            | Some 'E' ->
+                let newStream = next stream
+                match current newStream with
+                | Some '+'
+                | Some '-' ->
+                    let newStream = next newStream
+                    match current newStream with
+                    | Some c when System.Char.IsDigit c ->
+                        // 'e+', 'E+', 'e-' or 'E-' followed by some digit. 
+                        // Excellent.
+                        readRange System.Char.IsDigit (next newStream)
+                    | _ ->
+                        // 'e+', 'E+', 'e-' or 'E-' followed by something
+                        // other than a digit. This is not an exponent.
+                        stream
+                | Some c when System.Char.IsDigit c ->
+                    // 'e' or 'E+' followed by some digit. 
+                    // That'll work just fine.
+                    readRange System.Char.IsDigit newStream
+                | _ ->
+                    // 'e' or 'E' followed by something
+                    // other than a digit. We have to
+                    // go back.
+                    stream
+            | _ ->
+                stream
+
+        // Parse a decimal period, optionally followed by an
+        // exponent.
+        match current stream with
+        | Some '.' ->
+            let stream = next stream
+            let periodPos = stream.pos
+            let stream = readRange System.Char.IsDigit stream
+            if stream.pos = periodPos then
+                // We don't allow stuff like 2.E3.
+                // Seriously, who does that?
+                None
+            else
+                // We have a winner!
+                Some (parseExponent stream)
+        | _ ->
+            // Sure, this may be an integer, but it is 
+            // not a floating point literal. Return
+            // None to signal that.
+            None
+
+    /// Tries to read a double-precision floating-point literal token from
+    /// the stream.
+    let tryReadDoubleToken (stream : SourceStream) : (Token * SourceStream) option =
+        let startPos = stream.pos
+        match tryReadFloatingPoint stream with
+        | Some stream ->
+            Some (sliceToken startPos stream TokenType.Double, stream)
+        | None ->
+            None
+
     /// A list of functions that are succesively applied
     /// to a source stream whenever a token is to be read.
     let private lexerFunctions = 
         [
             tryReadRangeToken System.Char.IsWhiteSpace TokenType.Whitespace
+            tryReadDoubleToken
             tryReadRangeToken System.Char.IsDigit TokenType.Integer
             tryReadDelimitedToken '"' TokenType.String
             tryReadDelimitedToken '\'' TokenType.Char
