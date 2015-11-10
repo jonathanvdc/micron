@@ -34,7 +34,6 @@ type TypeInferenceTests () =
             ]
 
         let expected = 
-            LinearSet.empty<UnknownType * IType>,
             LinearSet.ofList
                 [
                     // a = bool -> int
@@ -55,7 +54,7 @@ type TypeInferenceTests () =
                         ])
                 ]
 
-        let results = TypeInference.resolve (fun _ _ -> false) constraints
+        let results = TypeInference.resolve constraints
         results |> should equal (Success expected)
 
     [<TestMethod>] 
@@ -69,7 +68,7 @@ type TypeInferenceTests () =
                 TypeInference.Variable t2, TypeInference.Instance(TypeInference.Variable t1, [TypeInference.Variable t2])
             ]
             
-        assertError (TypeInference.resolve (fun _ _ -> false) constraints)
+        assertError (TypeInference.resolve constraints)
 
     [<TestMethod>] 
     member this.DefinedTwice () =
@@ -83,4 +82,4 @@ type TypeInferenceTests () =
                 TypeInference.Variable t1, TypeInference.Constant (PrimitiveTypes.Int32)
             ]
 
-        assertError (TypeInference.resolve (fun _ _ -> false) constraints)
+        assertError (TypeInference.resolve constraints)

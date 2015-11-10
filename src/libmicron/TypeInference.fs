@@ -25,12 +25,6 @@ module TypeInference =
     /// as a boolean, integer, or user-defined
     /// data structure.
     | Constant of IType
-    /// Represents a typeclass constraint.
-    /// To satisfy this, either a generic
-    /// constraint must be introduced, or
-    /// a constant type must implement this
-    /// typeclass.
-    | Typeclass of IType
     /// Represents a generic instance type.
     | Instance of TypeConstraint * TypeConstraint list
     /// Represents a function type.
@@ -45,8 +39,6 @@ module TypeInference =
         Variable cTy
     | Constant cTy ->
         Constant cTy
-    | Typeclass cTy ->
-        Typeclass cTy
     | Function(arg, ret) ->
         Function (substitute ty constr arg, substitute ty constr ret)
     | Instance(genType, args) ->
@@ -96,7 +88,6 @@ module TypeInference =
         let rec show : TypeConstraint -> string = function
         | Constant x -> x.FullName
         | Variable x -> dict.GetOrAdd(x, createName "" 0)
-        | Typeclass x -> "class " + x.FullName
         | Function(x, y) -> 
             match x with
             | Function(_, _) -> "(" + show x + ")" + " -> " + show y
@@ -110,23 +101,21 @@ module TypeInference =
     let rec occursIn (left : UnknownType) : TypeConstraint -> bool = function
     | Variable x when x = left -> true
     | Variable _
-    | Constant _
-    | Typeclass _ -> false
+    | Constant _ -> false
     | Function(x, y) -> occursIn left x || occursIn left y
     | Instance(x, ys) -> occursIn left x || List.exists (occursIn left) ys
 
     /// Tries to resolve the given set of type constraints.
     /// This corresponds to the "unification" step in most
     /// Hindley-Milner type systems.
-    let rec resolve (implementsTypeclass : IType -> IType -> bool) 
-                    (relations : (TypeConstraint * TypeConstraint) list) 
-                    : Result<LinearSet<UnknownType * IType> * LinearSet<UnknownType * TypeConstraint>> =
+    let rec resolve (relations : (TypeConstraint * TypeConstraint) list) 
+                    : Result<LinearSet<UnknownType * TypeConstraint>> =
         let show = createShow()
-        let rec step (results : Result<LinearSet<UnknownType * IType> * LinearSet<UnknownType * TypeConstraint>>) 
+        let rec step (results : Result<LinearSet<UnknownType * TypeConstraint>>) 
                      (left : TypeConstraint, right : TypeConstraint) 
-                     : Result<LinearSet<UnknownType * IType> * LinearSet<UnknownType * TypeConstraint>> =
+                     : Result<LinearSet<UnknownType * TypeConstraint>> =
             match results with
-            | Success (tClasses, substs) ->
+            | Success substs ->
                 let applySubst target (tyFrom, tyTo) =
                     substitute tyFrom tyTo target
 
@@ -138,19 +127,6 @@ module TypeInference =
                 | Variable tVar1, Variable tVar2 when tVar1 = tVar2 ->
                     // Again, no magic here.
                     results
-                | Constant cTy, Typeclass classTy 
-                | Typeclass classTy, Constant cTy when not (implementsTypeclass cTy classTy) ->
-                    // Typeclasses must be implemented, of course.
-                    Error("Could not unify '" + show (Constant cTy) + "' and '" + show (Typeclass classTy) + 
-                          "' because the former did not implement the latter.")
-                | Constant cTy, Typeclass classTy 
-                | Typeclass classTy, Constant cTy ->
-                    // Typeclass was implemented properly. Carry on.
-                    results
-                | Variable tVar, Typeclass classTy 
-                | Typeclass classTy, Variable tVar ->
-                    // Whoa. We should introduce a typeclass constraint.
-                    Success (LinearSet.add (tVar, classTy) tClasses, substs)
                 | Variable tVar, other
                 | other, Variable tVar when occursIn tVar other ->
                     // Unifying these types would result in an infinite type.
@@ -164,7 +140,7 @@ module TypeInference =
                     // to apply this substitution rule to the results list itself.
                     let newSubsts = LinearSet.add (tVar, other) (LinearSet.map (fun (k, v) -> k, substitute tVar other v) substs)
 
-                    Success (tClasses, newSubsts)
+                    Success newSubsts
                 | Function(tArg1, tRet1), Function(tArg2, tRet2) ->
                     // Resolve generic declaration constraints both for the
                     // argument and return types.
@@ -180,7 +156,7 @@ module TypeInference =
             | Error _ -> 
                 results
 
-        List.fold step (Success (LinearSet.empty, LinearSet.empty)) relations
+        List.fold step (Success LinearSet.empty) relations
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
