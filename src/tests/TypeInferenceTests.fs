@@ -55,7 +55,7 @@ type TypeInferenceTests () =
                 ]
 
         let results = TypeInference.resolve constraints
-        results |> should equal (Success expected)
+        results |> Result.map LinearMap.toSet |> should equal (Success expected)
 
     [<TestMethod>] 
     member this.InfiniteType () =

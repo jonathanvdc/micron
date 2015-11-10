@@ -109,18 +109,18 @@ module TypeInference =
     /// This corresponds to the "unification" step in most
     /// Hindley-Milner type systems.
     let rec resolve (relations : (TypeConstraint * TypeConstraint) list) 
-                    : Result<LinearSet<UnknownType * TypeConstraint>> =
+                    : Result<LinearMap<UnknownType, TypeConstraint>> =
         let show = createShow()
-        let rec step (results : Result<LinearSet<UnknownType * TypeConstraint>>) 
+        let rec step (results : Result<LinearMap<UnknownType, TypeConstraint>>) 
                      (left : TypeConstraint, right : TypeConstraint) 
-                     : Result<LinearSet<UnknownType * TypeConstraint>> =
+                     : Result<LinearMap<UnknownType, TypeConstraint>> =
             match results with
             | Success substs ->
-                let applySubst target (tyFrom, tyTo) =
+                let applySubst target tyFrom tyTo =
                     substitute tyFrom tyTo target
 
-                match LinearSet.fold applySubst left substs, 
-                      LinearSet.fold applySubst right substs with
+                match LinearMap.fold applySubst left substs, 
+                      LinearMap.fold applySubst right substs with
                 | Constant t1, Constant t2 when t1.IsEquivalent(t2) ->
                     // This is a pretty boring case, really.
                     results
@@ -138,7 +138,7 @@ module TypeInference =
                     // If either one of the input constraints are type variables,
                     // substitute them with the other constraint. Also make sure
                     // to apply this substitution rule to the results list itself.
-                    let newSubsts = LinearSet.add (tVar, other) (LinearSet.map (fun (k, v) -> k, substitute tVar other v) substs)
+                    let newSubsts = LinearMap.add tVar other (LinearMap.map (fun k v -> substitute tVar other v) substs)
 
                     Success newSubsts
                 | Function(tArg1, tRet1), Function(tArg2, tRet2) ->
@@ -156,7 +156,8 @@ module TypeInference =
             | Error _ -> 
                 results
 
-        List.fold step (Success LinearSet.empty) relations
+        List.fold step (Success LinearMap.empty) relations
+        
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
@@ -165,8 +166,13 @@ module TypeInference =
 
         let mutable constraints = initialConstraints
 
+        /// Adds a constraint to this type constraint visitor's constraint list.
         let addConstraint (left : IType) (right : IType) : unit =
-            constraints <- (toConstraint left, toConstraint right) :: constraints 
+            constraints <- (toConstraint left, toConstraint right) :: constraints
+
+        /// Adds a constraint to this type constraint visitor's constraint list.
+        member this.AddConstraint (left : IType) (right : IType) : unit =
+            addConstraint left right
             
         override this.Matches (stmt : IStatement) : bool = 
             true
