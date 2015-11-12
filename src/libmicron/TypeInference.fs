@@ -158,11 +158,15 @@ module TypeInference =
 
         List.fold step (Success LinearMap.empty) relations
         
-    (*let findUnknownTypes (expr : IExpression) : LinearSet<UnknownType> =
+    /// Extracts all unknown types from the given expression.
+    let findUnknownTypes (expr : IExpression) : LinearSet<UnknownType> =
         let results = HashSet<UnknownType>()
-        let l
+        let visitType : IType -> IType = function
+        | :? UnknownType as ty -> results.Add ty |> ignore; ty :> IType
+        | ty -> ty
+
+        MemberNodeVisitor.ConvertTypes(DelegateConverter(Func<IType, IType>(visitType)), expr) |> ignore
         LinearSet.ofSeq results
-        *)
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
@@ -209,7 +213,8 @@ module TypeInference =
             | _ -> 
                 expr.Accept this
 
-    let getConstraints (expr : IExpression) : (TypeConstraint * TypeConstraint) list =
+    /// Finds all constraints in the given expression.
+    let findConstraints (expr : IExpression) : (TypeConstraint * TypeConstraint) list =
         let visitor = TypeConstraintVisitor([])
         visitor.Visit expr |> ignore
         visitor.Constraints
