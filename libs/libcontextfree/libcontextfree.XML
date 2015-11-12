@@ -168,15 +168,22 @@
 
 </summary>
 </member>
-<member name="">
-
-</member>
-<member name="">
-
-</member>
 <member name="T:libcontextfree.Result`1">
 <summary>
- Result&lt;&apos;a&gt; is like &apos;a option, but the &quot;None&quot; value contains an error message.
+ Result&lt;&apos;a&gt; is like &apos;a option, but the &quot;None&quot; 
+ value contains an error message.
+</summary>
+</member>
+<member name="">
+
+</member>
+<member name="">
+
+</member>
+<member name="T:libcontextfree.Result`2">
+<summary>
+ Result&lt;&apos;a, &apos;b&gt; is like &apos;a option, but the &quot;None&quot; 
+ value contains an error message.
 </summary>
 </member>
 <member name="T:libcontextfree.Symbol`2.Terminal">
@@ -1288,7 +1295,7 @@
 <member name="T:libcontextfree.PushdownAutomatonOps">
 
 </member>
-<member name="M:libcontextfree.Result.eprintf(libcontextfree.Result{Microsoft.FSharp.Core.Unit})">
+<member name="M:libcontextfree.Result.eprintf(libcontextfree.Result{Microsoft.FSharp.Core.Unit,System.String})">
 <summary>
  Print an Error to stderr, or do nothing for Success ().
 </summary>
@@ -1300,35 +1307,35 @@
  in both cases, a newline is appended.
 </summary>
 </member>
-<member name="M:libcontextfree.Result.printWith``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.String},libcontextfree.Result{``0})">
+<member name="M:libcontextfree.Result.printWith``1(Microsoft.FSharp.Core.FSharpFunc{``0,System.String},libcontextfree.Result{``0,System.String})">
 <summary>
  Print an Error, or the result of applying a function to a Success value.
  Success and Error values are printed to stdout and stderr, respectively;
  in both cases, a newline is appended.
 </summary>
 </member>
-<member name="M:libcontextfree.Result.sequence``2(``0)">
+<member name="M:libcontextfree.Result.sequence``3(``0)">
 <summary>
  Return a list of all given results, if they are all Successes; otherwise,
  return the first error in the list.
 </summary>
 </member>
-<member name="M:libcontextfree.Result.map``2(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.Result{``0})">
+<member name="M:libcontextfree.Result.map``3(Microsoft.FSharp.Core.FSharpFunc{``0,``1},libcontextfree.Result{``0,``2})">
 <summary>
  Map a function over a Success value.
 </summary>
 </member>
-<member name="M:libcontextfree.Result.bind``2(Microsoft.FSharp.Core.FSharpFunc{``0,libcontextfree.Result{``1}},libcontextfree.Result{``0})">
+<member name="M:libcontextfree.Result.bind``3(Microsoft.FSharp.Core.FSharpFunc{``0,libcontextfree.Result{``1,``2}},libcontextfree.Result{``0,``2})">
 <summary>
  Chain computations that might fail.
 </summary>
 </member>
-<member name="M:libcontextfree.Result.isError``1(libcontextfree.Result{``0})">
+<member name="M:libcontextfree.Result.isError``2(libcontextfree.Result{``0,``1})">
 <summary>
  Determines if the given result was unsuccessful.
 </summary>
 </member>
-<member name="M:libcontextfree.Result.isSuccess``1(libcontextfree.Result{``0})">
+<member name="M:libcontextfree.Result.isSuccess``2(libcontextfree.Result{``0,``1})">
 <summary>
  Finds out if the given result value indicates success.
 </summary>

@@ -139,7 +139,7 @@ module TypeInference =
                     // substitute them with the other constraint. Also make sure
                     // to apply this substitution rule to the results list itself.
                     let newSubsts = LinearMap.add tVar other (LinearMap.map (fun k v -> substitute tVar other v) substs)
-
+                    
                     Success newSubsts
                 | Function(tArg1, tRet1), Function(tArg2, tRet2) ->
                     // Resolve generic declaration constraints both for the
@@ -158,6 +158,11 @@ module TypeInference =
 
         List.fold step (Success LinearMap.empty) relations
         
+    (*let findUnknownTypes (expr : IExpression) : LinearSet<UnknownType> =
+        let results = HashSet<UnknownType>()
+        let l
+        LinearSet.ofSeq results
+        *)
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
@@ -173,6 +178,8 @@ module TypeInference =
         /// Adds a constraint to this type constraint visitor's constraint list.
         member this.AddConstraint (left : IType) (right : IType) : unit =
             addConstraint left right
+
+        member this.Constraints = constraints
             
         override this.Matches (stmt : IStatement) : bool = 
             true
@@ -198,7 +205,11 @@ module TypeInference =
                 let trueTy = select.TrueValue.Type
                 let falseTy = select.FalseValue.Type
                 addConstraint trueTy falseTy
-                addConstraint falseTy trueTy
                 expr.Accept this
             | _ -> 
                 expr.Accept this
+
+    let getConstraints (expr : IExpression) : (TypeConstraint * TypeConstraint) list =
+        let visitor = TypeConstraintVisitor([])
+        visitor.Visit expr |> ignore
+        visitor.Constraints
