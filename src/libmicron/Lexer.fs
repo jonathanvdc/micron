@@ -93,6 +93,7 @@ module Lexer =
                        ")", TokenType.RParen
                        "=", TokenType.Equals
                        "if", TokenType.IfKeyword
+                       "then", TokenType.ThenKeyword
                        "else", TokenType.ElseKeyword
                        "data", TokenType.DataKeyword
                        "let", TokenType.LetKeyword

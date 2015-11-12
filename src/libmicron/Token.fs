@@ -37,6 +37,8 @@ type TokenType =
 | RParen
 /// The "if" keyword.
 | IfKeyword
+/// The "then" keyword.
+| ThenKeyword
 /// The "else" keyword.
 | ElseKeyword
 /// The "data" keyword.
