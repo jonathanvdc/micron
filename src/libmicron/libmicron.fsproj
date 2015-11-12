@@ -54,6 +54,7 @@
     <Compile Include="OptionHelpers.fs" />
     <Compile Include="Token.fs" />
     <Compile Include="Lexer.fs" />
+    <Compile Include="UnkownType.fs" />
     <Compile Include="TypeInference.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />

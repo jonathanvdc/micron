@@ -10,11 +10,6 @@ open Flame.Compiler.Expressions
 open Flame.Compiler.Statements
 open Flame.Compiler.Visitors
 
-/// Defines an unknown type: a type that
-/// has yet to be inferred.
-type UnknownType() =
-    inherit FunctionalType("?", null)
-
 module TypeInference =
     /// Describes a type constraint.
     type TypeConstraint =
