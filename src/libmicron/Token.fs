@@ -70,16 +70,20 @@ module TokenHelpers =
 
     /// Gets the given token's total source string, including
     /// its associated trivia tokens.
-    let rec getTotalContents (tok : Token) : string =
-        tok.preTrivia |> List.map getTotalContents
+    let rec totalContents (tok : Token) : string =
+        tok.preTrivia |> List.map totalContents
                       |> List.append [tok.contents]
                       |> String.concat ""
 
     /// Extracts the given token's total source location, including 
     /// its associated trivia tokens.
-    let rec getTotalSourceLocation (tok : Token) : SourceLocation = 
-        tok.preTrivia |> List.map getTotalSourceLocation
+    let rec totalSourceLocation (tok : Token) : SourceLocation = 
+        tok.preTrivia |> List.map totalSourceLocation
                       |> List.fold (fun x y -> x.Concat(y)) tok.sourceLocation
+
+    /// Gets the given token's type.
+    let tokenType (token : Token) : TokenType =
+        token.tokenType
 
     /// Finds out if the given token type is a trivia token type,
     /// i.e. it should be skipped when parsing.
@@ -102,4 +106,23 @@ module TokenHelpers =
 
         toks |> List.fold folder ([], [])
              |> fst
+             |> List.rev
+
+    /// Transforms the given list of tokens into another list
+    /// of tokens, where all pre-trivia tokens in tokens of the
+    /// original list have been prepended recursively to 
+    /// the token they belonged to. 
+    /// Pre-trivia are then stripped from all tokens
+    /// in the resulting list.
+    /// This is the opposite of `foldTrivia`, which
+    /// tries to hide trivia in a tree-like structure.
+    /// `expandTrivia` expands all trivia to a flat
+    /// list instead.
+    let rec expandTrivia (toks : Token list) : Token list =
+        let folder (results : Token list) (item : Token) : Token list =
+            let preTrivia = expandTrivia item.preTrivia
+            let newToken = { item with preTrivia = [] }
+            newToken :: (List.append preTrivia results)
+
+        toks |> List.fold folder []
              |> List.rev
