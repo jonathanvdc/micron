@@ -5,12 +5,20 @@ open NHamcrest.Core
 open libmicron
 open libcontextfree
 open Flame
+open Flame.Compiler
+open Flame.Compiler.Expressions
+open Flame.Compiler.Statements
+open Flame.Compiler.Variables
+open Flame.Functional
 
 [<TestClass>]
 type TypeInferenceTests () =
-    let assertError : Result<'a> -> unit = function
+    let assertError : Result<'a, 'b> -> unit = function
     | Error _ -> ()
     | Success _ -> true |> should equal false
+
+    let assertEqual (left : Result<'a, 'b>) (right : Result<'a, 'b>) : unit =   
+        left = right |> should equal true
 
     [<TestMethod>] 
     member this.ValidInference () =
@@ -55,7 +63,7 @@ type TypeInferenceTests () =
                 ]
 
         let results = TypeInference.resolve constraints
-        results |> Result.map LinearMap.toSet |> should equal (Success expected)
+        assertEqual (results |> Result.map LinearMap.toSet) (Success expected)
 
     [<TestMethod>] 
     member this.InfiniteType () =
@@ -83,3 +91,21 @@ type TypeInferenceTests () =
             ]
 
         assertError (TypeInference.resolve constraints)
+
+    [<TestMethod>]
+    member this.SelfAssignment () =
+        // Verifies that an expression
+        //
+        // let x = x
+        //
+        // is well-typed
+
+        let idunnoty = UnknownType()
+        let local = LateBoundVariable(idunnoty)
+        let stmt = local.CreateSetStatement(local.CreateGetExpression())
+        let expr = InitializedExpression(stmt, VoidExpression.Instance)
+        let constraints = TypeInference.getConstraints expr
+        let results = TypeInference.resolve constraints
+        let expected = LinearSet.empty<UnknownType * TypeInference.TypeConstraint>
+
+        assertEqual (results |> Result.map LinearMap.toSet) (Success expected)
