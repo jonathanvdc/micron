@@ -15,6 +15,10 @@ module Parser =
     /// A nonterminal name for identifiers. This is
     /// the Moon-Moon of the micron parser.
     let identifierIdentifier = "identifier"
+    /// A nonterminal name for if-then-else expressions.
+    let ifThenElseIdentifier = "if-then-else"
+    /// A nonterminal name for let-expressions.
+    let letIdentifier = "let"
     /// A nonterminal name for integer literals.
     let literalIntIdentifier = "literal-int"
     /// A nonterminal name for double literals.
@@ -49,14 +53,21 @@ module Parser =
                 // apply -> $apply $expr
                 ProductionRule(applyIdentifier, [Nonterminal applyGroupIdentifier; Nonterminal expressionGroupIdentifier])
 
-                // $paren -> paren | identifier | literal-int | literal-double
+                // $paren -> paren | if-then-else | let | identifier | literal-int | literal-double
                 ProductionRule(parenGroupIdentifier, [Nonterminal parenIdentifier])
                 ProductionRule(parenGroupIdentifier, [Nonterminal identifierIdentifier])
                 ProductionRule(parenGroupIdentifier, [Nonterminal literalIntIdentifier])
                 ProductionRule(parenGroupIdentifier, [Nonterminal literalDoubleIdentifier])
-
+                ProductionRule(parenGroupIdentifier, [Nonterminal ifThenElseIdentifier])
+                ProductionRule(parenGroupIdentifier, [Nonterminal letIdentifier])
+                
                 // paren -> <(> $expr <)>
                 ProductionRule(parenIdentifier, [Terminal TokenType.LParen; Nonterminal expressionGroupIdentifier; Terminal TokenType.RParen])
+                // if-then-else -> <if> $expr <then> $expr <else> $expr
+                ProductionRule(ifThenElseIdentifier, [Terminal TokenType.IfKeyword; Nonterminal expressionGroupIdentifier; 
+                                                      Terminal TokenType.ThenKeyword; Nonterminal expressionGroupIdentifier; 
+                                                      Terminal TokenType.ElseKeyword; Nonterminal expressionGroupIdentifier])
+                // TODO: implement let-expressions
 
                 // identifier -> <identifier>
                 ProductionRule(identifierIdentifier, [Terminal TokenType.Identifier])
