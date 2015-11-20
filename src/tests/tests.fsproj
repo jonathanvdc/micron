@@ -55,6 +55,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="LexerTests.fs" />
+    <Compile Include="ParserTests.fs" />
     <Compile Include="TypeInferenceTests.fs" />
     <None Include="App.config" />
     <None Include="packages.config" />

@@ -68,22 +68,22 @@ module Parser =
     let expressionRules : Set<ProductionRule<string, TokenType>> =
         Set.ofList
             [
-                // $expr -> $apply
+                // $expr -> $apply | if-then-else | let
                 ProductionRule(expressionGroupIdentifier, [Nonterminal applyGroupIdentifier])
+                ProductionRule(expressionGroupIdentifier, [Nonterminal ifThenElseIdentifier])
+                ProductionRule(expressionGroupIdentifier, [Nonterminal letIdentifier])
 
                 // $apply -> apply | $paren
                 ProductionRule(applyGroupIdentifier, [Nonterminal applyIdentifier])
                 ProductionRule(applyGroupIdentifier, [Nonterminal parenGroupIdentifier])
-                // apply -> $apply $expr
-                ProductionRule(applyIdentifier, [Nonterminal applyGroupIdentifier; Nonterminal expressionGroupIdentifier])
+                // apply -> $apply $paren
+                ProductionRule(applyIdentifier, [Nonterminal applyGroupIdentifier; Nonterminal parenGroupIdentifier])
 
-                // $paren -> paren | if-then-else | let | identifier | literal-int | literal-double
+                // $paren -> paren | identifier | literal-int | literal-double
                 ProductionRule(parenGroupIdentifier, [Nonterminal parenIdentifier])
                 ProductionRule(parenGroupIdentifier, [Nonterminal identifierIdentifier])
                 ProductionRule(parenGroupIdentifier, [Nonterminal literalIntIdentifier])
                 ProductionRule(parenGroupIdentifier, [Nonterminal literalDoubleIdentifier])
-                ProductionRule(parenGroupIdentifier, [Nonterminal ifThenElseIdentifier])
-                ProductionRule(parenGroupIdentifier, [Nonterminal letIdentifier])
                 
                 // paren -> <(> $expr <)>
                 ProductionRule(parenIdentifier, [Terminal TokenType.LParen; Nonterminal expressionGroupIdentifier; Terminal TokenType.RParen])
@@ -123,3 +123,14 @@ module Parser =
         let allRules = Set.ofList rules |> Set.union expressionRules
         ContextFreeGrammar(allRules, programIdentifier)
 
+    /// Tries to create an LR(1) parser for the given grammar.
+    let tryCreateParser (grammar : ContextFreeGrammar<string, TokenType>) =
+        LRParser.createLR1 grammar |> Result.map LRParser.toFunctionalParser
+                                   |> Result.map ((<|||) (LRParser.parse TokenHelpers.tokenType))
+
+    /// Creates an LR(1) parser for the given grammar. If this
+    /// cannot be done, an exception is thrown.
+    let createParser (grammar : ContextFreeGrammar<string, TokenType>) =
+        match tryCreateParser grammar with
+        | Success x -> x
+        | Error e -> raise (System.InvalidOperationException(e))
