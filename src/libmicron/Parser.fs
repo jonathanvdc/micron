@@ -15,10 +15,14 @@ module Parser =
     /// A nonterminal name for identifiers. This is
     /// the Moon-Moon of the micron parser.
     let identifierIdentifier = "identifier"
+    /// A nonterminal name for identifiers.
+    let identifierListIdentifier = "identifier..."
     /// A nonterminal name for if-then-else expressions.
     let ifThenElseIdentifier = "if-then-else"
     /// A nonterminal name for let-expressions.
     let letIdentifier = "let"
+    /// A nonterminal name for let-definitions.
+    let letDefinitionIdentifier = "let-definition"
     /// A nonterminal name for integer literals.
     let literalIntIdentifier = "literal-int"
     /// A nonterminal name for double literals.
@@ -91,7 +95,19 @@ module Parser =
                 ProductionRule(ifThenElseIdentifier, [Terminal TokenType.IfKeyword; Nonterminal expressionGroupIdentifier; 
                                                       Terminal TokenType.ThenKeyword; Nonterminal expressionGroupIdentifier; 
                                                       Terminal TokenType.ElseKeyword; Nonterminal expressionGroupIdentifier])
-                // TODO: implement let-expressions
+
+                // let-identifier -> let-definition <in> $expr
+                ProductionRule(letIdentifier, [Nonterminal letDefinitionIdentifier;
+                                               Terminal TokenType.InKeyword; Nonterminal expressionGroupIdentifier])
+
+                // let-definition -> <let> <identifier> identifier... <=> $expr
+                ProductionRule(letDefinitionIdentifier, [Terminal TokenType.LetKeyword; Terminal TokenType.Identifier;
+                                                         Nonterminal identifierListIdentifier;
+                                                         Terminal TokenType.Equals; Nonterminal expressionGroupIdentifier])
+
+                // identifier... -> epsilon | <identifier> identifier...
+                ProductionRule(identifierListIdentifier, [])
+                ProductionRule(identifierListIdentifier, [Terminal TokenType.Identifier; Nonterminal identifierListIdentifier])
 
                 // identifier -> <identifier>
                 ProductionRule(identifierIdentifier, [Terminal TokenType.Identifier])
@@ -110,12 +126,13 @@ module Parser =
         // TODO: create the top-level grammar for micron here.
         let rules = 
             [
-                // program -> epsilon
+                // program -> let-definition program | module | epsilon
                 ProductionRule(programIdentifier, [])
-                // program -> module
-                ProductionRule(moduleIdentifier, [Nonterminal moduleIdentifier])
+                ProductionRule(programIdentifier, [Nonterminal letDefinitionIdentifier; Nonterminal programIdentifier])
+                ProductionRule(programIdentifier, [Nonterminal moduleIdentifier])
+
                 // module -> <module> <identifier>
-                // ProductionRule("module", [Terminal TokenType.ModuleKeyword; Terminal TokenType.Identifier])
+                // ProductionRule(moduleIdentifier, [Terminal TokenType.ModuleKeyword; Terminal TokenType.Identifier])
 
                 // etc
             ]
