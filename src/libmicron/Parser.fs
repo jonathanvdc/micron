@@ -40,6 +40,30 @@ module Parser =
     let isGroupIdentifier (ident : string) =
         ident.StartsWith("$")
 
+    /// Replaces group production nodes by their child.
+    ///
+    /// For example, a tree such as 
+    ///
+    ///         $expr
+    ///           |
+    ///        $paren
+    ///           | 
+    ///       identifier
+    ///           |
+    ///           f
+    ///
+    /// is simplified to
+    ///
+    ///       identifier
+    ///           |
+    ///           f
+    let rec stripGroups : ParseTree<string, Token> -> ParseTree<string, Token> = function
+    | TerminalLeaf _ as node -> node
+    | ProductionNode(head, [child]) when isGroupIdentifier head -> 
+        stripGroups child
+    | ProductionNode(head, items) ->
+        ProductionNode(head, List.map stripGroups items)
+
     /// A set of production rules for expressions.
     let expressionRules : Set<ProductionRule<string, TokenType>> =
         Set.ofList
@@ -77,7 +101,12 @@ module Parser =
                 ProductionRule(literalDoubleIdentifier, [Terminal TokenType.Double])
             ]
 
-    let micronGrammar : ContextFreeGrammar<string, TokenType> =
+    /// A grammar for micron expressions.
+    let expressionGrammar : ContextFreeGrammar<string, TokenType> =
+        ContextFreeGrammar(expressionRules, expressionGroupIdentifier)
+
+    /// A grammar for micron programs.
+    let programGrammar : ContextFreeGrammar<string, TokenType> =
         // TODO: create the top-level grammar for micron here.
         let rules = 
             [
