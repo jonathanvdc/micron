@@ -28,7 +28,7 @@ type ParserTests () =
         match totalGrammarParser tokens with
         | Choice1Of2 tree -> 
             match tree with
-            | ProductionNode("program", [ProductionNode("let-definition", [_; _; _; _; result])]) ->
+            | ProductionNode("program", [ProductionNode("let-definition", [_; _; _; _; result]); ProductionNode("program", [])]) ->
                 result
             | _ ->
                 raise (System.Exception("Parser error."))
