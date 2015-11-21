@@ -23,6 +23,8 @@ module Parser =
     let letIdentifier = "let"
     /// A nonterminal name for let-definitions.
     let letDefinitionIdentifier = "let-definition"
+    /// A nonterminal name for let-definition lists.
+    let letDefinitionListIdentifier = "let-definition..."
     /// A nonterminal name for integer literals.
     let literalIntIdentifier = "literal-int"
     /// A nonterminal name for double literals.
@@ -109,6 +111,10 @@ module Parser =
                 ProductionRule(identifierListIdentifier, [])
                 ProductionRule(identifierListIdentifier, [Terminal TokenType.Identifier; Nonterminal identifierListIdentifier])
 
+                // let-definition... -> epsilon | let-definition let-definition...
+                ProductionRule(letDefinitionListIdentifier, [])
+                ProductionRule(letDefinitionListIdentifier, [Nonterminal letDefinitionIdentifier; Nonterminal letDefinitionListIdentifier])
+
                 // identifier -> <identifier>
                 ProductionRule(identifierIdentifier, [Terminal TokenType.Identifier])
                 // literal-int -> <integer>
@@ -131,8 +137,10 @@ module Parser =
                 ProductionRule(programIdentifier, [Nonterminal letDefinitionIdentifier; Nonterminal programIdentifier])
                 ProductionRule(programIdentifier, [Nonterminal moduleIdentifier])
 
-                // module -> <module> <identifier>
-                // ProductionRule(moduleIdentifier, [Terminal TokenType.ModuleKeyword; Terminal TokenType.Identifier])
+                // module -> <module> <identifier> let-definition...
+                ProductionRule(moduleIdentifier, [Terminal TokenType.ModuleKeyword; 
+                                                  Terminal TokenType.Identifier; 
+                                                  Nonterminal letDefinitionListIdentifier])
 
                 // etc
             ]

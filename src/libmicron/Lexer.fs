@@ -98,6 +98,7 @@ module Lexer =
                        "data", TokenType.DataKeyword
                        "let", TokenType.LetKeyword
                        "in", TokenType.InKeyword
+                       "module", TokenType.ModuleKeyword
                    ]
 
     /// Tries to read a static token from the source stream.

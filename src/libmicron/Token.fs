@@ -47,6 +47,8 @@ type TokenType =
 | LetKeyword
 /// The "in" keyword.
 | InKeyword
+/// The "module" keyword.
+| ModuleKeyword
 
 /// A single token is a structure consisting of a source
 /// string, a token type, and a location in the source document,
