@@ -59,3 +59,11 @@ type ParserTests () =
     [<TestMethod>] 
     member this.ParseParen () =
         checkTreeType "(x)" Parser.parenIdentifier
+
+    [<TestMethod>] 
+    member this.ParseApply () =
+        checkTreeType "f x" Parser.applyIdentifier
+
+    [<TestMethod>] 
+    member this.ParseLet () =
+        checkTreeType "let x = f y in f x" Parser.letIdentifier
