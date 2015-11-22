@@ -18,14 +18,14 @@ module Analysis =
         // A simple if-then-else expression
         ExpressionBuilder.Select scope (analyzeExpression scope cond) (analyzeExpression scope ifExpr) (analyzeExpression scope elseExpr)
             |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation ifKeyword)
-    | ProductionNode("int-literal", [TerminalLeaf token]) ->
+    | ProductionNode("literal-int", [TerminalLeaf token]) ->
         // Integer literal
         (match System.Int32.TryParse token.contents with
         | (true, i) -> ExpressionBuilder.ConstantInt32 i
         | (false, _) -> ExpressionBuilder.Error (LogEntry("Invalid integer literal", sprintf "'%s' could not be parsed as a valid integer literal." token.contents))
                                                 (ExpressionBuilder.ConstantInt32 0)
         ) |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
-    | ProductionNode("double-literal", [TerminalLeaf token]) ->
+    | ProductionNode("literal-double", [TerminalLeaf token]) ->
         // Double literal
         (match System.Double.TryParse token.contents with
         | (true, d) -> ExpressionBuilder.ConstantFloat64 d
@@ -36,7 +36,7 @@ module Analysis =
         // Parentheses
         analyzeExpression scope expr
             |> ExpressionBuilder.Source (CompilerLogExtensions.Concat(TokenHelpers.totalSourceLocation lParen, TokenHelpers.totalSourceLocation rParen))
-    | ProductionNode("let-expression", [ProductionNode("let-definition", [TerminalLeaf letKeyword; TerminalLeaf name; ProductionNode("identifier...", args); TerminalLeaf eq; value]); _; expr]) ->
+    | ProductionNode("let", [ProductionNode("let-definition", [TerminalLeaf letKeyword; TerminalLeaf name; ProductionNode("identifier...", args); TerminalLeaf eq; value]); _; expr]) ->
         match args with
         | [] -> 
             // Local variable declaration.
