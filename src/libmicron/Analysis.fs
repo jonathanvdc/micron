@@ -32,6 +32,10 @@ module Analysis =
         | (false, _) -> ExpressionBuilder.Error (LogEntry("Invalid double literal", sprintf "'%s' could not be parsed as a valid double literal." token.contents))
                                                 (ExpressionBuilder.ConstantFloat64 0.0)
         ) |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
+    | ProductionNode("paren", [TerminalLeaf lParen; expr; TerminalLeaf rParen]) ->
+        // Parentheses
+        analyzeExpression scope expr
+            |> ExpressionBuilder.Source (CompilerLogExtensions.Concat(TokenHelpers.totalSourceLocation lParen, TokenHelpers.totalSourceLocation rParen))
     | ProductionNode("let-expression", [ProductionNode("let-definition", [TerminalLeaf letKeyword; TerminalLeaf name; ProductionNode("identifier...", args); TerminalLeaf eq; value]); _; expr]) ->
         match args with
         | [] -> 
