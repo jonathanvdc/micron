@@ -23,15 +23,23 @@ module Analysis =
         (match System.Int32.TryParse token.contents with
         | (true, i) -> ExpressionBuilder.ConstantInt32 i
         | (false, _) -> ExpressionBuilder.Error (LogEntry("Invalid integer literal", sprintf "'%s' could not be parsed as a valid integer literal." token.contents))
-                                                (ExpressionBuilder.ConstantInt32 0))
-            |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
+                                                (ExpressionBuilder.ConstantInt32 0)
+        ) |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
     | ProductionNode("double-literal", [TerminalLeaf token]) ->
         // Double literal
         (match System.Double.TryParse token.contents with
         | (true, d) -> ExpressionBuilder.ConstantFloat64 d
         | (false, _) -> ExpressionBuilder.Error (LogEntry("Invalid double literal", sprintf "'%s' could not be parsed as a valid double literal." token.contents))
-                                                (ExpressionBuilder.ConstantFloat64 0.0))
-            |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
+                                                (ExpressionBuilder.ConstantFloat64 0.0)
+        ) |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
+    | ProductionNode("identifier", [TerminalLeaf ident]) ->
+        // Identifier
+        (match scope.GetVariable ident.contents with
+        | Some local ->
+            local.CreateGetExpression()
+        | None ->
+            ExpressionBuilder.VoidError (LogEntry("Unresolved identifier", sprintf "Identifier '%s' could not be resolved." ident.contents))
+        ) |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation ident)
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
         // This just means that a construct has been defined in the grammar, 
