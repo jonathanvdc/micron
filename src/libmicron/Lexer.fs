@@ -255,11 +255,12 @@ module Lexer =
         | None ->
             None
 
+    /// A set of operator characters.
+    let operatorCharacters = set ['!'; '='; '&'; '|'; '*'; '+'; '-'; '/'; '%'; '@'; '^'; '<'; '>']
+
     /// Tries to read an operator token
     let tryReadOperatorToken (stream : SourceStream) : (Token * SourceStream) option =
-        let opTokens = set ['!'; '='; '&'; '|'; '*'; '+'; '/'; '%'; '@'; '^'; '<'; '>']
-        
-        match tryReadRangeToken (fun c -> Set.contains c opTokens) TokenType.OperatorToken stream with
+        match tryReadRangeToken (fun c -> Set.contains c operatorCharacters) TokenType.OperatorToken stream with
         | None -> None
         | Some(token, stream) -> 
             if Map.containsKey token.contents staticTokens 
