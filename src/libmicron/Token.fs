@@ -1,5 +1,6 @@
 ﻿namespace libmicron
 
+open libcontextfree
 open Flame.Compiler
 
 /// Defines a list of all possible token types.
@@ -82,6 +83,15 @@ module TokenHelpers =
     let rec totalSourceLocation (tok : Token) : SourceLocation = 
         tok.preTrivia |> List.map totalSourceLocation
                       |> List.fold (fun x y -> x.Concat(y)) tok.sourceLocation
+
+    /// Gets the total source location for an entire parse tree of tokens.
+    let rec treeSourceLocation : ParseTree<'a, Token> -> SourceLocation = function
+    | TerminalLeaf token -> 
+        totalSourceLocation token
+    | ProductionNode(_, children) -> 
+        children |> List.map treeSourceLocation
+                 |> List.fold (fun a b -> CompilerLogExtensions.Concat(a, b)) null  
+        
 
     /// Gets the given token's type.
     let tokenType (token : Token) : TokenType =
