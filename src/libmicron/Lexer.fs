@@ -255,6 +255,18 @@ module Lexer =
         | None ->
             None
 
+    /// Tries to read an operator token
+    let tryReadOperatorToken (stream : SourceStream) : (Token * SourceStream) option =
+        let opTokens = set ['!'; '='; '&'; '|'; '*'; '+'; '/'; '%'; '@'; '^'; '<'; '>']
+        
+        match tryReadRangeToken (fun c -> Set.contains c opTokens) TokenType.OperatorToken stream with
+        | None -> None
+        | Some(token, stream) -> 
+            if Map.containsKey token.contents staticTokens 
+                then None 
+                else Some (token, stream)
+        
+
     /// A list of functions that are succesively applied
     /// to a source stream whenever a token is to be read.
     let private lexerFunctions = 
@@ -264,6 +276,7 @@ module Lexer =
             tryReadRangeToken System.Char.IsDigit TokenType.Integer
             tryReadDelimitedToken '"' TokenType.String
             tryReadDelimitedToken '\'' TokenType.Char
+            tryReadOperatorToken
             tryReadStaticToken
             tryReadIdentifier
         ]

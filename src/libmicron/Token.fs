@@ -36,6 +36,8 @@ type TokenType =
 | Equals
 | LParen
 | RParen
+/// An Operator Token
+| OperatorToken
 /// The "if" keyword.
 | IfKeyword
 /// The "then" keyword.

@@ -12,6 +12,7 @@ module Parser =
     let parenIdentifier = "paren"
     let programIdentifier = "program"
     let moduleIdentifier = "module"
+    let operatorIdentifier = "operator"
     /// A nonterminal name for identifiers. This is
     /// the Moon-Moon of the micron parser.
     let identifierIdentifier = "identifier"
@@ -74,10 +75,11 @@ module Parser =
     let expressionRules : Set<ProductionRule<string, TokenType>> =
         Set.ofList
             [
-                // $expr -> $apply | if-then-else | let
+                // $expr -> $apply | if-then-else | let | operator
                 ProductionRule(expressionGroupIdentifier, [Nonterminal applyGroupIdentifier])
                 ProductionRule(expressionGroupIdentifier, [Nonterminal ifThenElseIdentifier])
                 ProductionRule(expressionGroupIdentifier, [Nonterminal letIdentifier])
+                ProductionRule(expressionGroupIdentifier, [Nonterminal operatorIdentifier])
 
                 // $apply -> apply | $paren
                 ProductionRule(applyGroupIdentifier, [Nonterminal applyIdentifier])
@@ -98,11 +100,11 @@ module Parser =
                                                       Terminal TokenType.ThenKeyword; Nonterminal expressionGroupIdentifier; 
                                                       Terminal TokenType.ElseKeyword; Nonterminal expressionGroupIdentifier])
 
-                // let-identifier -> let-definition <in> $expr
+                // let -> let-definition <in> $expr
                 ProductionRule(letIdentifier, [Nonterminal letDefinitionIdentifier;
                                                Terminal TokenType.InKeyword; Nonterminal expressionGroupIdentifier])
 
-                // let-definition -> <let> <identifier> identifier... <=> $expr
+                // let -> <let> <identifier> identifier... <=> $expr
                 ProductionRule(letDefinitionIdentifier, [Terminal TokenType.LetKeyword; Terminal TokenType.Identifier;
                                                          Nonterminal identifierListIdentifier;
                                                          Terminal TokenType.Equals; Nonterminal expressionGroupIdentifier])
@@ -121,6 +123,8 @@ module Parser =
                 ProductionRule(literalIntIdentifier, [Terminal TokenType.Integer])
                 // literal-double -> <double>
                 ProductionRule(literalDoubleIdentifier, [Terminal TokenType.Double])
+                // operator -> $expr <op> $expr
+                ProductionRule(operatorIdentifier, [Nonterminal expressionGroupIdentifier; Terminal TokenType.OperatorToken ;Nonterminal expressionGroupIdentifier])
             ]
 
     /// A grammar for micron expressions.
@@ -159,3 +163,39 @@ module Parser =
         match tryCreateParser grammar with
         | Success x -> x
         | Error e -> raise (System.InvalidOperationException(e))
+
+    //[6:02:25 PM] Jonathan Van der Cruysse: 
+    type OpFixity = InfixLeft of int | InfixRight of int
+
+    // Extract only the precedence from the fixity
+    let precedence : OpFixity -> int = function | InfixLeft i -> i | InfixRight i -> i
+
+    /// Flatten those ops boy
+    let rec flattenOps : ParseTree<string, Token> -> (ParseTree<string, Token> * Token) list * ParseTree<string, Token> = function
+        | ProductionNode("operator",[left; TerminalLeaf op; right]) -> 
+            let lFlat, lSuffix = flattenOps left
+            let rFlat, rSuffix = flattenOps right
+            List.append lFlat ((lSuffix, op) :: rFlat), rSuffix
+        | node -> [], node
+
+    /// Reasosciaete the operators to obey the order of operators
+    let reassociate (prec : string -> OpFixity) (tree : ParseTree<string, Token>) : ParseTree<string, Token> =
+
+        let rec subReassociate : (ParseTree<string, Token> * Token) list * ParseTree<string, Token> -> ParseTree<string, Token> = function
+            | [], suf -> suf
+            | items, suf -> 
+                let _, maxPrec = List.maxBy (fun (_, op) -> precedence (prec op.contents)) items
+                let exprComp  (expr, op) = if op.contents = maxPrec.contents then Some expr else None
+                let lTree, rTree = 
+                    match prec maxPrec.contents with
+                    | InfixLeft _ -> 
+                        let ls, mid, rs = Option.get (ListHelpers.splitAtFirst exprComp items)
+                        subReassociate (ls, mid), subReassociate (rs, suf)
+                    | InfixRight _ ->
+                        let ls, mid, rs = Option.get (ListHelpers.splitAtLast exprComp items)
+                        subReassociate (ls, mid), subReassociate (rs, suf)
+
+                ProductionNode("operator", [lTree; TerminalLeaf maxPrec; rTree])
+
+        let flattened = flattenOps tree
+        subReassociate flattened
