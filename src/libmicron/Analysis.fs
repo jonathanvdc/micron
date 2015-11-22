@@ -18,6 +18,20 @@ module Analysis =
         // A simple if-then-else expression
         ExpressionBuilder.Select scope (analyzeExpression scope cond) (analyzeExpression scope ifExpr) (analyzeExpression scope elseExpr)
             |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation ifKeyword)
+    | ProductionNode("int-literal", [TerminalLeaf token]) ->
+        // Integer literal
+        (match System.Int32.TryParse token.contents with
+        | (true, i) -> ExpressionBuilder.ConstantInt32 i
+        | (false, _) -> ExpressionBuilder.Error (LogEntry("Invalid integer literal", sprintf "'%s' could not be parsed as a valid integer literal." token.contents))
+                                                (ExpressionBuilder.ConstantInt32 0))
+            |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
+    | ProductionNode("double-literal", [TerminalLeaf token]) ->
+        // Double literal
+        (match System.Double.TryParse token.contents with
+        | (true, d) -> ExpressionBuilder.ConstantFloat64 d
+        | (false, _) -> ExpressionBuilder.Error (LogEntry("Invalid double literal", sprintf "'%s' could not be parsed as a valid double literal." token.contents))
+                                                (ExpressionBuilder.ConstantFloat64 0.0))
+            |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
         // This just means that a construct has been defined in the grammar, 
