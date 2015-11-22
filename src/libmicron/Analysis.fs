@@ -32,6 +32,25 @@ module Analysis =
         | (false, _) -> ExpressionBuilder.Error (LogEntry("Invalid double literal", sprintf "'%s' could not be parsed as a valid double literal." token.contents))
                                                 (ExpressionBuilder.ConstantFloat64 0.0)
         ) |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation token)
+    | ProductionNode("let-expression", [ProductionNode("let-definition", [TerminalLeaf letKeyword; TerminalLeaf name; ProductionNode("identifier...", args); TerminalLeaf eq; value]); _; expr]) ->
+        match args with
+        | [] -> 
+            // Local variable declaration.
+            let scope = scope.ChildScope
+            // First, bind `value` in `let ident = value` to `ident`.
+            let localValue = analyzeExpression scope value
+            let defLocal, scope = ExpressionBuilder.Quickbind scope localValue name.contents
+            let defLocal = ExpressionBuilder.Source (TokenHelpers.totalSourceLocation eq) defLocal
+            // Take care of the `in expr` clause
+            let innerExpr = analyzeExpression scope expr
+            let result = ExpressionBuilder.Initialize defLocal innerExpr
+            ExpressionBuilder.Scope result scope 
+                |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation letKeyword)
+        | _ ->
+            // Local function declaration.
+            // TODO: implement this!
+            ExpressionBuilder.VoidError (LogEntry("Unimplemented feature", "Local functions have not been implemented yet."))
+                |> ExpressionBuilder.Source (TokenHelpers.totalSourceLocation letKeyword)
     | ProductionNode("identifier", [TerminalLeaf ident]) ->
         // Identifier
         (match scope.GetVariable ident.contents with
