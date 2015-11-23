@@ -55,6 +55,7 @@ type ParserTests () =
     [<TestMethod>] 
     member this.ParseIfThenElse () =
         checkTreeType "if x then f else g" Parser.ifThenElseIdentifier
+        checkTreeType "if x then y else z || x" Parser.ifThenElseIdentifier
 
     [<TestMethod>] 
     member this.ParseParen () =
@@ -67,3 +68,14 @@ type ParserTests () =
     [<TestMethod>] 
     member this.ParseLet () =
         checkTreeType "let x = f y in f x" Parser.letIdentifier
+        checkTreeType "let f x = x * x in id y" Parser.letIdentifier
+
+    [<TestMethod>]
+    member this.ParseOps () = 
+        checkTreeType "2 + 3" Parser.operatorIdentifier
+        checkTreeType "x ^ y" Parser.operatorIdentifier
+        checkTreeType "x * y" Parser.operatorIdentifier
+        checkTreeType "x % y" Parser.operatorIdentifier
+        checkTreeType "x / y" Parser.operatorIdentifier
+        checkTreeType "x :: xs" Parser.operatorIdentifier
+        checkTreeType "x != y" Parser.operatorIdentifier
