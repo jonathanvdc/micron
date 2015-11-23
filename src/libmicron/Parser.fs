@@ -157,10 +157,8 @@ module Parser =
                 ProductionRule(literalIntIdentifier, [Terminal TokenType.Integer])
                 // literal-double -> <double>
                 ProductionRule(literalDoubleIdentifier, [Terminal TokenType.Double])
-                // operator -> $expr <op> $expr
-                ProductionRule(operatorIdentifier, [Nonterminal expressionGroupIdentifier
-                                                    Terminal TokenType.OperatorToken
-                                                    Nonterminal expressionGroupIdentifier])
+                // operator -> $expr <op> $paren
+                ProductionRule(operatorIdentifier, [Nonterminal parenGroupIdentifier; Terminal TokenType.OperatorToken; Nonterminal expressionGroupIdentifier])
             ]
 
     /// A grammar for micron expressions.

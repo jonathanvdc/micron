@@ -45,6 +45,15 @@ type LexerTests () =
                                                 TokenType.Identifier; TokenType.ElseKeyword; TokenType.Identifier]
 
     [<TestMethod>]
+    member this.OperatorTokens () =
+        let ops = "! + ++ - -- * % / :: ~ ^ & |" +
+                  "<> == <= > < >= != ~= " + 
+                  "|> ||> |||> <| <|| <||| " +
+                  ">> << >>= <<= $ ??"
+        lex ops |> TokenHelpers.foldTrivia
+                |> checkTypes (List.replicate (ops.Split().Length) TokenType.OperatorToken)
+
+    [<TestMethod>]
     member this.ExpandTrivia () =
         let original = lex "if x then y else z"
 

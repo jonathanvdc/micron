@@ -258,7 +258,9 @@ module Lexer =
             None
 
     /// A set of operator characters.
-    let operatorCharacters = set ['!'; '='; '&'; '|'; '*'; '+'; '-'; '/'; '%'; '@'; '^'; '<'; '>']
+    let operatorCharacters = set ['!'; '='; '&'; '|'; '*'; '+'; '-'; '/'; 
+                                  '%'; '@'; '^'; '<'; '>'; ':'; '~'; '?'; 
+                                  '.'; '$'; '\\']
 
     /// Tries to read an operator token
     let tryReadOperatorToken (stream : SourceStream) : (Token * SourceStream) option =
