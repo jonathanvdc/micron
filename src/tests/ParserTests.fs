@@ -79,3 +79,31 @@ type ParserTests () =
         checkTreeType "x / y" Parser.operatorIdentifier
         checkTreeType "x :: xs" Parser.operatorIdentifier
         checkTreeType "x != y" Parser.operatorIdentifier
+
+    [<TestMethod>]
+    member this.ReassociateOps () =
+        let prec = function
+        | "+" -> Parser.InfixLeft 2
+        | "*" -> Parser.InfixLeft 1
+        | _   -> Parser.InfixLeft 0
+        let expr1 = parseExpression "1 + 2 * 3" |> Parser.stripGroups 
+                                                |> Parser.reassociate prec
+        let expr2 = parseExpression "2 * 3 + 1" |> Parser.stripGroups 
+                                                |> Parser.reassociate prec
+        match expr1 with
+        | ProductionNode("operator", 
+                         [_; TerminalLeaf plus; 
+                          ProductionNode("operator", [_; TerminalLeaf asterisk; _])]) 
+            when plus.contents = "+" && asterisk.contents = "*" ->
+                ()
+        | _ ->
+            raise (System.Exception("Invalid reassociation."))
+
+        match expr2 with
+        | ProductionNode("operator", 
+                         [ProductionNode("operator", [_; TerminalLeaf asterisk; _]); 
+                          TerminalLeaf plus; _]) 
+            when plus.contents = "+" && asterisk.contents = "*" ->
+                ()
+        | _ ->
+            raise (System.Exception("Invalid reassociation."))
