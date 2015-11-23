@@ -97,6 +97,8 @@ module Lexer =
                        "else", TokenType.ElseKeyword
                        "data", TokenType.DataKeyword
                        "let", TokenType.LetKeyword
+                       "infixl", TokenType.InfixlKeyword
+                       "infixr", TokenType.InfixrKeyword
                        "in", TokenType.InKeyword
                        "module", TokenType.ModuleKeyword
                    ]

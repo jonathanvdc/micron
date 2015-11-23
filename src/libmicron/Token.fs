@@ -16,13 +16,11 @@ type TokenType =
 | String
 /// A character literal.
 | Char
-/// A double-precision floating-point
-/// literal.
+/// A double-precision floating-point literal.
 | Double
 /// A whitespace symbol.
 | Whitespace
-/// A special token type that
-/// signifies the end of the token stream.
+/// A special token type that signifies the end of the token stream.
 | EndOfStream
 /// A comma.
 | Comma
@@ -34,9 +32,11 @@ type TokenType =
 | Underscore
 /// An equals (`=`) sign.
 | Equals
+/// A left parenthesis.
 | LParen
+/// A right parenthesis.
 | RParen
-/// An Operator Token
+/// An operator token.
 | OperatorToken
 /// The "if" keyword.
 | IfKeyword
@@ -48,6 +48,10 @@ type TokenType =
 | DataKeyword
 /// The "let" keyword.
 | LetKeyword
+/// The "infixl" keyword.
+| InfixlKeyword
+/// The "infixr" keyword.
+| InfixrKeyword
 /// The "in" keyword.
 | InKeyword
 /// The "module" keyword.

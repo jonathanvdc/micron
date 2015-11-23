@@ -26,6 +26,10 @@ module Parser =
     let letDefinitionIdentifier = "let-definition"
     /// A nonterminal name for let-definition lists.
     let letDefinitionListIdentifier = "let-definition..."
+    /// A nonterminal name for infix specifiers (infixl(n)/infixr(n)).
+    let infixSpecifierIdentifier = "infix-specifier"
+    /// A nonterminal name for infix specifier keywords (infixl/infixr).
+    let infixKeywordIdentifier = "infix-keyword"
     /// A nonterminal name for integer literals.
     let literalIntIdentifier = "literal-int"
     /// A nonterminal name for double literals.
@@ -85,7 +89,8 @@ module Parser =
                 ProductionRule(applyGroupIdentifier, [Nonterminal applyIdentifier])
                 ProductionRule(applyGroupIdentifier, [Nonterminal parenGroupIdentifier])
                 // apply -> $apply $paren
-                ProductionRule(applyIdentifier, [Nonterminal applyGroupIdentifier; Nonterminal parenGroupIdentifier])
+                ProductionRule(applyIdentifier, [Nonterminal applyGroupIdentifier
+                                                 Nonterminal parenGroupIdentifier])
 
                 // $paren -> paren | identifier | literal-int | literal-double
                 ProductionRule(parenGroupIdentifier, [Nonterminal parenIdentifier])
@@ -94,28 +99,57 @@ module Parser =
                 ProductionRule(parenGroupIdentifier, [Nonterminal literalDoubleIdentifier])
                 
                 // paren -> <(> $expr <)>
-                ProductionRule(parenIdentifier, [Terminal TokenType.LParen; Nonterminal expressionGroupIdentifier; Terminal TokenType.RParen])
+                ProductionRule(parenIdentifier, [Terminal TokenType.LParen
+                                                 Nonterminal expressionGroupIdentifier
+                                                 Terminal TokenType.RParen])
                 // if-then-else -> <if> $expr <then> $expr <else> $expr
-                ProductionRule(ifThenElseIdentifier, [Terminal TokenType.IfKeyword; Nonterminal expressionGroupIdentifier; 
-                                                      Terminal TokenType.ThenKeyword; Nonterminal expressionGroupIdentifier; 
-                                                      Terminal TokenType.ElseKeyword; Nonterminal expressionGroupIdentifier])
+                ProductionRule(ifThenElseIdentifier, [Terminal TokenType.IfKeyword
+                                                      Nonterminal expressionGroupIdentifier
+                                                      Terminal TokenType.ThenKeyword
+                                                      Nonterminal expressionGroupIdentifier
+                                                      Terminal TokenType.ElseKeyword
+                                                      Nonterminal expressionGroupIdentifier])
 
                 // let -> let-definition <in> $expr
-                ProductionRule(letIdentifier, [Nonterminal letDefinitionIdentifier;
-                                               Terminal TokenType.InKeyword; Nonterminal expressionGroupIdentifier])
+                ProductionRule(letIdentifier, [Nonterminal letDefinitionIdentifier
+                                               Terminal TokenType.InKeyword
+                                               Nonterminal expressionGroupIdentifier])
+                                               
+                // let-definition -> <let> <identifier> identifier... <=> $expr
+                ProductionRule(letDefinitionIdentifier, [Terminal TokenType.LetKeyword
+                                                         Terminal TokenType.Identifier
+                                                         Nonterminal identifierListIdentifier
+                                                         Terminal TokenType.Equals
+                                                         Nonterminal expressionGroupIdentifier])
 
-                // let -> <let> <identifier> identifier... <=> $expr
-                ProductionRule(letDefinitionIdentifier, [Terminal TokenType.LetKeyword; Terminal TokenType.Identifier;
-                                                         Nonterminal identifierListIdentifier;
-                                                         Terminal TokenType.Equals; Nonterminal expressionGroupIdentifier])
+                // let-definition -> <let> <fixity> identifier <op> identifier <=> $expr
+                ProductionRule(letDefinitionIdentifier, [Terminal TokenType.LetKeyword
+                                                         Nonterminal infixSpecifierIdentifier
+                                                         Nonterminal identifierIdentifier
+                                                         Terminal TokenType.OperatorToken
+                                                         Nonterminal identifierIdentifier
+                                                         Terminal TokenType.Equals
+                                                         Nonterminal expressionGroupIdentifier])
+
+                // infix-specifier -> infix-keyword <left-parenthesis> <literal-int> <right-parenthesis
+                ProductionRule(infixSpecifierIdentifier, [Nonterminal infixKeywordIdentifier
+                                                          Terminal TokenType.LParen
+                                                          Terminal TokenType.Integer
+                                                          Terminal TokenType.RParen])
+
+                // infix-keyword -> <infixl> | <infixr>
+                ProductionRule(infixKeywordIdentifier, [Terminal TokenType.InfixlKeyword])
+                ProductionRule(infixKeywordIdentifier, [Terminal TokenType.InfixrKeyword])
 
                 // identifier... -> epsilon | <identifier> identifier...
                 ProductionRule(identifierListIdentifier, [])
-                ProductionRule(identifierListIdentifier, [Terminal TokenType.Identifier; Nonterminal identifierListIdentifier])
+                ProductionRule(identifierListIdentifier, [Terminal TokenType.Identifier
+                                                          Nonterminal identifierListIdentifier])
 
                 // let-definition... -> epsilon | let-definition let-definition...
                 ProductionRule(letDefinitionListIdentifier, [])
-                ProductionRule(letDefinitionListIdentifier, [Nonterminal letDefinitionIdentifier; Nonterminal letDefinitionListIdentifier])
+                ProductionRule(letDefinitionListIdentifier, [Nonterminal letDefinitionIdentifier
+                                                             Nonterminal letDefinitionListIdentifier])
 
                 // identifier -> <identifier>
                 ProductionRule(identifierIdentifier, [Terminal TokenType.Identifier])
@@ -124,7 +158,9 @@ module Parser =
                 // literal-double -> <double>
                 ProductionRule(literalDoubleIdentifier, [Terminal TokenType.Double])
                 // operator -> $expr <op> $expr
-                ProductionRule(operatorIdentifier, [Nonterminal expressionGroupIdentifier; Terminal TokenType.OperatorToken ;Nonterminal expressionGroupIdentifier])
+                ProductionRule(operatorIdentifier, [Nonterminal expressionGroupIdentifier
+                                                    Terminal TokenType.OperatorToken
+                                                    Nonterminal expressionGroupIdentifier])
             ]
 
     /// A grammar for micron expressions.
@@ -138,12 +174,13 @@ module Parser =
             [
                 // program -> let-definition program | module | epsilon
                 ProductionRule(programIdentifier, [])
-                ProductionRule(programIdentifier, [Nonterminal letDefinitionIdentifier; Nonterminal programIdentifier])
+                ProductionRule(programIdentifier, [Nonterminal letDefinitionIdentifier
+                                                   Nonterminal programIdentifier])
                 ProductionRule(programIdentifier, [Nonterminal moduleIdentifier])
 
                 // module -> <module> <identifier> let-definition...
-                ProductionRule(moduleIdentifier, [Terminal TokenType.ModuleKeyword; 
-                                                  Terminal TokenType.Identifier; 
+                ProductionRule(moduleIdentifier, [Terminal TokenType.ModuleKeyword
+                                                  Terminal TokenType.Identifier
                                                   Nonterminal letDefinitionListIdentifier])
 
                 // etc
@@ -164,15 +201,17 @@ module Parser =
         | Success x -> x
         | Error e -> raise (System.InvalidOperationException(e))
 
-    //[6:02:25 PM] Jonathan Van der Cruysse: 
-    type OpFixity = InfixLeft of int | InfixRight of int
+    // The fixity of an operator.
+    type OpFixity = InfixLeft of int
+                  | InfixRight of int
 
-    // Extract only the precedence from the fixity
-    let precedence : OpFixity -> int = function | InfixLeft i -> i | InfixRight i -> i
+    // Extract only the precedence from the fixity.
+    let precedence : OpFixity -> int = function | InfixLeft i -> i
+                                                | InfixRight i -> i
 
     /// Flatten those ops boy
     let rec flattenOps : ParseTree<string, Token> -> (ParseTree<string, Token> * Token) list * ParseTree<string, Token> = function
-        | ProductionNode("operator",[left; TerminalLeaf op; right]) -> 
+        | ProductionNode("operator", [left; TerminalLeaf op; right]) -> 
             let lFlat, lSuffix = flattenOps left
             let rFlat, rSuffix = flattenOps right
             List.append lFlat ((lSuffix, op) :: rFlat), rSuffix
