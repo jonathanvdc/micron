@@ -98,49 +98,37 @@ module TokenHelpers =
         children |> List.map treeSourceLocation
                  |> List.fold (fun a b -> CompilerLogExtensions.Concat(a, b)) null  
         
-
     /// Gets the given token's type.
     let tokenType (token : Token) : TokenType =
         token.tokenType
 
     /// Finds out if the given token type is a trivia token type,
     /// i.e. it should be skipped when parsing.
-    let isTrivia : TokenType -> bool = function
-    | TokenType.Whitespace 
-    | TokenType.EndOfStream -> true
-    | _ -> false
+    let isTrivia : TokenType -> bool =
+        function
+        | TokenType.Whitespace | TokenType.EndOfStream -> true
+        | _ -> false
 
-    /// Transforms the given list of tokens into another list
-    /// of non-trivia tokens, where the trivia tokens from the
-    /// original list have been "folded" into the non-trivia tokens.
+    /// Finds out if the given token type is a non-trivia type.
+    let isNonTrivia : TokenType -> bool =
+        not << isTrivia
+
+    /// Transforms the given list of tokens into another list of non-trivia tokens, where the
+    /// trivia tokens from the original list have been "folded" into the non-trivia tokens.
     /// Trailing trivia tokens are discarded.
-    let rec foldTrivia (toks : Token list) : Token list =
-        let folder (results : Token list, accTrivia : Token list) (item : Token) : Token list * Token list =
-            if isTrivia item.tokenType then
-                (results, item :: accTrivia)
-            else
-                let newToken = { item with preTrivia = List.rev accTrivia }
-                (newToken :: results, [])
+    let foldTrivia : Token list -> Token list =
+        ListHelpers.cutAfter (tokenType >> isNonTrivia)
+        >> List.map (fun (trivia, token) -> { token with preTrivia = trivia })
 
-        toks |> List.fold folder ([], [])
-             |> fst
-             |> List.rev
-
-    /// Transforms the given list of tokens into another list
-    /// of tokens, where all pre-trivia tokens in tokens of the
-    /// original list have been prepended recursively to 
-    /// the token they belonged to. 
-    /// Pre-trivia are then stripped from all tokens
-    /// in the resulting list.
-    /// This is the opposite of `foldTrivia`, which
-    /// tries to hide trivia in a tree-like structure.
-    /// `expandTrivia` expands all trivia to a flat
-    /// list instead.
+    /// Transforms the given list of tokens into another list of tokens, where all pre-trivia
+    /// tokens in tokens of the original list have been prepended recursively to the token they
+    /// belonged to. Pre-trivia are then stripped from all tokens in the resulting list. This is
+    /// the opposite of `foldTrivia`, which tries to hide trivia in a tree-like structure.
+    /// `expandTrivia` expands all trivia to a flat list instead.
     let rec expandTrivia (toks : Token list) : Token list =
-        let folder (results : Token list) (item : Token) : Token list =
+        let folder (item : Token) (results : Token list) : Token list =
             let preTrivia = expandTrivia item.preTrivia
             let newToken = { item with preTrivia = [] }
-            newToken :: (List.append preTrivia results)
+            List.append preTrivia (newToken :: results)
 
-        toks |> List.fold folder []
-             |> List.rev
+        List.foldBack folder toks []
