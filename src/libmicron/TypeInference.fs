@@ -72,7 +72,7 @@ module TypeInference =
     let createShow () : TypeConstraint -> string =
         let dict = new System.Collections.Concurrent.ConcurrentDictionary<UnknownType, string>()
         let rec createName prefix offset k = 
-            let range = int 'z' - int 'a'
+            let range = int 'z' + 1 - int 'a'
             let index = (dict.Count - offset) % range
             let result = prefix + string ('a' + char index)
             if dict.Values.Contains result then

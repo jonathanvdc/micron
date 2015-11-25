@@ -109,3 +109,16 @@ type TypeInferenceTests () =
         let expected = LinearSet.empty<UnknownType * TypeInference.TypeConstraint>
 
         assertEqual (results |> Result.map LinearMap.toSet) (Success expected)
+
+    [<TestMethod>]
+    member this.AssignTypeNames() =
+        // Verify that type names are at least assigned as follows:
+        //
+        //     a, b, c, ... z, aa.
+        //
+        let show = TypeInference.createShow()
+        
+        Array.init 27 (fun _ -> show(TypeInference.Variable <| UnknownType()))
+        |> should equal [| "a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i";
+                           "j"; "k"; "l"; "m"; "n"; "o"; "p"; "q"; "r";
+                           "s"; "t"; "u"; "v"; "w"; "x"; "y"; "z"; "aa" |]
