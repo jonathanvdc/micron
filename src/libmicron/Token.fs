@@ -84,6 +84,10 @@ module TokenHelpers =
                       |> List.append [tok.contents]
                       |> String.concat ""
 
+    /// Gets the given token's source location.
+    let sourceLocation (token : Token) : SourceLocation =
+        token.sourceLocation
+
     /// Extracts the given token's total source location, including 
     /// its associated trivia tokens.
     let rec totalSourceLocation (tok : Token) : SourceLocation = 
@@ -91,9 +95,10 @@ module TokenHelpers =
                       |> List.fold (fun x y -> x.Concat(y)) tok.sourceLocation
 
     /// Gets the total source location for an entire parse tree of tokens.
+    /// Trivia token source locations are ignored.
     let rec treeSourceLocation : ParseTree<'a, Token> -> SourceLocation = function
     | TerminalLeaf token -> 
-        totalSourceLocation token
+        sourceLocation token
     | ProductionNode(_, children) -> 
         children |> List.map treeSourceLocation
                  |> List.fold (fun a b -> CompilerLogExtensions.Concat(a, b)) null  
@@ -101,10 +106,6 @@ module TokenHelpers =
     /// Gets the given token's type.
     let tokenType (token : Token) : TokenType =
         token.tokenType
-
-    /// Gets the given token's source location.
-    let sourceLocation (token : Token) : SourceLocation =
-        token.sourceLocation
 
     /// Finds out if the given token type is a trivia token type,
     /// i.e. it should be skipped when parsing.
