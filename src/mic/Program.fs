@@ -59,6 +59,7 @@ let modePrefixes =
     Map.ofList 
         [
             ":t", fun (expr : IExpression) -> printfn "%s" (nameType expr.Type)
+            ":repr", printfn "%A"
         ]
 
 /// Extracts the current "mode" from the input string.
@@ -81,6 +82,7 @@ let eval log source =
 
 /// Runs a REPL loop.
 let rec repl log input =
+    Console.Write("> ")
     let line = Console.ReadLine()
     if line = null then
         ()
