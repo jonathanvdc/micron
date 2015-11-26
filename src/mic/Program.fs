@@ -39,7 +39,7 @@ let parseExpression (log : ICompilerLog) (code : string) =
     | Choice1Of2 tree -> 
         match tree with
         | ProductionNode("program", [ProductionNode("let-definition", [_; _; _; _; result]); ProductionNode("program", [])]) ->
-            let globalScope = GlobalScope(FunctionalBinder(null), StrictConversionRules(), log, nameType, memProvider, getParameters)
+            let globalScope = GlobalScope(FunctionalBinder(null), StrictConversionRules(nameType), log, nameType, memProvider, getParameters)
             let scope = LocalScope(globalScope)
             Analysis.analyzeExpression scope (Parser.stripGroups result)
         | _ ->

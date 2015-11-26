@@ -6,9 +6,13 @@ open Flame.Compiler
 open Flame.Compiler.Expressions
 open Flame.Functional
 
-type StrictConversionRules() =
+type StrictConversionRules(typeNamer : IType -> string) =
     interface IConversionRules with
         member this.HasImplicitConversion tyFrom tyTo = false
-        member this.ConvertImplicit expr tyTo = ConversionExpression.Instance.Create(expr, tyTo)
+        member this.ConvertImplicit expr tyTo = 
+            ExpressionBuilder.Error (LogEntry("Type mismatch", 
+                                              "Expected an expression of type '" + typeNamer tyTo + 
+                                              "'. Got one of type '" + typeNamer expr.Type + "'.")) 
+                                    (ConversionExpression.Instance.Create(expr, tyTo))
         member this.ConvertExplicit expr tyTo = ConversionExpression.Instance.Create(expr, tyTo)
 
