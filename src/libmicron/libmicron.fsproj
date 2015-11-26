@@ -58,6 +58,7 @@
     <Compile Include="UnkownType.fs" />
     <Compile Include="TypeInference.fs" />
     <Compile Include="Parser.fs" />
+    <Compile Include="StrictConversionRules.fs" />
     <Compile Include="Analysis.fs" />
     <None Include="packages.config" />
     <None Include="app.config" />

@@ -9,6 +9,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "muc", "muc\muc.fsproj", "{B
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "tests", "tests\tests.fsproj", "{2303AA3B-7412-4A06-82D0-CC6F34C83578}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "mic", "mic\mic.fsproj", "{1C96F1C6-342C-4190-B101-24F76807C5F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{2303AA3B-7412-4A06-82D0-CC6F34C83578}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2303AA3B-7412-4A06-82D0-CC6F34C83578}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2303AA3B-7412-4A06-82D0-CC6F34C83578}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C96F1C6-342C-4190-B101-24F76807C5F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C96F1C6-342C-4190-B101-24F76807C5F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C96F1C6-342C-4190-B101-24F76807C5F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C96F1C6-342C-4190-B101-24F76807C5F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
