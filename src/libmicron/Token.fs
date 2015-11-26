@@ -102,6 +102,10 @@ module TokenHelpers =
     let tokenType (token : Token) : TokenType =
         token.tokenType
 
+    /// Gets the given token's source location.
+    let sourceLocation (token : Token) : SourceLocation =
+        token.sourceLocation
+
     /// Finds out if the given token type is a trivia token type,
     /// i.e. it should be skipped when parsing.
     let isTrivia : TokenType -> bool =

@@ -53,10 +53,31 @@ let parseExpression (log : ICompilerLog) (code : string) =
             raise (System.Exception("Parser error."))
     | Choice2Of2 _ -> ExpressionBuilder.VoidError (new LogEntry("Invalid syntax",  "Could not parse expression.", SourceLocation(doc, 0, doc.CharacterCount)))
 
+/// Gets a map of special "mode" prefixes
+/// to handlers.
+let modePrefixes = 
+    Map.ofList 
+        [
+            ":t", fun (expr : IExpression) -> printfn "%s" (nameType expr.Type)
+        ]
+
+/// Extracts the current "mode" from the input string.
+let getMode (source : string) : (string * (IExpression -> unit)) =
+    let asMode modePrefix mode =
+        if source.StartsWith(modePrefix) then
+            Some (source.Substring(modePrefix.Length), mode)
+        else
+            None
+    
+    match Map.tryPick asMode modePrefixes with
+    | Some(src, mode) -> src, mode
+    | None -> source, printfn "%A"
+
 /// Evaluates the given source expression.
 let eval log source =
+    let source, mode = getMode source
     let expr = parseExpression log source |> showErrors log
-    printfn "%A" expr
+    mode expr
 
 /// Runs a REPL loop.
 let rec repl log input =
