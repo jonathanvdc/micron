@@ -8,18 +8,21 @@ open Flame.Functional
 open Flame.Front
 open Flame.Front.Cli
 
+/// A compiled version of the micron program grammar.
 let parser = Parser.createParser Parser.programGrammar
 
 let showErrors (log : ICompilerLog) (expr : IExpression) =
     let visitor = Flame.Compiler.Visitors.LoggingVisitor(log, true, true)
     visitor.Visit expr
 
+/// Names the given type.
 let nameType (ty : IType) = ty.FullName
 let memProvider (ty : IType) = ty.GetAllMembers()
 let getParameters (func : IMethod option) =
     Map.empty
 
 let parseExpression (log : ICompilerLog) (code : string) =
+    // Prefix the list of tokens with `let <identifier> =`.
     let prefixTokens = 
         [{ contents = "let"
            tokenType = TokenType.LetKeyword
@@ -33,8 +36,12 @@ let parseExpression (log : ICompilerLog) (code : string) =
            tokenType = TokenType.Equals
            sourceLocation = null
            preTrivia = [] }]
+    // Create a source document so we can have 
+    // accurate diagnostics.
     let doc = SourceDocument(code, "repl.mu")
+    // Lex tokens
     let tokens = prefixTokens @ Lexer.lex doc |> TokenHelpers.foldTrivia
+    // Parse
     match parser tokens with
     | Choice1Of2 tree -> 
         match tree with
@@ -46,10 +53,12 @@ let parseExpression (log : ICompilerLog) (code : string) =
             raise (System.Exception("Parser error."))
     | Choice2Of2 _ -> ExpressionBuilder.VoidError (new LogEntry("Invalid syntax",  "Could not parse expression.", SourceLocation(doc, 0, doc.CharacterCount)))
 
+/// Evaluates the given source expression.
 let eval log source =
     let expr = parseExpression log source |> showErrors log
     printfn "%A" expr
 
+/// Runs a REPL loop.
 let rec repl log input =
     let line = Console.ReadLine()
     if line = null then
