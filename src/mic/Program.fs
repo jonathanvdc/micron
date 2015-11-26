@@ -62,6 +62,14 @@ let modePrefixes =
             ":repr", printfn "%A"
         ]
 
+/// Executes the given expression, and prints the result.
+let exec (expr : IExpression) : unit =
+    let descMethod = Flame.ExpressionTrees.ExpressionMethod("repl", null, expr.Type, true)
+    let cg = descMethod.CodeGenerator
+    descMethod.SetMethodBody(cg.EmitReturn(expr.Emit(cg)))
+    let result = descMethod.Invoke(null, Seq.empty)
+    printfn "%A" (result.GetObjectValue())
+
 /// Extracts the current "mode" from the input string.
 let getMode (source : string) : (string * (IExpression -> unit)) =
     let asMode modePrefix mode =
@@ -72,7 +80,7 @@ let getMode (source : string) : (string * (IExpression -> unit)) =
     
     match Map.tryPick asMode modePrefixes with
     | Some(src, mode) -> src, mode
-    | None -> source, printfn "%A"
+    | None -> source, exec
 
 /// Evaluates the given source expression.
 let eval log source =

@@ -59,6 +59,9 @@
     <Reference Include="Flame.DSProject">
       <HintPath>..\..\libs\Flame\Flame.DSProject.dll</HintPath>
     </Reference>
+    <Reference Include="Flame.ExpressionTrees">
+      <HintPath>..\..\libs\Flame\Flame.ExpressionTrees.dll</HintPath>
+    </Reference>
     <Reference Include="Flame.Front">
       <HintPath>..\..\libs\Flame\Flame.Front.dll</HintPath>
     </Reference>
