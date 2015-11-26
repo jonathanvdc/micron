@@ -122,7 +122,7 @@
  flow deltas.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.FinalFlowRemover.CreateLoopFlow(Flame.Compiler.BlockTag,Flame.Optimization.SpeculativeFlowState)">
+    <member name="M:Flame.Optimization.FinalFlowRemover.CreateLoopFlow(Flame.Compiler.UniqueTag,Flame.Optimization.SpeculativeFlowState)">
       <summary>
  Creates a flow delta that will be executed zero or more
  times.
@@ -247,7 +247,7 @@
  flow deltas.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.InitialFlowRemover.CreateLoopFlow(Flame.Compiler.BlockTag,Flame.Optimization.InitialFlowState)">
+    <member name="M:Flame.Optimization.InitialFlowRemover.CreateLoopFlow(Flame.Compiler.UniqueTag,Flame.Optimization.InitialFlowState)">
       <summary>
  Creates a flow delta that will be executed zero or more
  times.
@@ -391,7 +391,7 @@
  Selects precisely one of two flow paths.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.SizeVisitor.CreateLoopFlow(Flame.Compiler.BlockTag,System.Int32)">
+    <member name="M:Flame.Optimization.SizeVisitor.CreateLoopFlow(Flame.Compiler.UniqueTag,System.Int32)">
       <summary>
  Creates a flow state that "loops", i.e. will be executed zero or more
  times.
@@ -652,7 +652,7 @@
  flow deltas.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.AccessVisitor.CreateLoopFlow(Flame.Compiler.BlockTag,System.Collections.Generic.List`1{System.Func`3{Flame.Optimization.Variables.IVariableDefinition,System.Boolean,Flame.Optimization.Variables.AccessMetrics}})">
+    <member name="M:Flame.Optimization.Variables.AccessVisitor.CreateLoopFlow(Flame.Compiler.UniqueTag,System.Collections.Generic.List`1{System.Func`3{Flame.Optimization.Variables.IVariableDefinition,System.Boolean,Flame.Optimization.Variables.AccessMetrics}})">
       <summary>
  Creates a flow delta that will be executed zero or more
  times.
@@ -914,7 +914,7 @@
  Defines common functionality for variable flow structures.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.IVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.IVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -926,7 +926,7 @@
  Updates the given variable reach, possibly using a pre-insert point.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.EmptyVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.EmptyVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -938,7 +938,7 @@
  Updates the given variable reach, possibly using a pre-insert point.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableDefinitionFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.VariableDefinitionFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -950,7 +950,7 @@
  Updates the given variable reach, possibly using a pre-insert point.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableAccessFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.VariableAccessFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -962,7 +962,7 @@
  Updates the given variable reach, possibly using a pre-insert point.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.SequenceVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.SequenceVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -1042,7 +1042,7 @@
  Gets the unerlying local variable.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.LoopVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.LoopVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -1112,7 +1112,7 @@
  Gets these propagation dependencies' propagation scheme.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.SelectVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.SelectVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -1131,7 +1131,7 @@
  extremely conservative behavior.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.TerminatedVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.TerminatedVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -1148,7 +1148,7 @@
  Defines terminated block variable flow: a "break" or "continue" statement.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.TerminatedBlockVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Optimization.Variables.TerminatedBlockVariableFlow.GetTerminationPoints(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Compiler.UniqueTag)">
       <summary>
  Gets all termination points for the given chain and tagged block.
  This method must be called after updating the chain's reach
@@ -1390,7 +1390,7 @@
  flow deltas.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableDefinitionVisitor.CreateLoopFlow(Flame.Compiler.BlockTag,Flame.Optimization.Variables.VariableFlowState(Flame.Optimization.Variables.VariableFlowState))">
+    <member name="M:Flame.Optimization.Variables.VariableDefinitionVisitor.CreateLoopFlow(Flame.Compiler.UniqueTag,Flame.Optimization.Variables.VariableFlowState(Flame.Optimization.Variables.VariableFlowState))">
       <summary>
  Creates a flow delta that will be executed zero or more
  times.

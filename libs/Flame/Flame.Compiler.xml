@@ -26,25 +26,27 @@
  Gets the default entry message for fatal errors.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.BlockTag">
+    <member name="T:Flame.Compiler.UniqueTag">
       <summary>
- Defines a unique tag that is associated with some control-flow block.
- Such a tag is named, but its name need not be unique.
+ Defines a unique tag that is associated with some construct, like
+ a control-flow block or a variable.
+ Such a tag is named, but its name need not be unique, as the name
+ has nothing to do with the tag's identity.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.BlockTag.this">
+    <member name="M:Flame.Compiler.UniqueTag.this">
       <summary>
- Creates a new block tag with the empty string as its name.
+ Creates a new unique tag with the empty string as its name.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.BlockTag.this(System.String)">
+    <member name="M:Flame.Compiler.UniqueTag.this(System.String)">
       <summary>
- Creates a new block tag and assigns it the given name.
+ Creates a new unique tag and assigns it the given name.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.BlockTag.Name">
+    <member name="P:Flame.Compiler.UniqueTag.Name">
       <summary>
- Gets the block tag's name.
+ Gets this unique tag's name.
  </summary>
     </member>
     <member name="T:Flame.Compiler.IMemberNode">
@@ -654,7 +656,7 @@
  flow deltas.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.IFlowVisitor`2.CreateLoopFlow(Flame.Compiler.BlockTag,TDelta)">
+    <member name="M:Flame.Compiler.IFlowVisitor`2.CreateLoopFlow(Flame.Compiler.UniqueTag,TDelta)">
       <summary>
  Creates a flow delta that will be executed zero or more
  times.
@@ -677,7 +679,7 @@
  in local flow.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.ILocalFlowVisitor`2.CreateTerminatedLocalFlow(Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Compiler.ILocalFlowVisitor`2.CreateTerminatedLocalFlow(Flame.Compiler.UniqueTag)">
       <summary>
  Creates a terminated local flow delta, which terminates the current
  iteration of the given block, but does not end the function's execution.
@@ -1330,7 +1332,7 @@
  Creates a block that executes that given blocks in sequence.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.ICodeGenerator.EmitTagged(Flame.Compiler.BlockTag,Flame.Compiler.ICodeBlock)">
+    <member name="M:Flame.Compiler.ICodeGenerator.EmitTagged(Flame.Compiler.UniqueTag,Flame.Compiler.ICodeBlock)">
       <summary>
  Creates a tagged block: a block that supports "break" and "continue".
  "break" means: jump to the end of this block; "continue" means:
@@ -1356,13 +1358,13 @@
  function's exection and transfers control back to the calling block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.ICodeGenerator.EmitBreak(Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Compiler.ICodeGenerator.EmitBreak(Flame.Compiler.UniqueTag)">
       <summary>
  Creates a break block: a block that 'breaks' out of the given enclosing block:
  control is transferred to the block that trails said block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.ICodeGenerator.EmitContinue(Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Compiler.ICodeGenerator.EmitContinue(Flame.Compiler.UniqueTag)">
       <summary>
  Creates a continue block: a block that stops the execution of the
  given enclosing block's body, and starts the next iteration.
@@ -1512,7 +1514,7 @@
  A code generator that supports creating 'while' blocks.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.IWhileCodeGenerator.EmitWhile(Flame.Compiler.BlockTag,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock)">
+    <member name="M:Flame.Compiler.IWhileCodeGenerator.EmitWhile(Flame.Compiler.UniqueTag,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock)">
       <summary>
  Creates a block that repeats the given body as long as the given condition
  block evaluates to true.
@@ -1523,7 +1525,7 @@
  A code generator that supports creating 'do...while' blocks.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.IDoWhileCodeGenerator.EmitDoWhile(Flame.Compiler.BlockTag,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock)">
+    <member name="M:Flame.Compiler.IDoWhileCodeGenerator.EmitDoWhile(Flame.Compiler.UniqueTag,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock)">
       <summary>
  Creates a block that executes the given body once, and then keeps on executing
  it as long as the given condition block evaluates to true.
@@ -1538,6 +1540,41 @@
     <member name="P:Flame.Compiler.ICodeBlock.CodeGenerator">
       <summary>
  Gets the code generator that created this code block.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.IUnmanagedCodeGenerator">
+      <summary>
+ Defines an unmanaged code generator interface: a code generator
+ that can also perform a number of low-level tricks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.IUnmanagedCodeGenerator.EmitDereferencePointer(Flame.Compiler.ICodeBlock)">
+      <summary>
+ Creates a code block that dereferences the given pointer block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.IUnmanagedCodeGenerator.EmitStoreAtAddress(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock)">
+      <summary>
+ Creates a code block that stores the value in a code block
+ in the given pointer block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.IUnmanagedCodeGenerator.GetUnmanagedElement(Flame.Compiler.ICodeBlock,System.Collections.Generic.IEnumerable`1{Flame.Compiler.ICodeBlock})">
+      <summary>
+ Gets an unmanaged emit variable that represents an element of
+ a container type.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.IUnmanagedCodeGenerator.GetUnmanagedField(Flame.IField,Flame.Compiler.ICodeBlock)">
+      <summary>
+ Gets an unmanaged emit variable that represents the given field
+ of the value represented by the given target code block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.IUnmanagedCodeGenerator.EmitSizeOf(Flame.IType)">
+      <summary>
+ Creates a block that contains the run-time size of a variable of the
+ given type.
  </summary>
     </member>
     <member name="T:Flame.Compiler.IBranchingCodeGenerator">
@@ -1582,6 +1619,20 @@
  Creates a block that invokes the given method on the given
  calling block and arguments. An operator is given that tells
  how the calling block is used.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.CodeGeneratorExtensions.GetOrDeclareLocal(Flame.Compiler.Emit.IMethodStructureGenerator,Flame.Compiler.UniqueTag,Flame.Compiler.IVariableMember)">
+      <summary>
+ Gets the local variable with the given tag if it exists already, or
+ creates one with the given tag based on the given variable
+ member if it doesn't.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.CodeGeneratorExtensions.GetOrDeclareUnmanagedLocal(Flame.Compiler.Emit.IUnmanagedMethodStructureGenerator,Flame.Compiler.UniqueTag,Flame.Compiler.IVariableMember)">
+      <summary>
+ Gets the unmanaged local variable with the given tag if it
+ exists already, or creates one with the given tag based on
+ the given variable member if it doesn't.
  </summary>
     </member>
     <member name="T:Flame.Compiler.IVariableMember">
@@ -1763,6 +1814,19 @@
  Gets the union of all invariants the given type has, both directly and indirectly.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Emit.IMethodStructureGenerator.GetLocal(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the local variable with the given unique tag, if there is
+ such a variable. Otherwise, null is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IMethodStructureGenerator.DeclareLocal(Flame.Compiler.UniqueTag,Flame.Compiler.IVariableMember)">
+      <summary>
+ Declares a new local variable based on the given unique tag and
+ variable member. Declaring two variables with the same tag
+ results in an exception.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Emit.IMethodStructureGenerator.GetThis">
       <summary>
  Gets the "this" argument.
@@ -1772,6 +1836,34 @@
     <member name="P:Flame.Compiler.Emit.IMethodStructureGenerator.Method">
       <summary>
  Gets the method this code generator belongs to.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Emit.IUnmanagedMethodStructureGenerator">
+      <summary>
+ Defines a method structure generator interface that supports creating
+ and retrieving unmanaged variables.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IUnmanagedMethodStructureGenerator.GetUnmanagedLocal(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the local variable with the given unique tag, if there is
+ such an unmanaged variable. Otherwise, null is returned.
+ </summary>
+      <remarks>
+ It is up to the implementation to decide if this method returns null
+ for locals declared via DeclareLocal instead of DeclareUnmanagedLocal.
+ </remarks>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IUnmanagedMethodStructureGenerator.DeclareUnmanagedLocal(Flame.Compiler.UniqueTag,Flame.Compiler.IVariableMember)">
+      <summary>
+ Declares an unmanaged local variable with the given unique tag, and
+ based on the given variable member. Declaring two variables with the
+ same tag results in an exception.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IUnmanagedMethodStructureGenerator.GetUnmanagedArgument(System.Int32)">
+      <summary>
+ Gets the nth argument as an unmanaged variable.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Emit.IUnmanagedMethodStructureGenerator.GetUnmanagedThis">
@@ -1883,6 +1975,75 @@
  Gets the variable member's variable type.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Emit.LocalManagerBase`1">
+      <summary>
+ Defines a base class for objects that manage a code generator's locals.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.LocalManagerBase`1.CreateLocal(Flame.Compiler.IVariableMember)">
+      <summary>
+ Creates a new local variable from the given variable member.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.LocalManagerBase`1.ContainsLocal(Flame.Compiler.UniqueTag)">
+      <summary>
+ Tests if a local with the given unique tag exists
+ in this local manager.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.LocalManagerBase`1.GetOrDefault(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the local associated with the given tag,
+ or returns the default value for locals
+ if no such local exists. This is typically null.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.LocalManagerBase`1.Declare(Flame.Compiler.UniqueTag,Flame.Compiler.IVariableMember)">
+      <summary>
+ Declares a new local with the given tag, based on the
+ given variable member.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Emit.LocalManagerBase`1.Tags">
+      <summary>
+ Gets a sequence of all unique tags that are currently
+ associated with variables in this local manager.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Emit.LocalManagerBase`1.Locals">
+      <summary>
+ Gets a sequence containing all locals that are being managed
+ by this local manager.
+ </summary>
+    </member>
+    <member name="F:Flame.Compiler.Emit.LocalManagerBase`1.locals">
+      <summary>
+ A dictionary that stores all locals.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Emit.LocalManager`1">
+      <summary>
+ A class for objects that manage a code generator's locals.
+ This is a simple and straightforward implementation.
+ Locals are never recycled.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.LocalManager`1.this(T(Flame.Compiler.IVariableMember))">
+      <summary>
+ Creates a new local manager from the given
+ local-creating function.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.LocalManager`1.CreateLocal(Flame.Compiler.IVariableMember)">
+      <summary>
+ Creates a new local variable from the given variable member.
+ </summary>
+    </member>
+    <member name="F:Flame.Compiler.Emit.LocalManager`1.createNewLocal">
+      <summary>
+ A function that creates locals from variable members.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Emit.IInitializingCodeGenerator.EmitInitializedArray(Flame.IType,Flame.Compiler.ICodeBlock[])">
       <summary>
  Creates and initializes a new array.
@@ -1898,7 +2059,7 @@
  Provides an interface for code generators that support C-family style for loops.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Emit.IForCodeGenerator.EmitForBlock(Flame.Compiler.BlockTag,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock)">
+    <member name="M:Flame.Compiler.Emit.IForCodeGenerator.EmitForBlock(Flame.Compiler.UniqueTag,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock)">
       <summary>
  Creates a for loop block from the given initialization, condition, delta and body blocks.
  </summary>
@@ -1914,7 +2075,7 @@
  given collection block at a time.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Emit.IForeachCodeGenerator.EmitForeachHeader(Flame.Compiler.BlockTag,System.Collections.Generic.IEnumerable`1{Flame.Compiler.Emit.ICollectionBlock})">
+    <member name="M:Flame.Compiler.Emit.IForeachCodeGenerator.EmitForeachHeader(Flame.Compiler.UniqueTag,System.Collections.Generic.IEnumerable`1{Flame.Compiler.Emit.ICollectionBlock})">
       <summary>
  Creates a foreach block header based on the given collection blocks.
  </summary>
@@ -5173,7 +5334,7 @@
  targets a specific tagged block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.BreakStatement.this(Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Compiler.Statements.BreakStatement.this(Flame.Compiler.UniqueTag)">
       <summary>
  Creates a "break" statement that targets the given block tag.
  </summary>
@@ -5189,7 +5350,7 @@
  targets a specific tagged block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ContinueStatement.this(Flame.Compiler.BlockTag)">
+    <member name="M:Flame.Compiler.Statements.ContinueStatement.this(Flame.Compiler.UniqueTag)">
       <summary>
  Creates a "continue" statement that targets the given block tag.
  </summary>
@@ -5221,7 +5382,7 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.DoWhileStatement.RewriteContinueToBreak(Flame.Compiler.BlockTag,System.Boolean)">
+    <member name="M:Flame.Compiler.Statements.DoWhileStatement.RewriteContinueToBreak(Flame.Compiler.UniqueTag,System.Boolean)">
       <summary>
  Rewrites the do...while statement's body by replacing `continue` statements
  with `break` statements to an outer tagged statement, which has the
@@ -5269,7 +5430,7 @@
  statements.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.this(Flame.Compiler.BlockTag,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.this(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
       <summary>
  Creates a new tagged statement from the given tag and body.
  </summary>
@@ -6600,7 +6761,7 @@
  with a given statement.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.ContinueRewriter.this(Flame.Compiler.BlockTag,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Visitors.ContinueRewriter.this(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
       <summary>
  Creates a continue rewriter that replaces all `continue` statements to the given block
  with the given statement.
@@ -6651,7 +6812,7 @@
  Selects precisely one of two flow paths.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.DeadCodeVisitor.CreateLoopFlow(Flame.Compiler.BlockTag,System.Boolean)">
+    <member name="M:Flame.Compiler.Visitors.DeadCodeVisitor.CreateLoopFlow(Flame.Compiler.UniqueTag,System.Boolean)">
       <summary>
  Creates a flow state that "loops", i.e. will be executed zero or more
  times.
@@ -6998,7 +7159,7 @@
  Visits the given statement, which logically belongs to the given method.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.ContinueRewriter.Static_Singleton.RewriteContinue(Flame.Compiler.BlockTag,Flame.Compiler.IStatement,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Visitors.ContinueRewriter.Static_Singleton.RewriteContinue(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement,Flame.Compiler.IStatement)">
       <summary>
  Rewrites the given statement by replacing every `continue` to a given specific block
  by another statement.
