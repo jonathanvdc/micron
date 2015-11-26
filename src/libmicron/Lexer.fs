@@ -61,7 +61,7 @@ module Lexer =
     let sliceToken (startPos : int) (stream : SourceStream) (tokType : TokenType) : Token =
         { contents = slice startPos stream
           tokenType = tokType
-          sourceLocation = SourceLocation(stream.document, startPos, stream.pos)
+          sourceLocation = SourceLocation(stream.document, startPos, stream.pos - startPos)
           preTrivia = [] }
 
     /// Tries to read a single character from the given input stream, provided

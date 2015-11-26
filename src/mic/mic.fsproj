@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>1c96f1c6-342c-4190-b101-24f76807c5f5</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>mic</RootNamespace>
+    <AssemblyName>mic</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
+    <Name>mic</Name>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Debug\mic.XML</DocumentationFile>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Release\mic.XML</DocumentationFile>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Flame">
+      <HintPath>..\..\libs\Flame\Flame.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Analysis">
+      <HintPath>..\..\libs\Flame\Flame.Analysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Cecil">
+      <HintPath>..\..\libs\Flame\Flame.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.CodeDescription">
+      <HintPath>..\..\libs\Flame\Flame.CodeDescription.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Compiler">
+      <HintPath>..\..\libs\Flame\Flame.Compiler.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Cpp">
+      <HintPath>..\..\libs\Flame\Flame.Cpp.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.DSProject">
+      <HintPath>..\..\libs\Flame\Flame.DSProject.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.ExpressionTrees">
+      <HintPath>..\..\libs\Flame\Flame.ExpressionTrees.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Front">
+      <HintPath>..\..\libs\Flame\Flame.Front.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Front.Common">
+      <HintPath>..\..\libs\Flame\Flame.Front.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Functional">
+      <HintPath>..\..\libs\Flame\Flame.Functional.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Intermediate">
+      <HintPath>..\..\libs\Flame\Flame.Intermediate.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Markdown">
+      <HintPath>..\..\libs\Flame\Flame.Markdown.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.MIPS">
+      <HintPath>..\..\libs\Flame\Flame.MIPS.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Optimization">
+      <HintPath>..\..\libs\Flame\Flame.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Python">
+      <HintPath>..\..\libs\Flame\Flame.Python.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Recompilation">
+      <HintPath>..\..\libs\Flame\Flame.Recompilation.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.RT">
+      <HintPath>..\..\libs\Flame\Flame.RT.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Syntax">
+      <HintPath>..\..\libs\Flame\Flame.Syntax.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.TextContract">
+      <HintPath>..\..\libs\Flame\Flame.TextContract.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.Verification">
+      <HintPath>..\..\libs\Flame\Flame.Verification.dll</HintPath>
+    </Reference>
+    <Reference Include="Flame.XmlDocs">
+      <HintPath>..\..\libs\Flame\Flame.XmlDocs.dll</HintPath>
+    </Reference>
+    <Reference Include="libcontextfree">
+      <HintPath>..\..\libs\libcontextfree\libcontextfree.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Binary">
+      <HintPath>..\..\libs\Flame\Loyc.Binary.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Collections">
+      <HintPath>..\..\libs\Flame\Loyc.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Essentials">
+      <HintPath>..\..\libs\Flame\Loyc.Essentials.dll</HintPath>
+    </Reference>
+    <Reference Include="Loyc.Syntax">
+      <HintPath>..\..\libs\Flame\Loyc.Syntax.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\..\libs\Flame\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\..\libs\Flame\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\..\libs\Flame\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\..\libs\Flame\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Pixie">
+      <HintPath>..\..\libs\Flame\Pixie.dll</HintPath>
+    </Reference>
+    <Reference Include="Pixie.Xml">
+      <HintPath>..\..\libs\Flame\Pixie.Xml.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libmicron\libmicron.fsproj">
+      <Name>libmicron</Name>
+      <Project>{e80ae7c3-d8b2-4b45-8178-170ba6d390a0}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '11.0'">
+      <PropertyGroup Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')">
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets')">
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+  <Import Project="$(FSharpTargetsPath)" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
