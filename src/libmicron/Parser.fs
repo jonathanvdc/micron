@@ -4,6 +4,9 @@ open Flame
 open Flame.Compiler
 open libcontextfree
 
+type Parser<'nt, 't> =
+    't list -> Choice<ParseTree<'nt, 't>, 't list>
+
 module Parser =
     // A list of nonterminal names.
 
@@ -188,16 +191,14 @@ module Parser =
         ContextFreeGrammar(allRules, programIdentifier)
 
     /// Tries to create an LR(1) parser for the given grammar.
-    let tryCreateParser (grammar : ContextFreeGrammar<string, TokenType>) =
-        LRParser.createLR1 grammar |> Result.map LRParser.toFunctionalParser
-                                   |> Result.map ((<|||) (LRParser.parse TokenHelpers.tokenType))
+    let tryCreateParser : ContextFreeGrammar<string, TokenType> -> Result<Parser<string, Token>> =
+        LRParser.createLR1 >> Result.map LRParser.toFunctionalParser
+                           >> Result.map ((<|||) (LRParser.parse TokenHelpers.tokenType))
 
     /// Creates an LR(1) parser for the given grammar. If this
     /// cannot be done, an exception is thrown.
-    let createParser (grammar : ContextFreeGrammar<string, TokenType>) =
-        match tryCreateParser grammar with
-        | Success x -> x
-        | Error e -> raise (System.InvalidOperationException(e))
+    let createParser : ContextFreeGrammar<string, TokenType> -> Parser<string, Token> =
+        tryCreateParser >> Result.get
 
     // The fixity of an operator.
     type OpFixity = InfixLeft of int
