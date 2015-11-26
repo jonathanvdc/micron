@@ -1,5 +1,6 @@
 ﻿namespace libmicron
 
+open libmicron.ConstantPattern
 open libcontextfree
 open Flame
 open Flame.Compiler
@@ -15,36 +16,54 @@ module Analysis =
 
     /// Analyzes the given expression parse tree.
     let rec analyzeExpression (scope : LocalScope) : ParseTree<string, Token> -> IExpression = function
-    | ProductionNode("if-then-else", [TerminalLeaf ifKeyword; cond; _; ifExpr; _; elseExpr]) -> 
+    | ProductionNode(Constant Parser.ifThenElseIdentifier,
+                     [TerminalLeaf ifKeyword; cond; _; ifExpr; _; elseExpr]) -> 
         // A simple if-then-else expression
-        EB.Select scope (analyzeExpression scope cond) (analyzeExpression scope ifExpr) (analyzeExpression scope elseExpr)
+        EB.Select scope (analyzeExpression scope cond)
+                        (analyzeExpression scope ifExpr)
+                        (analyzeExpression scope elseExpr)
             |> EB.Source (TokenHelpers.totalSourceLocation ifKeyword)
-    | ProductionNode("literal-int", [TerminalLeaf token]) ->
+    | ProductionNode(Constant Parser.literalIntIdentifier,
+                     [TerminalLeaf token]) ->
         // Integer literal
         (match System.Int32.TryParse token.contents with
         | (true, i) -> EB.ConstantInt32 i
-        | (false, _) -> EB.Error (LogEntry("Invalid integer literal", sprintf "'%s' could not be parsed as a valid integer literal." token.contents))
-                                                (EB.ConstantInt32 0)
+        | (false, _) -> EB.Error (LogEntry("Invalid integer literal",
+                                           sprintf "'%s' could not be parsed as a valid integer literal." token.contents))
+                                 (EB.ConstantInt32 0)
         ) |> EB.Source (TokenHelpers.totalSourceLocation token)
-    | ProductionNode("literal-double", [TerminalLeaf token]) ->
+    | ProductionNode(Constant Parser.literalDoubleIdentifier,
+                     [TerminalLeaf token]) ->
         // Double literal
         (match System.Double.TryParse token.contents with
         | (true, d) -> EB.ConstantFloat64 d
-        | (false, _) -> EB.Error (LogEntry("Invalid double literal", sprintf "'%s' could not be parsed as a valid double literal." token.contents))
-                                                (EB.ConstantFloat64 0.0)
+        | (false, _) -> EB.Error (LogEntry("Invalid double literal",
+                                           sprintf "'%s' could not be parsed as a valid double literal." token.contents))
+                                 (EB.ConstantFloat64 0.0)
         ) |> EB.Source (TokenHelpers.totalSourceLocation token)
-    | ProductionNode("paren", [TerminalLeaf lParen; expr; TerminalLeaf rParen]) ->
+    | ProductionNode(Constant Parser.parenIdentifier,
+                     [TerminalLeaf lParen; expr; TerminalLeaf rParen]) ->
         // Parentheses
         analyzeExpression scope expr
-            |> EB.Source (CompilerLogExtensions.Concat(TokenHelpers.totalSourceLocation lParen, TokenHelpers.totalSourceLocation rParen))
-    | ProductionNode("let", [ProductionNode("let-definition", [TerminalLeaf letKeyword; TerminalLeaf name; ProductionNode("identifier...", args); TerminalLeaf eq; value]); _; expr]) ->
+            |> EB.Source (CompilerLogExtensions.Concat(TokenHelpers.totalSourceLocation lParen,
+                                                       TokenHelpers.totalSourceLocation rParen))
+    | ProductionNode(Constant Parser.letIdentifier,
+                     [ProductionNode(
+                          Constant Parser.letDefinitionIdentifier,
+                          [TerminalLeaf letKeyword
+                           TerminalLeaf name
+                           ProductionNode(Constant Parser.identifierListIdentifier, args)
+                           TerminalLeaf eq
+                           value])
+                      _
+                      expr]) ->
         match args with
         | [] -> 
             // Local variable declaration.
-            let scope = scope.ChildScope
+            let childScope = scope.ChildScope
             // First, bind `value` in `let ident = value` to `ident`.
-            let localValue = analyzeExpression scope value
-            let defLocal, scope = EB.Quickbind scope localValue name.contents
+            let localValue = analyzeExpression childScope value
+            let defLocal, scope = EB.Quickbind childScope localValue name.contents
             let defLocal = EB.Source (TokenHelpers.totalSourceLocation eq) defLocal
             // Take care of the `in expr` clause
             let innerExpr = analyzeExpression scope expr
@@ -56,7 +75,9 @@ module Analysis =
             // TODO: implement this!
             EB.VoidError (LogEntry("Unimplemented feature", "Local functions have not been implemented yet."))
                 |> EB.Source (TokenHelpers.totalSourceLocation letKeyword)
-    | ProductionNode("identifier", [TerminalLeaf ident]) ->
+
+    | ProductionNode(Constant Parser.identifierIdentifier,
+                     [TerminalLeaf ident]) ->
         // Identifier
         (match scope.GetVariable ident.contents with
         | Some local ->

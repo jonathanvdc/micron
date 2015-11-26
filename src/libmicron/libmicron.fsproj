@@ -49,6 +49,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="ConstantPattern.fs" />
     <Compile Include="LinearSet.fs" />
     <Compile Include="LinearMap.fs" />
     <Compile Include="ListHelpers.fs" />
