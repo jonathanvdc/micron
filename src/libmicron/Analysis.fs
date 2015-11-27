@@ -22,7 +22,7 @@ module Analysis =
         EB.Select scope (analyzeExpression scope cond)
                         (analyzeExpression scope ifExpr)
                         (analyzeExpression scope elseExpr)
-            |> EB.Source (TokenHelpers.totalSourceLocation ifKeyword)
+            |> EB.Source (TokenHelpers.sourceLocation ifKeyword)
     | ProductionNode(Constant Parser.literalIntIdentifier,
                      [TerminalLeaf token]) ->
         // Integer literal
@@ -31,7 +31,7 @@ module Analysis =
         | (false, _) -> EB.Error (LogEntry("Invalid integer literal",
                                            sprintf "'%s' could not be parsed as a valid integer literal." token.contents))
                                  (EB.ConstantInt32 0)
-        ) |> EB.Source (TokenHelpers.totalSourceLocation token)
+        ) |> EB.Source (TokenHelpers.sourceLocation token)
     | ProductionNode(Constant Parser.literalDoubleIdentifier,
                      [TerminalLeaf token]) ->
         // Double literal
@@ -40,41 +40,65 @@ module Analysis =
         | (false, _) -> EB.Error (LogEntry("Invalid double literal",
                                            sprintf "'%s' could not be parsed as a valid double literal." token.contents))
                                  (EB.ConstantFloat64 0.0)
-        ) |> EB.Source (TokenHelpers.totalSourceLocation token)
+        ) |> EB.Source (TokenHelpers.sourceLocation token)
     | ProductionNode(Constant Parser.parenIdentifier,
                      [TerminalLeaf lParen; expr; TerminalLeaf rParen]) ->
         // Parentheses
         analyzeExpression scope expr
-            |> EB.Source (CompilerLogExtensions.Concat(TokenHelpers.totalSourceLocation lParen,
-                                                       TokenHelpers.totalSourceLocation rParen))
+            |> EB.Source (CompilerLogExtensions.Concat(TokenHelpers.sourceLocation lParen,
+                                                       TokenHelpers.sourceLocation rParen))
     | ProductionNode(Constant Parser.letIdentifier,
                      [ProductionNode(
                           Constant Parser.letDefinitionIdentifier,
                           [TerminalLeaf letKeyword
                            TerminalLeaf name
-                           ProductionNode(Constant Parser.identifierListIdentifier, args)
+                           ProductionNode(Constant Parser.identifierListIdentifier, args) as argsNode
                            TerminalLeaf eq
                            value])
                       _
                       expr]) ->
+        let here = TokenHelpers.sourceLocation letKeyword
         match args with
         | [] -> 
-            // Local variable declaration.
+            // Local variable declaration:  `let name = value in expr`
             let childScope = scope.ChildScope
-            // First, bind `value` in `let ident = value` to `ident`.
+            
+            // First, bind `value` to `name`.
             let localValue = analyzeExpression childScope value
-            let defLocal, scope = EB.Quickbind childScope localValue name.contents
-            let defLocal = EB.Source (TokenHelpers.totalSourceLocation eq) defLocal
+            let defLocal, updatedScope = EB.Quickbind childScope localValue name.contents
+            let defLocal = EB.Source (TokenHelpers.sourceLocation eq) defLocal
             // Take care of the `in expr` clause
-            let innerExpr = analyzeExpression scope expr
+            let innerExpr = analyzeExpression updatedScope expr
             let result = EB.Initialize defLocal innerExpr
-            EB.Scope result scope 
-                |> EB.Source (TokenHelpers.totalSourceLocation letKeyword)
+
+            EB.Scope result updatedScope |> EB.Source here
         | _ ->
-            // Local function declaration.
-            // TODO: implement this!
-            EB.VoidError (LogEntry("Unimplemented feature", "Local functions have not been implemented yet."))
-                |> EB.Source (TokenHelpers.totalSourceLocation letKeyword)
+            // Local function declaration:  let name args = value in expr
+
+            let childScope = scope.ChildScope
+            let createBody lambdaScope = analyzeExpression lambdaScope value
+            
+            let attributes = [PrimitiveAttributes.Instance.ConstantAttribute]
+            let argumentNames = [for t in ParseTree.treeYield argsNode -> t.contents]
+
+            // Create a lambda for the defined function.
+            let header = FunctionalMemberHeader("", attributes, here)
+            let makeParam argName = Flame.Build.DescribedParameter(argName, UnknownType()) :> IParameter
+            let signature = FunctionalMethod(header, null, true)
+                                .WithParameters(fun _ -> Seq.map makeParam argumentNames)
+
+            let lambda = EB.Lambda createBody signature childScope
+            let result = EB.Initialize
+            
+            // Bind this lambda to `name`.
+            let defLocal, updatedScope = EB.Quickbind childScope lambda name.contents
+            let defLocal = EB.Source (TokenHelpers.sourceLocation eq) defLocal
+
+            // Take care of the `in expr` clause
+            let innerExpr = analyzeExpression updatedScope expr
+            let result = EB.Initialize defLocal innerExpr
+
+            EB.Scope result updatedScope |> EB.Source here
 
     | ProductionNode(Constant Parser.identifierIdentifier,
                      [TerminalLeaf ident]) ->
@@ -84,7 +108,7 @@ module Analysis =
             local.CreateGetExpression()
         | None ->
             EB.VoidError (LogEntry("Unresolved identifier", sprintf "Identifier '%s' could not be resolved." ident.contents))
-        ) |> EB.Source (TokenHelpers.totalSourceLocation ident)
+        ) |> EB.Source (TokenHelpers.sourceLocation ident)
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
         // This just means that a construct has been defined in the grammar, 
@@ -95,4 +119,4 @@ module Analysis =
         // Unexpected terminal leaf.
         // This points to an error in the grammar.
         EB.VoidError (LogEntry("Unexpected raw token", sprintf "Token '%s' was completely unexpected here." term.contents))
-            |> EB.Source (TokenHelpers.totalSourceLocation term)
+            |> EB.Source (TokenHelpers.sourceLocation term)
