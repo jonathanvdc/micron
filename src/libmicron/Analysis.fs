@@ -89,7 +89,6 @@ module Analysis =
                                 .WithReturnType(fun _ -> UnknownType() :> IType)
 
             let lambda = EB.Lambda createBody signature childScope
-            let result = EB.Initialize
             
             // Bind this lambda to `name`.
             let defLocal, updatedScope = EB.Quickbind childScope lambda name.contents
