@@ -74,7 +74,7 @@ module Analysis =
             EB.Scope result updatedScope |> EB.Source here
         | _ ->
             // Local function declaration:  let name args = value in expr
-
+            // For now, this doesn't support recursion.
             let childScope = scope.ChildScope
             let createBody lambdaScope = analyzeExpression lambdaScope value
             
@@ -86,6 +86,7 @@ module Analysis =
             let makeParam argName = Flame.Build.DescribedParameter(argName, UnknownType()) :> IParameter
             let signature = FunctionalMethod(header, null, true)
                                 .WithParameters(fun _ -> Seq.map makeParam argumentNames)
+                                .WithReturnType(fun _ -> UnknownType() :> IType)
 
             let lambda = EB.Lambda createBody signature childScope
             let result = EB.Initialize
