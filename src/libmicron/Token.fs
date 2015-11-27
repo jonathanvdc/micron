@@ -103,6 +103,10 @@ module TokenHelpers =
         children |> List.map treeSourceLocation
                  |> List.fold (fun a b -> CompilerLogExtensions.Concat(a, b)) null  
         
+    /// Gets the given token's contents.
+    let tokenContents (token : Token) : string =
+        token.contents
+
     /// Gets the given token's type.
     let tokenType (token : Token) : TokenType =
         token.tokenType
