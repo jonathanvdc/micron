@@ -37,7 +37,7 @@ module TypeInference =
     | Function(arg, ret) ->
         Function (substitute ty constr arg, substitute ty constr ret)
     | Instance(genType, args) ->
-        Instance (substitute ty constr genType, args |> List.map (substitute ty constr)) 
+        Instance (substitute ty constr genType, args |> List.map (substitute ty constr))
 
     /// Checks if the given type is or contains
     /// an unknown type.
@@ -61,17 +61,18 @@ module TypeInference =
         | null ->
             Constant ty
         | m ->
-            let rec toFunctionConstraint retType = function
-            | [] -> toConstraint retType
-            | param :: parameters -> Function(toConstraint param, toFunctionConstraint retType parameters)
-
             toFunctionConstraint m.ReturnType (m.Parameters.GetTypes() |> List.ofSeq)
+    /// Creates a function constraint from the given return type
+    /// and parameter type list.
+    and toFunctionConstraint retType = function
+    | [] -> toConstraint retType
+    | param :: parameters -> Function(toConstraint param, toFunctionConstraint retType parameters)
 
     /// Creates a function that converts type constraints to strings.
     /// Unknown types are assigned unique single-character names.
     let createShow () : TypeConstraint -> string =
         let dict = new System.Collections.Concurrent.ConcurrentDictionary<UnknownType, string>()
-        let rec createName prefix offset k = 
+        let rec createName prefix offset k =
             let range = int 'z' + 1 - int 'a'
             let index = (dict.Count - offset) % range
             let result = prefix + string ('a' + char index)
@@ -79,19 +80,19 @@ module TypeInference =
                 createName result (offset + index) k
             else
                 result
-            
+
         let rec show : TypeConstraint -> string = function
         | Constant x -> x.FullName
         | Variable x -> dict.GetOrAdd(x, createName "" 0)
-        | Function(x, y) -> 
+        | Function(x, y) ->
             match x with
             | Function(_, _) -> "(" + show x + ")" + " -> " + show y
             | _ -> show x + " -> " + show y
         | Instance(x, ys) -> show x + "<" + (ys |> List.map show |> String.concat ", ") + ">"
-        
+
         show
 
-    /// Tells if the given unknown type occurs in the 
+    /// Tells if the given unknown type occurs in the
     /// given type constraint.
     let rec occursIn (left : UnknownType) : TypeConstraint -> bool = function
     | Variable x when x = left -> true
@@ -103,18 +104,18 @@ module TypeInference =
     /// Tries to resolve the given set of type constraints.
     /// This corresponds to the "unification" step in most
     /// Hindley-Milner type systems.
-    let rec resolve (relations : (TypeConstraint * TypeConstraint) list) 
+    let rec resolve (relations : (TypeConstraint * TypeConstraint) list)
                     : Result<LinearMap<UnknownType, TypeConstraint>> =
         let show = createShow()
-        let rec step (results : Result<LinearMap<UnknownType, TypeConstraint>>) 
-                     (left : TypeConstraint, right : TypeConstraint) 
+        let rec step (results : Result<LinearMap<UnknownType, TypeConstraint>>)
+                     (left : TypeConstraint, right : TypeConstraint)
                      : Result<LinearMap<UnknownType, TypeConstraint>> =
             match results with
             | Success substs ->
                 let applySubst target tyFrom tyTo =
                     substitute tyFrom tyTo target
 
-                match LinearMap.fold applySubst left substs, 
+                match LinearMap.fold applySubst left substs,
                       LinearMap.fold applySubst right substs with
                 | Constant t1, Constant t2 when t1.IsEquivalent(t2) ->
                     // This is a pretty boring case, really.
@@ -126,7 +127,7 @@ module TypeInference =
                 | other, Variable tVar when occursIn tVar other ->
                     // Unifying these types would result in an infinite type.
                     // I suppose that is somewhat undesirable.
-                    Error("Could not unify '" + show (Variable tVar) + "' and '" + show other + 
+                    Error("Could not unify '" + show (Variable tVar) + "' and '" + show other +
                           "' because the resulting type would be infinite.")
                 | Variable tVar, other
                 | other, Variable tVar ->
@@ -134,7 +135,7 @@ module TypeInference =
                     // substitute them with the other constraint. Also make sure
                     // to apply this substitution rule to the results list itself.
                     let newSubsts = LinearMap.add tVar other (LinearMap.map (fun k v -> substitute tVar other v) substs)
-                    
+
                     Success newSubsts
                 | Function(tArg1, tRet1), Function(tArg2, tRet2) ->
                     // Resolve generic declaration constraints both for the
@@ -145,14 +146,14 @@ module TypeInference =
                     let genDecls = step results (tDecl1, tDecl2)
                     // Next, resolve generic parameter constraints.
                     List.zip tArgs1 tArgs2 |> List.fold step genDecls
-                | t1, t2 -> 
+                | t1, t2 ->
                     // Incompatible constant types mean trouble.
                     Error("Could not unify incompatible types '" + show t1 + "' and '" + show t2 + "'.")
-            | Error _ -> 
+            | Error _ ->
                 results
 
         List.fold step (Success LinearMap.empty) relations
-        
+
     /// Extracts all unknown types from the given expression.
     let findUnknownTypes (expr : IExpression) : LinearSet<UnknownType> =
         let results = HashSet<UnknownType>()
@@ -165,22 +166,22 @@ module TypeInference =
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
-    type TypeConstraintVisitor(initialConstraints : (TypeConstraint * TypeConstraint) list) = 
+    type TypeConstraintVisitor(initialConstraints : (TypeConstraint * TypeConstraint) list) =
         inherit ContextlessVisitorBase()
 
         let mutable constraints = initialConstraints
 
         /// Adds a constraint to this type constraint visitor's constraint list.
-        let addConstraint (left : IType) (right : IType) : unit =
-            constraints <- (toConstraint left, toConstraint right) :: constraints
+        let addConstraint (left : TypeConstraint) (right : TypeConstraint) : unit =
+            constraints <- (left, right) :: constraints
 
         /// Adds a constraint to this type constraint visitor's constraint list.
-        member this.AddConstraint (left : IType) (right : IType) : unit =
+        member this.AddConstraint (left : TypeConstraint) (right : TypeConstraint) : unit =
             addConstraint left right
 
         member this.Constraints = constraints
-            
-        override this.Matches (stmt : IStatement) : bool = 
+
+        override this.Matches (stmt : IStatement) : bool =
             true
 
         override this.Matches (expr : IExpression) : bool =
@@ -189,23 +190,30 @@ module TypeInference =
         override this.Transform (stmt : IStatement) : IStatement =
             match stmt with
             | :? ISetVariableNode as varNode when varNode.Action = VariableNodeAction.Set ->
-                addConstraint varNode.Value.Type (varNode.GetVariable().Type)
+                addConstraint (toConstraint varNode.Value.Type) (toConstraint (varNode.GetVariable().Type))
                 stmt.Accept this
             | :? IfElseStatement as select ->
-                addConstraint select.Condition.Type PrimitiveTypes.Boolean
+                addConstraint (toConstraint select.Condition.Type) (toConstraint PrimitiveTypes.Boolean)
                 stmt.Accept this
             | _ ->
                 stmt.Accept this
 
-        override this.Transform (expr : IExpression) : IExpression = 
+        override this.Transform (expr : IExpression) : IExpression =
             match expr with
-            | :? SelectExpression as select -> 
-                addConstraint select.Condition.Type PrimitiveTypes.Boolean
-                let trueTy = select.TrueValue.Type
-                let falseTy = select.FalseValue.Type
+            | :? SelectExpression as select ->
+                addConstraint (toConstraint select.Condition.Type) (toConstraint PrimitiveTypes.Boolean)
+                let trueTy = toConstraint select.TrueValue.Type
+                let falseTy = toConstraint select.FalseValue.Type
                 addConstraint trueTy falseTy
                 expr.Accept this
-            | _ -> 
+            | :? PartialApplication as apply ->
+                let targetTy = apply.Target.Type
+                let argTys = List.map (fun (x : IExpression) -> x.Type) apply.Arguments
+                let retType = UnknownType()
+                let funcConstraint = toFunctionConstraint retType argTys
+                addConstraint (toConstraint targetTy) funcConstraint
+                expr.Accept this
+            | _ ->
                 expr.Accept this
 
     /// Finds all constraints in the given expression.
