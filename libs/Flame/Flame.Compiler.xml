@@ -34,12 +34,12 @@
  has nothing to do with the tag's identity.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.UniqueTag.this">
+    <member name="M:Flame.Compiler.UniqueTag.#ctor">
       <summary>
  Creates a new unique tag with the empty string as its name.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.UniqueTag.this(System.String)">
+    <member name="M:Flame.Compiler.UniqueTag.#ctor(System.String)">
       <summary>
  Creates a new unique tag and assigns it the given name.
  </summary>
@@ -786,22 +786,22 @@
  Describes a compiler log entry.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.LogEntry.this(System.String)">
+    <member name="M:Flame.Compiler.LogEntry.#ctor(System.String)">
       <summary>
  Creates a new log entry from the given name.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.LogEntry.this(System.String,System.String)">
+    <member name="M:Flame.Compiler.LogEntry.#ctor(System.String,System.String)">
       <summary>
  Creates a new log entry from the given name and message.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.LogEntry.this(System.String,Flame.Compiler.SourceLocation)">
+    <member name="M:Flame.Compiler.LogEntry.#ctor(System.String,Flame.Compiler.SourceLocation)">
       <summary>
  Creates a new log entry from the given name and source location.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.LogEntry.this(System.String,System.String,Flame.Compiler.SourceLocation)">
+    <member name="M:Flame.Compiler.LogEntry.#ctor(System.String,System.String,Flame.Compiler.SourceLocation)">
       <summary>
  Creates a new log entry from the given name, message and source
  location.
@@ -869,17 +869,17 @@
  Defines a region of text in a source document.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.SourceLocation.this(Flame.Compiler.ISourceDocument)">
+    <member name="M:Flame.Compiler.SourceLocation.#ctor(Flame.Compiler.ISourceDocument)">
       <summary>
  Creates a new source location from the given document.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.SourceLocation.this(Flame.Compiler.ISourceDocument,System.Int32)">
+    <member name="M:Flame.Compiler.SourceLocation.#ctor(Flame.Compiler.ISourceDocument,System.Int32)">
       <summary>
  Creates a new source location from the given document and position.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.SourceLocation.this(Flame.Compiler.ISourceDocument,System.Int32,System.Int32)">
+    <member name="M:Flame.Compiler.SourceLocation.#ctor(Flame.Compiler.ISourceDocument,System.Int32,System.Int32)">
       <summary>
  Creates a new source location from the given document, position and length.
  </summary>
@@ -970,34 +970,34 @@
  Describes a type of warning or warning group.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.WarningDescription.this(System.String)">
+    <member name="M:Flame.Compiler.WarningDescription.#ctor(System.String)">
       <summary>
  Creates a warning description with the given name.
  This warning is turned off by default.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.WarningDescription.this(System.String,System.Boolean)">
+    <member name="M:Flame.Compiler.WarningDescription.#ctor(System.String,System.Boolean)">
       <summary>
  Creates a warning description with the given name.
  A boolean flag determines whether the warning is turned
  on or off by default.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.WarningDescription.this(System.String,Flame.Compiler.WarningDescription)">
+    <member name="M:Flame.Compiler.WarningDescription.#ctor(System.String,Flame.Compiler.WarningDescription)">
       <summary>
  Creates a warning description with the given name and parent
  warning description. Its default behavior is inherited from
  the parent warning description.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.WarningDescription.this(System.String,Flame.Compiler.WarningDescription,System.Boolean)">
+    <member name="M:Flame.Compiler.WarningDescription.#ctor(System.String,Flame.Compiler.WarningDescription,System.Boolean)">
       <summary>
  Creates a warning description with the given name and parent
  warning description. A boolean flag determines whether
  the warning is turned on or off by default.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.WarningDescription.this(System.String,System.String,Flame.Compiler.WarningDescription,System.Boolean)">
+    <member name="M:Flame.Compiler.WarningDescription.#ctor(System.String,System.String,Flame.Compiler.WarningDescription,System.Boolean)">
       <summary>
  Creates a warning description with the positive and negative options,
  as well as a parent warning description. A boolean flag determines
@@ -1914,10 +1914,21 @@
  Creates a lambda from the given header and body block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Emit.ILambdaHeaderBlock.GetCapturedValue(System.Int32)">
+    <member name="T:Flame.Compiler.Emit.ILambdaHeaderBlock">
+      <summary>
+ An common interface for lambda header blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.ILambdaHeaderBlock.EmitGetCapturedValue(System.Int32)">
       <summary>
  Creates a code block that gets the lambda's captured value with
  the given index.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Emit.ILambdaHeaderBlock.ThisLambdaBlock">
+      <summary>
+ Gets a code block that represents a delegate for this lambda function.
+ This construct is designed to support recursion within a lambda function.
  </summary>
     </member>
     <member name="P:Flame.Compiler.Emit.ILambdaHeaderBlock.LambdaCodeGenerator">
@@ -1964,7 +1975,7 @@
  constructed one member at a time.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Emit.DescribedVariableMember.this(System.String,Flame.IType)">
+    <member name="M:Flame.Compiler.Emit.DescribedVariableMember.#ctor(System.String,Flame.IType)">
       <summary>
  Creates a new described variable member from the given name and variable
  type.
@@ -2028,7 +2039,7 @@
  Locals are never recycled.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Emit.LocalManager`1.this(T(Flame.Compiler.IVariableMember))">
+    <member name="M:Flame.Compiler.Emit.LocalManager`1.#ctor(T(Flame.Compiler.IVariableMember))">
       <summary>
  Creates a new local manager from the given
  local-creating function.
@@ -2554,7 +2565,7 @@
  Delegate instance expressions cannot be used to create generic instance delegates.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.DelegateInstanceExpression.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Expressions.DelegateInstanceExpression.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Creates a new delegate instance expression from the given delegate.
  </summary>
@@ -2632,7 +2643,7 @@
  A base class for conversion expressions.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.ConversionExpressionBase.this(Flame.Compiler.IExpression,Flame.IType)">
+    <member name="M:Flame.Compiler.Expressions.ConversionExpressionBase.#ctor(Flame.Compiler.IExpression,Flame.IType)">
       <summary>
  Creates a conversion expression that converts the given value
  to the given type.
@@ -2891,13 +2902,13 @@
  it a list of arguments.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.InvocationExpression.this(Flame.Compiler.IExpression,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
+    <member name="M:Flame.Compiler.Expressions.InvocationExpression.#ctor(Flame.Compiler.IExpression,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
       <summary>
  Creates an invocation expression that invokes the given delegate
  expression with the given argument list.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.InvocationExpression.this(Flame.IMethod,Flame.Compiler.IExpression,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
+    <member name="M:Flame.Compiler.Expressions.InvocationExpression.#ctor(Flame.IMethod,Flame.Compiler.IExpression,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
       <summary>
  Creates an invocation expression that calls the given method
  with the given argument list. Virtual methods will be called
@@ -3141,7 +3152,7 @@
  is an instance of a given type.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.IsExpression.this(Flame.Compiler.IExpression,Flame.IType)">
+    <member name="M:Flame.Compiler.Expressions.IsExpression.#ctor(Flame.Compiler.IExpression,Flame.IType)">
       <summary>
  Creates an is-expression from the given expression and type.
  </summary>
@@ -3217,12 +3228,12 @@
  A type that contains a bound emit lambda header block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.LambdaBoundHeaderBlock.this">
+    <member name="M:Flame.Compiler.Expressions.LambdaBoundHeaderBlock.#ctor">
       <summary>
  Creates a bound header block that has not been bound to any block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.LambdaBoundHeaderBlock.this(Flame.Compiler.Emit.ILambdaHeaderBlock)">
+    <member name="M:Flame.Compiler.Expressions.LambdaBoundHeaderBlock.#ctor(Flame.Compiler.Emit.ILambdaHeaderBlock)">
       <summary>
  Creates a bound header block that is already bound to the given block.
  </summary>
@@ -3287,6 +3298,17 @@
  that gets one of this lambda expression's captured values.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Expressions.LambdaExpression.IsThisDelegateExpression(Flame.Compiler.IExpression)">
+      <summary>
+ Tests if the given argument is a lambda delegate expression
+ that creates a delegate for this lambda function.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LambdaExpression.IsDependentExpression(Flame.Compiler.IExpression)">
+      <summary>
+ Checks if the given expression depends on this lambda expression.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.LambdaExpression.Copy">
       <summary>
  Creates a copy of this lambda expression that is not dependent on
@@ -3319,6 +3341,12 @@
  only during a call to `Emit`.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.LambdaCapturedValueExpression">
+      <summary>
+ An expression that accesses one of the values that a lambda
+ has captured.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.LambdaCapturedValueExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -3344,6 +3372,74 @@
     <member name="M:Flame.Compiler.Expressions.LambdaCapturedValueExpression.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.LambdaCapturedValueExpression.Header">
+      <summary>
+ Gets the lambda header that this captured value
+ expression is associated with.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.LambdaCapturedValueExpression.BoundHeaderBlock">
+      <summary>
+ Gets the bound lambda header block this captured value expression is
+ associated with.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.LambdaCapturedValueExpression.Index">
+      <summary>
+ Gets the index in the lambda capture list of the captured value
+ that is accessed by this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.LambdaDelegateExpression">
+      <summary>
+ An expression that yields a delegate to the enclosing lambda.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LambdaDelegateExpression.#ctor(Flame.Compiler.Expressions.LambdaHeader,Flame.Compiler.Expressions.LambdaBoundHeaderBlock)">
+      <summary>
+ Creates a new lambda delegate expression from the given lambda header
+ and bound header block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LambdaDelegateExpression.Evaluate">
+      <summary>
+ Performs a compile-time evaluation of the expression.
+ If it cannot be evaluated, null is returned.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LambdaDelegateExpression.Optimize">
+      <summary>
+ Returns an optimized version of the expression.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LambdaDelegateExpression.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LambdaDelegateExpression.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.LambdaDelegateExpression.Header">
+      <summary>
+ Gets the lambda header that this lambda delegate expression
+ is associated with.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.LambdaDelegateExpression.BoundHeaderBlock">
+      <summary>
+ Gets the bound lambda header block this lambda delegate expression is
+ associated with.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.CharExpression.Emit(Flame.Compiler.ICodeGenerator)">
@@ -3386,7 +3482,7 @@
  Not all unary expressions are associated with a specific unary operator.
  </remarks>
     </member>
-    <member name="M:Flame.Compiler.Expressions.UnaryExpression.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Expressions.UnaryExpression.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Initializes this unary expression with the given operand.
  </summary>
@@ -3438,7 +3534,7 @@
  operand.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.UnaryOperatorExpression.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Expressions.UnaryOperatorExpression.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Initializes this unary operator expression with the given expression.
  </summary>
@@ -3470,7 +3566,7 @@
  a default unary operator code sequence is generated.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.this(Flame.Operator,Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.#ctor(Flame.Operator,Flame.Compiler.IExpression)">
       <summary>
  Creates a unary expression that applies the given
  unary operator to the given operand.
@@ -3519,7 +3615,7 @@
  from performing their task overly aggressively.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.UnknownExpression.this(Flame.IType)">
+    <member name="M:Flame.Compiler.Expressions.UnknownExpression.#ctor(Flame.IType)">
       <summary>
  Creates an unknown expression with the given type.
  </summary>
@@ -3654,7 +3750,7 @@
  An expression that represents a dynamic cast.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.DynamicCastExpression.this(Flame.Compiler.IExpression,Flame.IType)">
+    <member name="M:Flame.Compiler.Expressions.DynamicCastExpression.#ctor(Flame.Compiler.IExpression,Flame.IType)">
       <summary>
  Creates a dynamic cast from the given value and type.
  </summary>
@@ -3751,7 +3847,7 @@
  A base class for expression that contain log entries.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.LogEntryExpression.this(Flame.Compiler.IExpression,Flame.Compiler.LogEntry)">
+    <member name="M:Flame.Compiler.Expressions.LogEntryExpression.#ctor(Flame.Compiler.IExpression,Flame.Compiler.LogEntry)">
       <summary>
  Creates a new log entry expression from the given value and message.
  </summary>
@@ -3822,7 +3918,7 @@
  with other nodes, but said expression may not be semantically valid.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.ErrorExpression.this(Flame.Compiler.IExpression,Flame.Compiler.LogEntry)">
+    <member name="M:Flame.Compiler.Expressions.ErrorExpression.#ctor(Flame.Compiler.IExpression,Flame.Compiler.LogEntry)">
       <summary>
  Creates a new error expression from the given value and error message.
  </summary>
@@ -3838,7 +3934,7 @@
  fishy expression, which contains a warning message.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.WarningExpression.this(Flame.Compiler.IExpression,Flame.Compiler.LogEntry)">
+    <member name="M:Flame.Compiler.Expressions.WarningExpression.#ctor(Flame.Compiler.IExpression,Flame.Compiler.LogEntry)">
       <summary>
  Creates a new warning expression from the given value and warning message.
  </summary>
@@ -3866,7 +3962,7 @@
  An expression that represents an as-instance expression.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.AsInstanceExpression.this(Flame.Compiler.IExpression,Flame.IType)">
+    <member name="M:Flame.Compiler.Expressions.AsInstanceExpression.#ctor(Flame.Compiler.IExpression,Flame.IType)">
       <summary>
  Creates an as-instance expression from the given value and type.
  </summary>
@@ -4002,7 +4098,7 @@
  and does not mandate a runtime check.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.ReinterpretCastExpression.this(Flame.Compiler.IExpression,Flame.IType)">
+    <member name="M:Flame.Compiler.Expressions.ReinterpretCastExpression.#ctor(Flame.Compiler.IExpression,Flame.IType)">
       <summary>
  Creates a reinterpret cast from the given value and type.
  </summary>
@@ -4078,13 +4174,13 @@
  calling expression.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.GetMethodExpression.this(Flame.IMethod,Flame.Compiler.IExpression,Flame.Operator)">
+    <member name="M:Flame.Compiler.Expressions.GetMethodExpression.#ctor(Flame.IMethod,Flame.Compiler.IExpression,Flame.Operator)">
       <summary>
  Creates a get-method expression from the given method and calling expression.
  The resulting delegate is created by the given operator.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.GetMethodExpression.this(Flame.IMethod,Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Expressions.GetMethodExpression.#ctor(Flame.IMethod,Flame.Compiler.IExpression)">
       <summary>
  Creates a get-method expression from the given method and calling
  expression.
@@ -4186,7 +4282,7 @@
  and debugging purposes.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.SourceExpression.this(Flame.Compiler.IExpression,Flame.Compiler.SourceLocation)">
+    <member name="M:Flame.Compiler.Expressions.SourceExpression.#ctor(Flame.Compiler.IExpression,Flame.Compiler.SourceLocation)">
       <summary>
  Creates a new source expression from the given statement and location.
  </summary>
@@ -4242,7 +4338,7 @@
  An expression that represents a static cast.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.StaticCastExpression.this(Flame.Compiler.IExpression,Flame.IType)">
+    <member name="M:Flame.Compiler.Expressions.StaticCastExpression.#ctor(Flame.Compiler.IExpression,Flame.IType)">
       <summary>
  Creates a static cast from the given value and type.
  </summary>
@@ -4779,12 +4875,12 @@
  and then terminates the function's execution.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ReturnStatement.this">
+    <member name="M:Flame.Compiler.Statements.ReturnStatement.#ctor">
       <summary>
  Creates a return statement that returns `void`.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ReturnStatement.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Statements.ReturnStatement.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Creates a return statement that returns the given value.
  </summary>
@@ -4820,13 +4916,13 @@
  based on the result of a condition expression.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.this(Flame.Compiler.IExpression,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IStatement)">
       <summary>
  Creates an if-else statement based on the given condition and 'if' body.
  The 'else' body is assumed to be the empty statement.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.this(Flame.Compiler.IExpression,Flame.Compiler.IStatement,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IStatement,Flame.Compiler.IStatement)">
       <summary>
  Creates an if-else statement based on the given condition, 'if' body
  and 'else' body.
@@ -5098,12 +5194,12 @@
  statements in sequence.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.BlockStatement.this(Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Statements.BlockStatement.#ctor(Flame.Compiler.IStatement)">
       <summary>
  Creates a new block statement from the given child statement.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.BlockStatement.this(System.Collections.Generic.IEnumerable`1{Flame.Compiler.IStatement})">
+    <member name="M:Flame.Compiler.Statements.BlockStatement.#ctor(System.Collections.Generic.IEnumerable`1{Flame.Compiler.IStatement})">
       <summary>
  Creates a block statement from the given sequence of child statements.
  </summary>
@@ -5148,7 +5244,7 @@
  discards its value.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ExpressionStatement.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Statements.ExpressionStatement.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Creates an expression statement that wraps the given expression.
  </summary>
@@ -5262,7 +5358,7 @@
  returned when calling `Emit`.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.CodeBlockStatement.this(Flame.Compiler.ICodeBlock)">
+    <member name="M:Flame.Compiler.Statements.CodeBlockStatement.#ctor(Flame.Compiler.ICodeBlock)">
       <summary>
  Creates a code block statement from the given code block.
  </summary>
@@ -5334,7 +5430,7 @@
  targets a specific tagged block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.BreakStatement.this(Flame.Compiler.UniqueTag)">
+    <member name="M:Flame.Compiler.Statements.BreakStatement.#ctor(Flame.Compiler.UniqueTag)">
       <summary>
  Creates a "break" statement that targets the given block tag.
  </summary>
@@ -5350,7 +5446,7 @@
  targets a specific tagged block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ContinueStatement.this(Flame.Compiler.UniqueTag)">
+    <member name="M:Flame.Compiler.Statements.ContinueStatement.#ctor(Flame.Compiler.UniqueTag)">
       <summary>
  Creates a "continue" statement that targets the given block tag.
  </summary>
@@ -5430,7 +5526,7 @@
  statements.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.this(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.#ctor(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
       <summary>
  Creates a new tagged statement from the given tag and body.
  </summary>
@@ -5578,7 +5674,7 @@
  A statement that has a comment attached to it.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.CommentedStatement.this(System.String,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Statements.CommentedStatement.#ctor(System.String,Flame.Compiler.IStatement)">
       <summary>
  Creates a new commented statement.
  </summary>
@@ -5683,7 +5779,7 @@
  Defines a type of statement that throws the given exception expression.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ThrowStatement.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Statements.ThrowStatement.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Creates a new throw statement from the given exception expression.
  </summary>
@@ -5720,7 +5816,7 @@
  If not, the user is notified in an implementation-defined manner.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.AssertStatement.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Statements.AssertStatement.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Creates an assertion statement from the given expression.
  </summary>
@@ -5756,7 +5852,7 @@
  and debugging purposes.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.SourceStatement.this(Flame.Compiler.IStatement,Flame.Compiler.SourceLocation)">
+    <member name="M:Flame.Compiler.Statements.SourceStatement.#ctor(Flame.Compiler.IStatement,Flame.Compiler.SourceLocation)">
       <summary>
  Creates a new source statement from the given statement and location.
  </summary>
@@ -5922,7 +6018,7 @@
  but they will always be empty.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.ExpressionVariable.this(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Variables.ExpressionVariable.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Creates an expression variable from the given underlying expression.
  </summary>
@@ -5958,7 +6054,7 @@
  A type of variable that represents an argument to a function.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.ArgumentVariable.this(Flame.IParameter,System.Int32)">
+    <member name="M:Flame.Compiler.Variables.ArgumentVariable.#ctor(Flame.IParameter,System.Int32)">
       <summary>
  Creates a new argument variable from the given parameter and index.
  </summary>
@@ -6143,7 +6239,7 @@
  that the field's value will actually change when a set-statement is executed.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.ValueTypeFieldVariable.this(Flame.IField,Flame.Compiler.IVariable)">
+    <member name="M:Flame.Compiler.Variables.ValueTypeFieldVariable.#ctor(Flame.IField,Flame.Compiler.IVariable)">
       <summary>
  Creates a new value type field variable from the given field
  and target variable.
@@ -6254,7 +6350,7 @@
  a type with a user-defined indexer.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.ElementVariable.this(Flame.Compiler.IExpression,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
+    <member name="M:Flame.Compiler.Variables.ElementVariable.#ctor(Flame.Compiler.IExpression,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
       <summary>
  Creates a new element variable from the given target and argument
  expressions.
@@ -6470,7 +6566,7 @@
  Defines an aggregate pass, which applies two passes in sequence.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.AggregatePass`1.this(Flame.Compiler.Visitors.IPass`2{T,T},Flame.Compiler.Visitors.IPass`2{T,T})">
+    <member name="M:Flame.Compiler.Visitors.AggregatePass`1.#ctor(Flame.Compiler.Visitors.IPass`2{T,T},Flame.Compiler.Visitors.IPass`2{T,T})">
       <summary>
  Creates a new aggregate pass from the given passes.
  </summary>
@@ -6495,7 +6591,7 @@
  Defines a node visitor that applies two visitors in sequence.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.AggregateVisitor.this(Flame.Compiler.INodeVisitor,Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Visitors.AggregateVisitor.#ctor(Flame.Compiler.INodeVisitor,Flame.Compiler.INodeVisitor)">
       <summary>
  Creates a new aggregate visitor from the given visitors.
  </summary>
@@ -6527,7 +6623,7 @@
  `Matches` method is used when visiting nodes.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.AggregateMatchVisitor.this(Flame.Compiler.Visitors.NodeVisitorBase,Flame.Compiler.Visitors.NodeVisitorBase)">
+    <member name="M:Flame.Compiler.Visitors.AggregateMatchVisitor.#ctor(Flame.Compiler.Visitors.NodeVisitorBase,Flame.Compiler.Visitors.NodeVisitorBase)">
       <summary>
  Creates a new aggregate visitor from the given visitors.
  </summary>
@@ -6602,12 +6698,12 @@
  Contains a body pass' arguments.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.BodyPassArgument.this(Flame.Compiler.Visitors.IBodyPassEnvironment,Flame.Compiler.Visitors.PassMetadata,Flame.IMethod,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Visitors.BodyPassArgument.#ctor(Flame.Compiler.Visitors.IBodyPassEnvironment,Flame.Compiler.Visitors.PassMetadata,Flame.IMethod,Flame.Compiler.IStatement)">
       <summary>
  Creates a new body pass argument from the given values.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.BodyPassArgument.this(Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Visitors.BodyPassArgument.#ctor(Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement)">
       <summary>
  Creates a new body pass argument from the given previous body
  pass argument and new method body.
@@ -6651,7 +6747,7 @@
  modify members.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.BodyPassBase.this">
+    <member name="M:Flame.Compiler.Visitors.BodyPassBase.#ctor">
       <summary>
  Creates a new body pass.
  </summary>
@@ -6672,7 +6768,7 @@
  combines the pass' output statement with the pass' other arguments.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.FatBodyPass.this(Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement})">
+    <member name="M:Flame.Compiler.Visitors.FatBodyPass.#ctor(Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement})">
       <summary>
  Creates a new fat body pass based on the given body pass.
  </summary>
@@ -6693,7 +6789,7 @@
  pass under the hood.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.SlimBodyPass.this(Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.Visitors.BodyPassArgument})">
+    <member name="M:Flame.Compiler.Visitors.SlimBodyPass.#ctor(Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.Visitors.BodyPassArgument})">
       <summary>
  Creates a new slim body pass based on the given fat body pass.
  </summary>
@@ -6713,7 +6809,7 @@
  Defines an aggregate body pass.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.AggregateBodyPass.this(Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement},Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement})">
+    <member name="M:Flame.Compiler.Visitors.AggregateBodyPass.#ctor(Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement},Flame.Compiler.Visitors.IPass`2{Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.IStatement})">
       <summary>
  Creates a new aggregate pass from the given passes.
  </summary>
@@ -6761,7 +6857,7 @@
  with a given statement.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.ContinueRewriter.this(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Visitors.ContinueRewriter.#ctor(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
       <summary>
  Creates a continue rewriter that replaces all `continue` statements to the given block
  with the given statement.
@@ -6854,7 +6950,7 @@
  A node visitor that matches and then replaces expressions.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.ExpressionRewriter.this(System.Boolean(Flame.Compiler.IExpression),Flame.Compiler.IExpression(Flame.Compiler.IExpression))">
+    <member name="M:Flame.Compiler.Visitors.ExpressionRewriter.#ctor(System.Boolean(Flame.Compiler.IExpression),Flame.Compiler.IExpression(Flame.Compiler.IExpression))">
       <summary>
  Creates a final flow visitor from the given delegates.
  </summary>
@@ -6896,7 +6992,7 @@
  visiting a node tree.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.LocationVisitorBase.this">
+    <member name="M:Flame.Compiler.Visitors.LocationVisitorBase.#ctor">
       <summary>
  Creates a new location visitor base.
  </summary>
@@ -6914,7 +7010,7 @@
  Said nodes are optionally simplified to their inner nodes.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.LoggingVisitor.this(Flame.Compiler.ICompilerLog,System.Boolean,System.Boolean)">
+    <member name="M:Flame.Compiler.Visitors.LoggingVisitor.#ctor(Flame.Compiler.ICompilerLog,System.Boolean,System.Boolean)">
       <summary>
  Creates a new logging visitor from the given compiler log and a
  flag that tells if error and warning nodes are to be
@@ -6987,6 +7083,17 @@
  Applies this pass to the given value.
  </summary>
     </member>
+    <member name="P:Flame.Compiler.Visitors.SubstituteLambdaDependentExprClosure.ThisDelegate">
+      <summary>
+ Gets an expression that creates a delegate for this
+ lambda function.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.SubstituteLambdaDependentExprClosure.CapturedValues">
+      <summary>
+ Gets the captured value list.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Visitors.MemberNodeVisitor.VisitBody(Flame.Compiler.IExpression,Flame.IMethod)">
       <summary>
  Visits the given expression, which logically belongs to the given method.
@@ -7012,7 +7119,7 @@
  Defines metadata for a pass.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.PassMetadata.this(Flame.Compiler.IRandomAccessOptions,Flame.Compiler.IRandomAccessOptions,Flame.Compiler.IRandomAccessOptions)">
+    <member name="M:Flame.Compiler.Visitors.PassMetadata.#ctor(Flame.Compiler.IRandomAccessOptions,Flame.Compiler.IRandomAccessOptions,Flame.Compiler.IRandomAccessOptions)">
       <summary>
  Creates a new pass metadata object.
  </summary>
@@ -7037,7 +7144,7 @@
  Defines a statement pass based on a node visitor.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Visitors.StatementPass.this(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Visitors.StatementPass.#ctor(Flame.Compiler.INodeVisitor)">
       <summary>
  Creates a new statement pass instance based on the given node visitor.
  </summary>
@@ -7175,7 +7282,7 @@
  Defines a field signature template that is based on a prototype field.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.FieldPrototypeTemplate.this(Flame.IField)">
+    <member name="M:Flame.Compiler.Build.FieldPrototypeTemplate.#ctor(Flame.IField)">
       <summary>
  Creates a field prototype template from the given prototype.
  </summary>
@@ -7190,7 +7297,7 @@
  An instantiation of a field signature template.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.FieldSignatureInstance.this(Flame.Compiler.Build.IFieldSignatureTemplate,Flame.IField)">
+    <member name="M:Flame.Compiler.Build.FieldSignatureInstance.#ctor(Flame.Compiler.Build.IFieldSignatureTemplate,Flame.IField)">
       <summary>
  Instantiates the given field signature template with the given field.
  </summary>
@@ -7473,7 +7580,7 @@
  A base class for member signature templates that use a prototype member.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.MemberPrototypeTemplate`1.this(T)">
+    <member name="M:Flame.Compiler.Build.MemberPrototypeTemplate`1.#ctor(T)">
       <summary>
  Creates a member prototype template from the given prototype member.
  </summary>
@@ -7498,7 +7605,7 @@
  A base class for type member signature templates that use a prototype member.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.TypeMemberPrototypeTemplate`1.this(T)">
+    <member name="M:Flame.Compiler.Build.TypeMemberPrototypeTemplate`1.#ctor(T)">
       <summary>
  Creates a type member prototype from the given prototype member.
  </summary>
@@ -7513,7 +7620,7 @@
  Defines a method signature template that is based on a prototype method.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.MethodPrototypeTemplate.this(Flame.IMethod)">
+    <member name="M:Flame.Compiler.Build.MethodPrototypeTemplate.#ctor(Flame.IMethod)">
       <summary>
  Creates a method prototype template from the given prototype.
  </summary>
@@ -7543,7 +7650,7 @@
  An instantiation of a method signature template.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.MethodSignatureInstance.this(Flame.Compiler.Build.IMethodSignatureTemplate,Flame.IMethod)">
+    <member name="M:Flame.Compiler.Build.MethodSignatureInstance.#ctor(Flame.Compiler.Build.IMethodSignatureTemplate,Flame.IMethod)">
       <summary>
  Instantiates the given method signature template with the given method.
  </summary>
@@ -7613,7 +7720,7 @@
  Defines a property signature template that is based on a prototype property.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.PropertyPrototypeTemplate.this(Flame.IProperty)">
+    <member name="M:Flame.Compiler.Build.PropertyPrototypeTemplate.#ctor(Flame.IProperty)">
       <summary>
  Creates a property signature template from the given prototype property.
  </summary>
@@ -7633,7 +7740,7 @@
  An instantiation of a property signature template.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.PropertySignatureInstance.this(Flame.Compiler.Build.IPropertySignatureTemplate,Flame.IProperty)">
+    <member name="M:Flame.Compiler.Build.PropertySignatureInstance.#ctor(Flame.Compiler.Build.IPropertySignatureTemplate,Flame.IProperty)">
       <summary>
  Instantiates the given property signature template with the given property.
  </summary>
@@ -7673,7 +7780,7 @@
  Defines a type signature template that is based on a prototype type.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.TypePrototypeTemplate.this(Flame.IType)">
+    <member name="M:Flame.Compiler.Build.TypePrototypeTemplate.#ctor(Flame.IType)">
       <summary>
  Creates a type prototype template from the given prototype.
  </summary>
@@ -7693,7 +7800,7 @@
  An instantiation of a type signature template.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Build.TypeSignatureInstance.this(Flame.Compiler.Build.ITypeSignatureTemplate,Flame.IType)">
+    <member name="M:Flame.Compiler.Build.TypeSignatureInstance.#ctor(Flame.Compiler.Build.ITypeSignatureTemplate,Flame.IType)">
       <summary>
  Instantiates the given type signature template with the given type.
  </summary>

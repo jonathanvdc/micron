@@ -1395,6 +1395,12 @@
  its parents.
 </summary>
 </member>
+<member name="M:Flame.Functional.LocalScope.WithVariable(Flame.Compiler.IVariable,System.String)">
+<summary>
+ Registers the given variable with this
+ local scope under the given name.
+</summary>
+</member>
 <member name="M:Flame.Functional.LocalScope.GetVariable(System.String)">
 <summary>
  Gets the variable with the given name.
@@ -1694,10 +1700,25 @@
 <member name="">
 
 </member>
+<member name="M:Flame.Functional.ExpressionBuilder.RecursiveLambda(Microsoft.FSharp.Core.FSharpFunc{Flame.Functional.LocalScope,Flame.Compiler.IExpression},Flame.IMethod,System.String,Flame.Functional.LocalScope)">
+<summary>
+ Creates a capture-by-value lambda that captures all locals based on the given
+ body creation function, lambda signature, and enclosing scope.
+ A recursive delegate for this lambda function is bound to the given
+ recursion identifier.
+</summary>
+</member>
 <member name="M:Flame.Functional.ExpressionBuilder.Lambda(Microsoft.FSharp.Core.FSharpFunc{Flame.Functional.LocalScope,Flame.Compiler.IExpression},Flame.IMethod,Flame.Functional.LocalScope)">
 <summary>
  Creates a capture-by-value lambda that captures all locals based on the given
  body creation function, lambda signature, and enclosing scope.
+</summary>
+</member>
+<member name="M:Flame.Functional.ExpressionBuilder.MaybeRecLambda(Microsoft.FSharp.Core.FSharpFunc{Flame.Functional.LocalScope,Flame.Compiler.IExpression},Flame.IMethod,Microsoft.FSharp.Core.FSharpOption{System.String},Flame.Functional.LocalScope)">
+<summary>
+ Creates a capture-by-value lambda that captures all locals based on the given
+ body creation function, lambda signature, and enclosing scope. If a name is provided,
+ then a recursive delegate is bound to that name.
 </summary>
 </member>
 <member name="M:Flame.Functional.ExpressionBuilder.This(System.String,Flame.Functional.LocalScope)">

@@ -767,7 +767,7 @@
  converters.
  </summary>
     </member>
-    <member name="M:Flame.CompositeConverter`3.this(Flame.IConverter`2{T1,T2},Flame.IConverter`2{T2,T3})">
+    <member name="M:Flame.CompositeConverter`3.#ctor(Flame.IConverter`2{T1,T2},Flame.IConverter`2{T2,T3})">
       <summary>
  Creates a converter that represents the composition of the given
  converters.
@@ -892,7 +892,7 @@
  A property accessor belonging to a generic type instantiation.
  </summary>
     </member>
-    <member name="M:Flame.GenericInstanceAccessor.this(Flame.IAccessor,Flame.IGenericResolver,Flame.IProperty)">
+    <member name="M:Flame.GenericInstanceAccessor.#ctor(Flame.IAccessor,Flame.IGenericResolver,Flame.IProperty)">
       <summary>
  Creates a new generic type instance accessor from the given accessor,
  resolver and declaring property.
@@ -928,13 +928,13 @@
  Defines a method belonging to a generic type instantiation.
  </summary>
     </member>
-    <member name="M:Flame.GenericInstanceMethod.this(Flame.IMethod,Flame.IGenericResolver,Flame.IType)">
+    <member name="M:Flame.GenericInstanceMethod.#ctor(Flame.IMethod,Flame.IGenericResolver,Flame.IType)">
       <summary>
  Creates a generic type method instantiation from the given method,
  resolver and declaring type.
  </summary>
     </member>
-    <member name="M:Flame.GenericInstanceMethod.this(Flame.IMethod,Flame.IGenericResolverType)">
+    <member name="M:Flame.GenericInstanceMethod.#ctor(Flame.IMethod,Flame.IGenericResolverType)">
       <summary>
  Creates a generic type method instantiation from the given method and
  declaring type.
@@ -945,13 +945,13 @@
  Defines a type belonging to a generic type instantiation.
  </summary>
     </member>
-    <member name="M:Flame.GenericInstanceType.this(Flame.IType,Flame.IGenericResolver,Flame.IType)">
+    <member name="M:Flame.GenericInstanceType.#ctor(Flame.IType,Flame.IGenericResolver,Flame.IType)">
       <summary>
  Creates a generic type instantiation from the given type,
  resolver and declaring type.
  </summary>
     </member>
-    <member name="M:Flame.GenericInstanceType.this(Flame.IType,Flame.IGenericResolverType)">
+    <member name="M:Flame.GenericInstanceType.#ctor(Flame.IType,Flame.IGenericResolverType)">
       <summary>
  Creates a generic type instantiation from the given type and
  declaring type.
@@ -962,7 +962,7 @@
  Defines a generic method instantiation.
  </summary>
     </member>
-    <member name="M:Flame.GenericMethod.this(Flame.IMethod,System.Collections.Generic.IEnumerable`1{Flame.IType})">
+    <member name="M:Flame.GenericMethod.#ctor(Flame.IMethod,System.Collections.Generic.IEnumerable`1{Flame.IType})">
       <summary>
  Creates a generic instantiation of the given method with the given
  type arguments.
@@ -1010,7 +1010,7 @@
  Defines a generic type instantiation.
  </summary>
     </member>
-    <member name="M:Flame.GenericType.this(Flame.IType,System.Collections.Generic.IEnumerable`1{Flame.IType})">
+    <member name="M:Flame.GenericType.#ctor(Flame.IType,System.Collections.Generic.IEnumerable`1{Flame.IType})">
       <summary>
  Creates a generic instantiation of the given type with the given
  type arguments.
@@ -1026,7 +1026,7 @@
  A base class for generic type instances.
  </summary>
     </member>
-    <member name="M:Flame.GenericTypeBase.this(Flame.IType)">
+    <member name="M:Flame.GenericTypeBase.#ctor(Flame.IType)">
       <summary>
  Creates a new generic type base from the given type.
  </summary>
@@ -1124,7 +1124,7 @@
  A generic constraint that specifies that a value of the type argument should be assignable to a specific type.
  </summary>
     </member>
-    <member name="M:Flame.TypeConstraint.this(Flame.IType)">
+    <member name="M:Flame.TypeConstraint.#ctor(Flame.IType)">
       <summary>
  Creates a new type constraint based on the given type.
  </summary>
@@ -1238,24 +1238,24 @@
  such as this comment.
  </summary>
     </member>
-    <member name="M:Flame.DescriptionAttribute.this(Pixie.IMarkupNode)">
+    <member name="M:Flame.DescriptionAttribute.#ctor(Pixie.IMarkupNode)">
       <summary>
  Creates a new description attribute from the given markup node.
  </summary>
     </member>
-    <member name="M:Flame.DescriptionAttribute.this(System.String,Pixie.IMarkupNode)">
+    <member name="M:Flame.DescriptionAttribute.#ctor(System.String,Pixie.IMarkupNode)">
       <summary>
  Creates a new description attribute from the given tag and
  description body.
  </summary>
     </member>
-    <member name="M:Flame.DescriptionAttribute.this(System.String)">
+    <member name="M:Flame.DescriptionAttribute.#ctor(System.String)">
       <summary>
  Creates a new 'summary' description attribute from the given
  description body.
  </summary>
     </member>
-    <member name="M:Flame.DescriptionAttribute.this(System.String,System.String)">
+    <member name="M:Flame.DescriptionAttribute.#ctor(System.String,System.String)">
       <summary>
  Creates a new description attribute from the given tag and
  description body.
@@ -1484,7 +1484,7 @@
  Defines a base type for container types.
  </summary>
     </member>
-    <member name="M:Flame.Build.ContainerTypeBase.this(Flame.IType)">
+    <member name="M:Flame.Build.ContainerTypeBase.#ctor(Flame.IType)">
       <summary>
  Creates a container type from the given element type.
  </summary>
