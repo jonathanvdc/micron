@@ -104,12 +104,12 @@ module TypeInference =
     /// Tries to resolve the given set of type constraints.
     /// This corresponds to the "unification" step in most
     /// Hindley-Milner type systems.
-    let rec resolve (relations : (TypeConstraint * TypeConstraint) list)
-                    : Result<LinearMap<UnknownType, TypeConstraint>> =
+    let rec resolve (relations : (TypeConstraint * TypeConstraint * SourceLocation) list)
+                    : Result<LinearMap<UnknownType, TypeConstraint>, LogEntry> =
         let show = createShow()
-        let rec step (results : Result<LinearMap<UnknownType, TypeConstraint>>)
-                     (left : TypeConstraint, right : TypeConstraint)
-                     : Result<LinearMap<UnknownType, TypeConstraint>> =
+        let rec step (results : Result<LinearMap<UnknownType, TypeConstraint>, LogEntry>)
+                     (left : TypeConstraint, right : TypeConstraint, srcLoc : SourceLocation)
+                     : Result<LinearMap<UnknownType, TypeConstraint>, LogEntry> =
             match results with
             | Success substs ->
                 let applySubst target tyFrom tyTo =
@@ -127,8 +127,11 @@ module TypeInference =
                 | other, Variable tVar when occursIn tVar other ->
                     // Unifying these types would result in an infinite type.
                     // I suppose that is somewhat undesirable.
-                    Error("Could not unify '" + show (Variable tVar) + "' and '" + show other +
-                          "' because the resulting type would be infinite.")
+                    Error(LogEntry("Type error",
+                                   "Could not unify '" + show (Variable tVar) +
+                                   "' and '" + show other +
+                                   "' because the resulting type would be infinite.",
+                                   srcLoc))
                 | Variable tVar, other
                 | other, Variable tVar ->
                     // If either one of the input constraints are type variables,
@@ -140,15 +143,21 @@ module TypeInference =
                 | Function(tArg1, tRet1), Function(tArg2, tRet2) ->
                     // Resolve generic declaration constraints both for the
                     // argument and return types.
-                    step (step results (tArg1, tArg2)) (tRet1, tRet2)
+                    step (step results (tArg1, tArg2, srcLoc)) (tRet1, tRet2, srcLoc)
                 | Instance(tDecl1, tArgs1), Instance(tDecl2, tArgs2) ->
                     // First, resolve the generic declaration constraints.
-                    let genDecls = step results (tDecl1, tDecl2)
+                    let genDecls = step results (tDecl1, tDecl2, srcLoc)
+                    // Create a list of source locations for
+                    // debugging purposes.
+                    let srcLocList = List.replicate (List.length tArgs1) srcLoc
                     // Next, resolve generic parameter constraints.
-                    List.zip tArgs1 tArgs2 |> List.fold step genDecls
+                    List.zip3 tArgs1 tArgs2 srcLocList |> List.fold step genDecls
                 | t1, t2 ->
                     // Incompatible constant types mean trouble.
-                    Error("Could not unify incompatible types '" + show t1 + "' and '" + show t2 + "'.")
+                    Error(LogEntry("Type error",
+                                   "Could not unify incompatible types '" +
+                                   show t1 + "' and '" + show t2 + "'.",
+                                   srcLoc))
             | Error _ ->
                 results
 
@@ -166,14 +175,15 @@ module TypeInference =
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
-    type TypeConstraintVisitor(initialConstraints : (TypeConstraint * TypeConstraint) list) =
+    type TypeConstraintVisitor(initialConstraints : (TypeConstraint * TypeConstraint * SourceLocation) list) =
         inherit ContextlessVisitorBase()
 
         let mutable constraints = initialConstraints
+        let mutable srcLoc : SourceLocation = null
 
         /// Adds a constraint to this type constraint visitor's constraint list.
         let addConstraint (left : TypeConstraint) (right : TypeConstraint) : unit =
-            constraints <- (left, right) :: constraints
+            constraints <- (left, right, srcLoc) :: constraints
 
         /// Adds a constraint to this type constraint visitor's constraint list.
         member this.AddConstraint (left : TypeConstraint) (right : TypeConstraint) : unit =
@@ -195,6 +205,16 @@ module TypeInference =
             | :? IfElseStatement as select ->
                 addConstraint (toConstraint select.Condition.Type) (toConstraint PrimitiveTypes.Boolean)
                 stmt.Accept this
+            | :? SourceStatement as srcStmt ->
+                let newLoc = srcStmt.Location
+                if newLoc <> null then
+                    let oldLoc = srcLoc
+                    srcLoc <- newLoc
+                    let result = srcStmt.Accept this
+                    srcLoc <- oldLoc
+                    result
+                else
+                    srcStmt.Accept this
             | _ ->
                 stmt.Accept this
 
@@ -205,7 +225,7 @@ module TypeInference =
                 let trueTy = toConstraint select.TrueValue.Type
                 let falseTy = toConstraint select.FalseValue.Type
                 addConstraint trueTy falseTy
-                expr.Accept this
+                select.Accept this
             | :? PartialApplication as apply ->
                 let targetTy = apply.Target.Type
                 let argTys = List.map (fun (x : IExpression) -> x.Type) apply.Arguments
@@ -213,11 +233,21 @@ module TypeInference =
                 let funcConstraint = toFunctionConstraint retType argTys
                 addConstraint (toConstraint targetTy) funcConstraint
                 expr.Accept this
+            | :? SourceExpression as srcExpr ->
+                let newLoc = srcExpr.Location
+                if newLoc <> null then
+                    let oldLoc = srcLoc
+                    srcLoc <- newLoc
+                    let result = srcExpr.Accept this
+                    srcLoc <- oldLoc
+                    result
+                else
+                    srcExpr.Accept this
             | _ ->
                 expr.Accept this
 
     /// Finds all constraints in the given expression.
-    let findConstraints (expr : IExpression) : (TypeConstraint * TypeConstraint) list =
+    let findConstraints (expr : IExpression) : (TypeConstraint * TypeConstraint * SourceLocation) list =
         let visitor = TypeConstraintVisitor([])
         visitor.Visit expr |> ignore
         visitor.Constraints
