@@ -74,7 +74,7 @@ module Analysis =
             EB.Scope result updatedScope |> EB.Source here
         | _ ->
             // Local function declaration:  let name args = value in expr
-            // For now, this doesn't support recursion.
+            // This should also support recursion.
             let childScope = scope.ChildScope
             let createBody lambdaScope = analyzeExpression lambdaScope value
 
@@ -88,10 +88,13 @@ module Analysis =
                                 .WithParameters(fun _ -> Seq.map makeParam argumentNames)
                                 .WithReturnType(fun _ -> UnknownType() :> IType)
 
-            let lambda = EB.Lambda createBody signature childScope
+            // The lambda's identifier is equivalent to the name token's contents.
+            let ident = name.contents
+            // Create the lambda itself.
+            let lambda = EB.RecursiveLambda createBody signature ident childScope
 
             // Bind this lambda to `name`.
-            let defLocal, updatedScope = EB.Quickbind childScope lambda name.contents
+            let defLocal, updatedScope = EB.Quickbind childScope lambda ident
             let defLocal = EB.Source (TokenHelpers.sourceLocation eq) defLocal
 
             // Take care of the `in expr` clause
