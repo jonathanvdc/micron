@@ -85,6 +85,10 @@ type PartialApplication private(target : IExpression, args : IExpression list,
     /// Gets this partial application expression's type.
     member this.Type = lowered.Value.Type
 
+    override this.ToString() =
+      let totalArgs = target.ToString() :: List.map (fun (x : IExpression) -> x.ToString()) args
+      "apply(" + (String.concat ", " totalArgs) + ")"
+
     interface IExpression with
         member this.Optimize() = lowered.Value.Optimize()
         member this.Evaluate() = lowered.Value.Evaluate()

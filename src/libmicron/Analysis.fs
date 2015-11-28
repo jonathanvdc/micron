@@ -17,7 +17,7 @@ module Analysis =
     /// Analyzes the given expression parse tree.
     let rec analyzeExpression (scope : LocalScope) : ParseTree<string, Token> -> IExpression = function
     | ProductionNode(Constant Parser.ifThenElseIdentifier,
-                     [TerminalLeaf ifKeyword; cond; _; ifExpr; _; elseExpr]) -> 
+                     [TerminalLeaf ifKeyword; cond; _; ifExpr; _; elseExpr]) ->
         // A simple if-then-else expression
         EB.Select scope (analyzeExpression scope cond)
                         (analyzeExpression scope ifExpr)
@@ -59,10 +59,10 @@ module Analysis =
                       expr]) ->
         let here = TokenHelpers.sourceLocation letKeyword
         match args with
-        | [] -> 
+        | [] ->
             // Local variable declaration:  `let name = value in expr`
             let childScope = scope.ChildScope
-            
+
             // First, bind `value` to `name`.
             let localValue = analyzeExpression childScope value
             let defLocal, updatedScope = EB.Quickbind childScope localValue name.contents
@@ -77,7 +77,7 @@ module Analysis =
             // For now, this doesn't support recursion.
             let childScope = scope.ChildScope
             let createBody lambdaScope = analyzeExpression lambdaScope value
-            
+
             let attributes = [PrimitiveAttributes.Instance.ConstantAttribute]
             let argumentNames = [for t in ParseTree.treeYield argsNode -> t.contents]
 
@@ -89,7 +89,7 @@ module Analysis =
                                 .WithReturnType(fun _ -> UnknownType() :> IType)
 
             let lambda = EB.Lambda createBody signature childScope
-            
+
             // Bind this lambda to `name`.
             let defLocal, updatedScope = EB.Quickbind childScope lambda name.contents
             let defLocal = EB.Source (TokenHelpers.sourceLocation eq) defLocal
@@ -100,6 +100,17 @@ module Analysis =
 
             EB.Scope result updatedScope |> EB.Source here
 
+    | ProductionNode(Constant Parser.applyIdentifier, [left; right]) as node ->
+        // Function application
+        let funcExpr = analyzeExpression scope left
+        let argExpr = analyzeExpression scope right
+
+        (match funcExpr.GetEssentialExpression() with
+        | :? PartialApplication as appl ->
+            (PartialApplication(appl.Target, List.append appl.Arguments [argExpr])) :> IExpression
+        | _ ->
+            (PartialApplication(funcExpr, [argExpr])) :> IExpression
+        ) |> EB.Source (TokenHelpers.treeSourceLocation node)
     | ProductionNode(Constant Parser.identifierIdentifier,
                      [TerminalLeaf ident]) ->
         // Identifier
@@ -111,7 +122,7 @@ module Analysis =
         ) |> EB.Source (TokenHelpers.sourceLocation ident)
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
-        // This just means that a construct has been defined in the grammar, 
+        // This just means that a construct has been defined in the grammar,
         // and that the semantic analysis pass does not support it yet.
         EB.VoidError (LogEntry("Unimplemented node type", sprintf "'%s' nodes have not been implemented yet." nonterm))
             |> EB.Source (TokenHelpers.treeSourceLocation node)
