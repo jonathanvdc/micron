@@ -23,7 +23,7 @@ let getParameters (func : IMethod option) =
 
 let parseExpression (log : ICompilerLog) (code : string) =
     // Prefix the list of tokens with `let <identifier> =`.
-    let prefixTokens = 
+    let prefixTokens =
         [{ contents = "let"
            tokenType = TokenType.LetKeyword
            sourceLocation = null
@@ -36,14 +36,14 @@ let parseExpression (log : ICompilerLog) (code : string) =
            tokenType = TokenType.Equals
            sourceLocation = null
            preTrivia = [] }]
-    // Create a source document so we can have 
+    // Create a source document so we can have
     // accurate diagnostics.
     let doc = SourceDocument(code, "repl.mu")
     // Lex tokens
     let tokens = prefixTokens @ Lexer.lex doc |> TokenHelpers.foldTrivia
     // Parse
     match parser tokens with
-    | Choice1Of2 tree -> 
+    | Choice1Of2 tree ->
         match tree with
         | ProductionNode("program", [ProductionNode("let-definition", [_; _; _; _; result]); ProductionNode("program", [])]) ->
             let globalScope = GlobalScope(FunctionalBinder(null), StrictConversionRules(nameType), log, nameType, memProvider, getParameters)
@@ -55,8 +55,8 @@ let parseExpression (log : ICompilerLog) (code : string) =
 
 /// Gets a map of special "mode" prefixes
 /// to handlers.
-let modePrefixes = 
-    Map.ofList 
+let modePrefixes =
+    Map.ofList
         [
             ":t", fun (expr : IExpression) -> printfn "%s" (nameType expr.Type)
             ":repr", printfn "%A"
@@ -77,7 +77,7 @@ let getMode (source : string) : (string * (IExpression -> unit)) =
             Some (source.Substring(modePrefix.Length), mode)
         else
             None
-    
+
     match Map.tryPick asMode modePrefixes with
     | Some(src, mode) -> src, mode
     | None -> source, exec
@@ -104,7 +104,8 @@ let rec repl log input =
         repl log (split.[split.Length - 1])
 
 [<EntryPoint>]
-let main argv = 
+let main argv =
     use log = new ConsoleLog()
     repl log ""
+    printfn ""
     0
