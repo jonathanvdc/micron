@@ -209,7 +209,7 @@ module TypeInference =
             | :? PartialApplication as apply ->
                 let targetTy = apply.Target.Type
                 let argTys = List.map (fun (x : IExpression) -> x.Type) apply.Arguments
-                let retType = UnknownType()
+                let retType = apply.Type
                 let funcConstraint = toFunctionConstraint retType argTys
                 addConstraint (toConstraint targetTy) funcConstraint
                 expr.Accept this
