@@ -102,13 +102,25 @@ module Analysis =
 
     | ProductionNode(Constant Parser.applyIdentifier, [left; right]) as node ->
         // Function application
+
+        // Left-hand side is the function to apply. Right-hand side is
+        // the argument to apply the function to. Analyze both.
         let funcExpr = analyzeExpression scope left
         let argExpr = analyzeExpression scope right
 
         (match funcExpr.GetEssentialExpression() with
         | :? PartialApplication as appl ->
+            // Try to combine partial applications as much as possible.
+            // This may discard *some* debug information, but I think that's
+            // a fair trade-off, even in a debug build ([-g] or [-Og]):
+            // once lamba expressions are lowered, they create really
+            // hard-to-read stack traces.
             (PartialApplication(appl.Target, List.append appl.Arguments [argExpr])) :> IExpression
         | _ ->
+            // You can't win 'em all, I guess. However,
+            // we do want to preserve the left-hand side's debug
+            // info, if any - we don't have a lot to gain by discarding
+            // source locations here.
             (PartialApplication(funcExpr, [argExpr])) :> IExpression
         ) |> EB.Source (TokenHelpers.treeSourceLocation node)
     | ProductionNode(Constant Parser.identifierIdentifier,
