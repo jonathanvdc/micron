@@ -4,6 +4,7 @@ open libcontextfree
 open System
 open System.Collections.Generic
 open Flame
+open Flame.Build
 open Flame.Functional
 open Flame.Compiler
 open Flame.Compiler.Expressions
@@ -68,6 +69,30 @@ module TypeInference =
     | [] -> toConstraint retType
     | param :: parameters -> Function(toConstraint param, toFunctionConstraint retType parameters)
 
+    /// Flattens the given type constraint to a 
+    /// flat list of parameter types, followed by 
+    /// a return type.
+    let rec uncurry : TypeConstraint -> TypeConstraint list * TypeConstraint = function
+    | Function(argTy, retTy) -> 
+        let extraArgTys, ty = uncurry retTy
+        argTy :: extraArgTys, ty
+    | ty -> [], ty
+    
+    /// Given a mapping function that converts unknown types to
+    /// types, this function converts type constraints to types.
+    let rec toType (mapping : UnknownType -> IType) : TypeConstraint -> IType = function
+    | Variable vTy -> mapping vTy
+    | Constant cTy -> cTy
+    | Instance(declTy, argTys) -> (toType mapping declTy).MakeGenericType(List.map (toType mapping) argTys)
+    | Function(_, _) as fConstraint -> 
+        let argTys, retTy = uncurry fConstraint
+        let parameters _ = argTys |> List.map (fun ty -> DescribedParameter("", toType mapping ty) :> IParameter)
+                                  |> Seq.ofList
+        let header = FunctionalMemberHeader("")
+        let result = FunctionalMethod(header, null, true).WithReturnType(fun _ -> toType mapping retTy)
+                                                         .WithParameters(parameters)
+        MethodType.Create result
+        
     /// Creates a function that converts type constraints to strings.
     /// Unknown types are assigned unique single-character names.
     let createShow () : TypeConstraint -> string =
@@ -251,3 +276,59 @@ module TypeInference =
         let visitor = TypeConstraintVisitor([])
         visitor.Visit expr |> ignore
         visitor.Constraints
+
+    /// Runs type inference on the given expression.
+    /// All unknown types that can be resolved are 
+    /// mapped to their known counterparts. 
+    /// The remaining unkown types are stored
+    /// in a set.
+    let inferTypes (expr : IExpression) : Result<LinearMap<UnknownType, TypeConstraint> * LinearSet<UnknownType>, LogEntry> =
+        let allUnknowns = findUnknownTypes expr
+        let replaceResolved (resolved : LinearMap<UnknownType, TypeConstraint>) =
+            resolved, LinearSet.difference allUnknowns resolved.Keys
+
+        findConstraints expr |> resolve
+                             |> Result.map replaceResolved
+
+    /// Binds all items in the set of truly unknown types to
+    /// generic parameters, and creates a mapping from
+    /// unknown types to known types.
+    let bindTypes (knownTypes : LinearMap<UnknownType, TypeConstraint>) 
+                  (unknownTypes : LinearSet<UnknownType>)
+                  (declMember : IGenericMember)
+                  : LinearSet<IGenericParameter> * (UnknownType -> IType) =
+        let show = createShow()
+        // Maps a single unknown type to a generic parameter.
+        let mapGenericParam ty =
+            ty, DescribedGenericParameter(show (Variable ty), declMember) :> IGenericParameter
+
+        // Now use the above function to map all truly unknown types 
+        // to generic parameter types.
+        let genParamMap = unknownTypes |> LinearSet.toList
+                                       |> List.map mapGenericParam
+                                       |> LinearMap.ofList
+
+        // Resolves an unknown type by recursively trying to
+        // match it with a generic parameter, or with
+        // some known type constraint.
+        let rec resolveUnknownType ty =
+            match LinearMap.tryFind ty genParamMap with
+            | Some result -> result :> IType
+            | None -> LinearMap.find ty knownTypes |> toType resolveUnknownType
+
+        LinearSet.ofList genParamMap.Values, resolveUnknownType
+
+    /// A type visitor that replaces unknown types by
+    /// their known counterparts.
+    type UnknownTypeResolvingVisitor(mapping : UnknownType -> IType) =
+        inherit TypeTransformerBase()
+
+        override this.ConvertTypeDefault (ty : IType) : IType =
+            match ty with
+            | :? UnknownType as ty -> mapping ty
+            | _ -> ty
+
+    /// Substitutes all unknown types in the given expression
+    /// according to the given mapping function.
+    let substituteTypes (mapping : UnknownType -> IType) (expr : IExpression) : IExpression =
+        MemberNodeVisitor.ConvertTypes(UnknownTypeResolvingVisitor(mapping), expr)

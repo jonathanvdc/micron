@@ -101,5 +101,5 @@ module LinearSet =
         List.foldBack add second.Items first
 
     /// Removes all items in the second set from the first set.
-    let except (first : LinearSet<'a>) (second : LinearSet<'a>) : LinearSet<'a> =
+    let difference (first : LinearSet<'a>) (second : LinearSet<'a>) : LinearSet<'a> =
         List.foldBack remove second.Items first

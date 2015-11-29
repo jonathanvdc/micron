@@ -103,3 +103,7 @@ module LinearMap =
     /// Applies the given mapping function to all elements in the table.
     let map (mapping : 'a -> 'b -> 'c) (table : LinearMap<'a, 'b>) : LinearMap<'a, 'c> =
         List.map (fun (k, v) -> k, mapping k v) table.Items |> ofSeq
+
+    /// Adds all items in the second linear map to the first linear map.
+    let addAll (left : LinearMap<'a, 'b>) (right : LinearMap<'a, 'b>) : LinearMap<'a, 'b> =
+        right |> fold (fun result key value -> add key value result) left
