@@ -30,15 +30,15 @@ type TypeInferenceTests () =
         let constraints = 
             [
                 // a = a
-                TypeInference.Variable t1, TypeInference.Variable t1
+                TypeInference.Variable t1, TypeInference.Variable t1, null
                 // a = bool -> b
-                TypeInference.Variable t1, TypeInference.Function(TypeInference.Constant PrimitiveTypes.Boolean, TypeInference.Variable t2)
+                TypeInference.Variable t1, TypeInference.Function(TypeInference.Constant PrimitiveTypes.Boolean, TypeInference.Variable t2), null
                 // int = b
-                TypeInference.Constant PrimitiveTypes.Int32, TypeInference.Variable t2
+                TypeInference.Constant PrimitiveTypes.Int32, TypeInference.Variable t2, null
                 // c = d<a, b>
-                TypeInference.Variable t3, TypeInference.Instance(TypeInference.Variable t4, [TypeInference.Variable t1; TypeInference.Variable t2])
+                TypeInference.Variable t3, TypeInference.Instance(TypeInference.Variable t4, [TypeInference.Variable t1; TypeInference.Variable t2]), null
                 // e = c
-                TypeInference.Variable t5, TypeInference.Variable t3
+                TypeInference.Variable t5, TypeInference.Variable t3, null
             ]
 
         let expected = 
@@ -73,7 +73,7 @@ type TypeInferenceTests () =
         let constraints = 
             [
                 // b = a<b>
-                TypeInference.Variable t2, TypeInference.Instance(TypeInference.Variable t1, [TypeInference.Variable t2])
+                TypeInference.Variable t2, TypeInference.Instance(TypeInference.Variable t1, [TypeInference.Variable t2]), null
             ]
             
         assertError (TypeInference.resolve constraints)
@@ -85,9 +85,9 @@ type TypeInferenceTests () =
         let constraints =
             [
                 // a = bool
-                TypeInference.Variable t1, TypeInference.Constant (PrimitiveTypes.Boolean)
+                TypeInference.Variable t1, TypeInference.Constant (PrimitiveTypes.Boolean), null
                 // a = int
-                TypeInference.Variable t1, TypeInference.Constant (PrimitiveTypes.Int32)
+                TypeInference.Variable t1, TypeInference.Constant (PrimitiveTypes.Int32), null
             ]
 
         assertError (TypeInference.resolve constraints)
@@ -122,3 +122,21 @@ type TypeInferenceTests () =
         |> should equal [| "a"; "b"; "c"; "d"; "e"; "f"; "g"; "h"; "i";
                            "j"; "k"; "l"; "m"; "n"; "o"; "p"; "q"; "r";
                            "s"; "t"; "u"; "v"; "w"; "x"; "y"; "z"; "aa" |]
+
+    [<TestMethod>]
+    member this.SubstLambda() =
+        let unknownTy1 = UnknownType()
+        let unknownTy2 = UnknownType()
+        let signature = Flame.Build.DescribedMethod("", null, unknownTy2, true)
+        signature.AddParameter(Flame.Build.DescribedParameter("x", unknownTy1))
+        let header = LambdaHeader(signature, [||])
+        // Creates an 'a -> 'b lambda
+        let lambdaExpr = LambdaExpression(header, ReturnStatement(Int32Expression(0)))
+        // Maps everything to int
+        let mapping ty = PrimitiveTypes.Int32
+        // Check that the result is an int -> int lambda
+        let result = TypeInference.resolveExpression mapping lambdaExpr
+        MethodType.GetMethod(result.Type).Parameters |> Seq.exactlyOne 
+                                                     |> (fun parameter -> parameter.ParameterType)
+                                                     |> should equal PrimitiveTypes.Int32
+        MethodType.GetMethod(result.Type).ReturnType |> should equal PrimitiveTypes.Int32
