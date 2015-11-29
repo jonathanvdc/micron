@@ -247,6 +247,10 @@ module TypeInference =
 
         let mutable constraints = initialConstraints
         let mutable srcLoc : SourceLocation = null
+        /// A variable that remembers the 
+        /// current lambda's return type, if
+        /// any.
+        let mutable retType : IType = null
 
         /// Adds a constraint to this type constraint visitor's constraint list.
         let addConstraint (left : TypeConstraint) (right : TypeConstraint) : unit =
@@ -282,6 +286,11 @@ module TypeInference =
                     result
                 else
                     srcStmt.Accept this
+            | :? ReturnStatement as ret ->
+                // Add lambda return types here.
+                if retType <> null then
+                    addConstraint (toConstraint retType) (toConstraint ret.Value.Type)
+                stmt.Accept this
             | _ ->
                 stmt.Accept this
 
@@ -300,6 +309,22 @@ module TypeInference =
                 let funcConstraint = toFunctionConstraint retType argTys
                 addConstraint (toConstraint targetTy) funcConstraint
                 expr.Accept this
+            | :? LambdaExpression as lambda ->
+                // The expression analysis pass does not
+                // equate a lambda's return type with
+                // its expression's type, because it
+                // simplifies the analysis implementation.
+                // Thus, we must do so in the type inference
+                // pass. We'll just remember the lambda
+                // return type here, and unify that
+                // with the actual return type of the
+                // lambda when encountering a return 
+                // statement.
+                let oldRetType = retType
+                retType <- lambda.Signature.ReturnType
+                let result = expr.Accept this
+                retType <- oldRetType
+                result
             | :? SourceExpression as srcExpr ->
                 let newLoc = srcExpr.Location
                 if newLoc <> null then
@@ -338,7 +363,7 @@ module TypeInference =
     let bindTypes (knownTypes : LinearMap<UnknownType, TypeConstraint>) 
                   (unknownTypes : LinearSet<UnknownType>)
                   (declMember : IGenericMember)
-                  : LinearSet<IGenericParameter> * (UnknownType -> IType) =
+                  : IGenericParameter list * (UnknownType -> IType) =
         let show = createShow()
         // Maps a single unknown type to a generic parameter.
         let mapGenericParam ty =
@@ -366,7 +391,13 @@ module TypeInference =
                     let bad = show (Variable ty)
                     raise (InvalidOperationException(sprintf "Found a free unknown type '%s' after type inference. Non-free unknown types: %s. Known types: %s" bad unknown known))
 
-        LinearSet.ofList genParamMap.Values, resolveUnknownType
+        // Compares two generic parameters based on their name.
+        let compareLexico (left : IGenericParameter) (right : IGenericParameter) : int =
+            compare left.Name right.Name
+
+        // Sort generic parameters in lexicographical order, and
+        // return.
+        genParamMap.Values |> List.sortWith compareLexico, resolveUnknownType
 
     /// A type visitor that replaces unknown types by
     /// their known counterparts.

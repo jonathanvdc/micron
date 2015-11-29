@@ -15,10 +15,10 @@ type StrictConversionRules(typeNamer : IType -> string) =
         /// Tries to convert the given expression to the given type implicitly.
         /// Implicit conversion between non-equivalent types are disallowed. 
         member this.ConvertImplicit expr tyTo = 
-            let exprTy = expr.Type
-            if exprTy.IsEquivalent(tyTo) then
-                expr
-            else
+            match expr.Type with
+            | :? UnknownType -> expr
+            | exprTy when exprTy.IsEquivalent(tyTo) -> expr
+            | exprTy ->
                 // Make sure to insert an error node.
                 ExpressionBuilder.Error (LogEntry("Type mismatch", 
                                                   "Expected an expression of type '" + typeNamer tyTo + 
