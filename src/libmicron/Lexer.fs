@@ -92,6 +92,16 @@ module Lexer =
                        "(", TokenType.LParen
                        ")", TokenType.RParen
                        "=", TokenType.Equals
+                   ]
+
+    /// A map of strings that have a 1:1 mapping
+    /// to their associated token. Furthermore,
+    /// we need to take extra care not to
+    /// confuse these with identifier
+    /// tokens.
+    let private staticIdentifierTokens =
+            Map.ofList [
+                       "_", TokenType.Underscore
                        "if", TokenType.IfKeyword
                        "then", TokenType.ThenKeyword
                        "else", TokenType.ElseKeyword
@@ -140,23 +150,22 @@ module Lexer =
         let initPred c = System.Char.IsLetter c || c = '_'
         let bodyPred c = System.Char.IsLetter c || System.Char.IsDigit c || c = '_'
 
+        /// "Interprets" an identifier: the given identifier is
+        /// compared with a number of predefined identifiers
+        /// that have a specific token type.
+        let interpretIdentifier (token : Token) =
+            match Map.tryFind token.contents staticIdentifierTokens with
+            | Some ty -> { token with tokenType = ty }
+            | None -> token
+
         let startPos = stream.pos
         match tryReadChar initPred stream with
-        | Some(c, stream) when c = '_' ->
-            let nextPos = stream.pos
-            let stream = readRange bodyPred stream
-            if nextPos = stream.pos then
-                // We read nothing but an underscore. This results in an 
-                // underscore token.
-                Some (sliceToken startPos stream TokenType.Underscore, stream)
-            else
-                // We read an underscore followed by a nonempty string.
-                // That means we really just read an identifier.
-                Some (sliceToken startPos stream TokenType.Identifier, stream)
         | Some(_, stream) ->
-            // This is an identifier no matter what.
+            // Awesome! We found something that *looks like* an identifier. 
+            // Now we only have to read and interpret it.
             let stream = readRange bodyPred stream
-            Some (sliceToken startPos stream TokenType.Identifier, stream)
+            let token = sliceToken startPos stream TokenType.Identifier
+            Some (interpretIdentifier token, stream)
         | None ->
             // There's no way this thing is an identifier.
             None

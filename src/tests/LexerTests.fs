@@ -61,3 +61,10 @@ type LexerTests () =
                  |> TokenHelpers.expandTrivia
                  |> should equal original
 
+    [<TestMethod>]
+    member this.Keywords () =
+        // Ensures that keywords like `let` do not interfere
+        // with identifier parsing.
+        lex "let _ = letter" |> TokenHelpers.foldTrivia
+                             |> checkTypes [TokenType.LetKeyword; TokenType.Underscore; TokenType.Equals; 
+                                            TokenType.Identifier]
