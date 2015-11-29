@@ -3,6 +3,7 @@
 open Flame
 open Flame.Compiler
 open libcontextfree
+open ConstantPattern
 
 type Parser<'nt, 't> =
     't list -> Choice<ParseTree<'nt, 't>, 't list>
@@ -205,13 +206,23 @@ module Parser =
     let createParser : ContextFreeGrammar<string, TokenType> -> Parser<string, Token> =
         tryCreateParser >> Result.get
 
+    /// Flattens the given list parse tree: all production nodes
+    /// with the given nonterminal in its head are recursively
+    /// reduced to a list containing their children.
+    let rec flattenList (listTypeIdentifier : string) : ParseTree<string, Token> -> ParseTree<string, Token> list = function
+    | ProductionNode(Constant listTypeIdentifier, children) -> 
+        children |> List.map (flattenList listTypeIdentifier)
+                 |> List.concat
+    | node -> [node]
+
     // The fixity of an operator.
     type OpFixity = InfixLeft of int
                   | InfixRight of int
 
     // Extract only the precedence from the fixity.
-    let precedence : OpFixity -> int = function | InfixLeft i -> i
-                                                | InfixRight i -> i
+    let precedence : OpFixity -> int = function 
+    | InfixLeft i -> i
+    | InfixRight i -> i
 
     /// Flatten those ops boy
     let rec flattenOps : ParseTree<string, Token> -> (ParseTree<string, Token> * Token) list * ParseTree<string, Token> = function

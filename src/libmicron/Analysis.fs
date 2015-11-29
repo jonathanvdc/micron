@@ -10,6 +10,7 @@ open Flame.Compiler.Statements
 open Flame.Compiler.Variables
 open Flame.Functional
 open System
+open System.Collections.Generic
 
 /// A semantic analysis module for
 /// micron parse trees.
@@ -149,7 +150,6 @@ module Analysis =
         EB.VoidError (LogEntry("Unexpected raw token", sprintf "Token '%s' was completely unexpected here." term.contents))
             |> EB.Source (TokenHelpers.sourceLocation term)
 
-
     /// Analyzes a let-definition.
     let rec analyzeLetDefinition (scope : GlobalScope) (name : Token) (parameterNames : Token list) 
                                  (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
@@ -172,7 +172,7 @@ module Analysis =
                     // this let-binding to a field definition.
                     let resolveType = 
                         raise (InvalidOperationException("Free unknown type in field definition. " + 
-                                                         "Something went wrong in the type inference phase."))
+                                                         "Something went wrong during type inference."))
                     // Resolve unknown types.
                     let fieldVal = TypeInference.resolveExpression resolveType fieldVal
                     // Create a new described field to hold the field's value.
@@ -213,3 +213,102 @@ module Analysis =
             Result.map createConstant inferredTypes
         | _ -> 
             Error (LogEntry("Unimplemented feature", "Let-binding functions are not supported yet.", srcLoc))
+
+    /// Analyzes a module definition.
+    let analyzeModule (scope : GlobalScope) (name : string) (definitions : ParseTree<string, Token> list) (declNs : INamespace) 
+                      : IType =
+        // Let's start by creating a type to hold the module's contents...
+        let moduleType = DescribedType(name, declNs)
+        // ... which we'll mark as static, and public.
+        moduleType.AddAttribute(PrimitiveAttributes.Instance.StaticTypeAttribute)
+        moduleType.AddAttribute(AccessAttribute(AccessModifier.Public))
+
+        let initStmts = List<IStatement>()
+
+        // Iterate over the list of definitions in the module.
+        for def in definitions do
+            match def with
+            | ProductionNode(Constant Parser.letDefinitionIdentifier,
+                             [TerminalLeaf letKeyword
+                              TerminalLeaf name
+                              ProductionNode(Constant Parser.identifierListIdentifier, _) as argsNode
+                              TerminalLeaf eq
+                              value]) ->
+                // Let-binding. We'll analyze it, and add the resulting
+                // member to the module type. If we need some
+                // kind of initialization for this member, then
+                // we'll add a statement to this initialization 
+                // statement list.
+                let parameterTokens = ParseTree.treeYield argsNode
+                let srcLoc = TokenHelpers.sourceLocation letKeyword
+                match analyzeLetDefinition scope name parameterTokens value srcLoc moduleType with
+                | Success(:? IMethod as result, init) ->
+                    moduleType.AddMethod result
+                    initStmts.Add init
+                | Success(:? IField as result, init) ->
+                    moduleType.AddField result
+                    initStmts.Add init
+                | Success(:? IProperty as result, init) ->
+                    moduleType.AddProperty result
+                    initStmts.Add init
+                | Success(_, _) ->
+                    scope.Log.LogError(LogEntry("Unknown member type", sprintf "Member type of let-binding '%s' was not unexpected." name.contents, srcLoc))
+                | Error msg ->
+                    scope.Log.LogError msg
+            | ProductionNode(nonterm, _) as node ->
+                // Unimplemented node type.
+                // This just means that a construct has been defined in the grammar,
+                // and that the semantic analysis pass does not support it yet.
+                scope.Log.LogError(LogEntry("Unimplemented node type", sprintf "'%s' nodes have not been implemented yet." nonterm, TokenHelpers.treeSourceLocation node))
+            | TerminalLeaf(term) ->
+                // Unexpected terminal leaf.
+                // This points to an error in the grammar.
+                scope.Log.LogError(LogEntry("Unexpected raw token", sprintf "Token '%s' was completely unexpected here." term.contents, term.sourceLocation))
+
+        // We're going to need a static constructor to
+        // initialize fields with. This thing will be executed
+        // at run-time before we access any of the 
+        // module type's members.
+        let staticCtor = DescribedBodyMethod("cctor", moduleType, PrimitiveTypes.Void, true)
+        // Make the list of initialization statements
+        // the body of the static constructor.
+        staticCtor.Body <- BlockStatement(initStmts)
+        // Register the static constructor with the module type.
+        moduleType.AddMethod staticCtor
+
+        moduleType :> IType
+
+    /// Analyzes an entire program.
+    let analyzeProgram (scope : GlobalScope) (contents : ParseTree<string, Token>) (declAsm : IAssembly) : INamespace =
+        let flatDefs = Parser.flattenList Parser.programIdentifier contents
+
+        // Checks if a parse tree is a module declaration.
+        // If so, then relevant information is extracted.
+        let isModule = function
+        | ProductionNode(Constant Parser.moduleIdentifier, [TerminalLeaf moduleKeyword; TerminalLeaf ident; contents]) ->
+            Some (ident.contents, Parser.flattenList Parser.identifierListIdentifier contents)
+        | _ ->
+            None
+        
+        // Create a namespace, which will contain everything in
+        // this program.
+        let namespaceHeader = FunctionalMemberHeader("")
+        let result = FunctionalNamespace(namespaceHeader, declAsm)
+
+        // First, analyze all module declarations.
+        let result = List.choose isModule flatDefs
+                        |> List.fold (fun (result : FunctionalNamespace) (name, contents) -> 
+                            result.WithType(analyzeModule scope name contents)) result
+        
+        
+        // Then, analyze top-level declarations.
+        let topLevelDefs = List.filter (fun x -> Option.isNone (isModule x)) flatDefs
+
+        if List.isEmpty topLevelDefs then
+            // If there are no top-level declarations,
+            // then we're done here.
+            result :> INamespace
+        else
+            // Otherwise, create a `<Program>` module and
+            // put them in there.
+            result.WithType(analyzeModule scope "<Program>" topLevelDefs) :> INamespace
