@@ -11,3 +11,8 @@ let select =
             then trueVal
             else falseVal
     in f
+let capt =
+    let g y = 0 in
+    let z = 0 in
+    let f x = g in
+    f 3

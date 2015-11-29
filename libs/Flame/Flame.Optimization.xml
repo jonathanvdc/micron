@@ -418,7 +418,8 @@
     <member name="P:Flame.Optimization.SlimLambdaVisitor.TransformedLocations">
       <summary>
  Gets the source locations belonging to lambda expressions
- that have been optimized by this visitor.
+ that have been optimized by this visitor, followed by their
+ old capture list size, and the new capture list size.
  </summary>
     </member>
     <member name="T:Flame.Optimization.SlimLambdaPass">

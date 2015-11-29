@@ -1571,9 +1571,82 @@
  Gets the parameter's (default) type.
  </summary>
     </member>
+    <member name="T:Flame.Build.DescribedType">
+      <summary>
+ Defines a "described type": an IType implementation that makes
+ synthesizing types easier.
+ </summary>
+    </member>
+    <member name="M:Flame.Build.DescribedType.AddBaseType(Flame.IType)">
+      <summary>
+ Adds the given type to this described type's set of base types.
+ </summary>
+    </member>
+    <member name="M:Flame.Build.DescribedType.AddGenericParameter(Flame.IGenericParameter)">
+      <summary>
+ Adds the given generic parameter to this described type's
+ type parameter list.
+ </summary>
+    </member>
+    <member name="M:Flame.Build.DescribedType.AddMethod(Flame.IMethod)">
+      <summary>
+ Adds the given method to this described type's list of methods.
+ </summary>
+    </member>
+    <member name="M:Flame.Build.DescribedType.AddProperty(Flame.IProperty)">
+      <summary>
+ Adds the given property to this described type's list of properties.
+ </summary>
+    </member>
+    <member name="M:Flame.Build.DescribedType.AddField(Flame.IField)">
+      <summary>
+ Adds the given field to this described type's list of fields.
+ </summary>
+    </member>
+    <member name="M:Flame.Build.DescribedType.AddNestedType(Flame.IType)">
+      <summary>
+ Adds the given type to this described type's list of nested
+ types.
+ </summary>
+    </member>
     <member name="M:Flame.Build.DescribedType.GetDefaultValue">
       <summary>
  Gets the default value for this type.
+ </summary>
+    </member>
+    <member name="P:Flame.Build.DescribedType.BaseTypes">
+      <summary>
+ Gets this described type's base types.
+ </summary>
+    </member>
+    <member name="P:Flame.Build.DescribedType.Methods">
+      <summary>
+ Gets all methods stored in this described type.
+ </summary>
+    </member>
+    <member name="P:Flame.Build.DescribedType.Properties">
+      <summary>
+ Gets all properties stored in this described type.
+ </summary>
+    </member>
+    <member name="P:Flame.Build.DescribedType.Fields">
+      <summary>
+ Gets all fields stored in this described type.
+ </summary>
+    </member>
+    <member name="P:Flame.Build.DescribedType.Types">
+      <summary>
+ Gets all nested types stored in this described type.
+ </summary>
+    </member>
+    <member name="P:Flame.Build.DescribedType.DeclaringAssembly">
+      <summary>
+ Gets this described type's declaring assembly, if any.
+ </summary>
+    </member>
+    <member name="P:Flame.Build.DescribedType.DeclaringNamespace">
+      <summary>
+ Gets this type's declaring type.
  </summary>
     </member>
     <member name="T:Flame.Build.GenericAncestryRules">

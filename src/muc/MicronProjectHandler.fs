@@ -10,6 +10,7 @@ open Flame.Front.Options
 open Flame.Front.Projects
 open Flame.Front.Target
 open Flame.Verification
+open Flame.Optimization
 open System
 open System.Threading.Tasks
 open libcontextfree
@@ -33,7 +34,7 @@ type MicronProjectHandler() =
                 None
             | Choice2Of2 [] -> 
                 let charCount = doc.Source.Length
-                parameters.Log.LogError(LogEntry("Syntax error",  "Unexpected end-of-file.", SourceLocation(doc, charCount - 1, charCount)))
+                parameters.Log.LogError(LogEntry("Syntax error",  "Unexpected end-of-file marker.", SourceLocation(doc, charCount - 1, charCount)))
                 None
 
     interface IProjectHandler with
@@ -50,7 +51,7 @@ type MicronProjectHandler() =
             project
 
         member this.GetPassPreferences(log : ICompilerLog) : PassPreferences = 
-            PassPreferences(seq [],
+            PassPreferences(seq [ SlimLambdaPass.SlimLambdaPassName ],
                 seq [
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         LogPass(),
