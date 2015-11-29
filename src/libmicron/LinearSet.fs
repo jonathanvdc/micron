@@ -66,6 +66,14 @@ module LinearSet =
     /// The empty set.
     let empty<'a when 'a : equality> : LinearSet<'a> = ofList []
 
+    /// Checks if the given linear set is empty.
+    let isEmpty (set : LinearSet<'a>) : bool = 
+        set |> toList |> List.isEmpty
+
+    /// Counts the number of items in the given linear set.
+    let count (set : LinearSet<'a>) : int = 
+        set |> toList |> List.length
+
     /// Creates a singleton set from the given item.
     let singleton item = ofList [item]
 

@@ -3,11 +3,13 @@
 open libmicron.ConstantPattern
 open libcontextfree
 open Flame
+open Flame.Build
 open Flame.Compiler
 open Flame.Compiler.Expressions
 open Flame.Compiler.Statements
 open Flame.Compiler.Variables
 open Flame.Functional
+open System
 
 /// A semantic analysis module for
 /// micron parse trees.
@@ -146,3 +148,68 @@ module Analysis =
         // This points to an error in the grammar.
         EB.VoidError (LogEntry("Unexpected raw token", sprintf "Token '%s' was completely unexpected here." term.contents))
             |> EB.Source (TokenHelpers.sourceLocation term)
+
+
+    /// Analyzes a let-definition.
+    let rec analyzeLetDefinition (scope : GlobalScope) (name : Token) (parameterNames : Token list) 
+                                 (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
+                                 (declModule : IType) : Result<IMember * IStatement, LogEntry> =        
+        match parameterNames with
+        | [] -> 
+            // Zero parameters. If this let-binding does not
+            // contain any free unknown types, then we
+            // can compile this down to a field. Otherwise,
+            // we'll have to turn it into a method.
+
+            // Analyze the field's value.
+            let fieldVal = analyzeExpression (LocalScope(scope)) value
+            // Run type inference.
+            let inferredTypes = TypeInference.inferTypes fieldVal
+
+            let createConstant (knownTypes, unknownTypes) = 
+                if LinearSet.isEmpty unknownTypes then
+                    // There are no free unknown types. We can reduce
+                    // this let-binding to a field definition.
+                    let resolveType = 
+                        raise (InvalidOperationException("Free unknown type in field definition. " + 
+                                                         "Something went wrong in the type inference phase."))
+                    // Resolve unknown types.
+                    let fieldVal = TypeInference.resolveExpression resolveType fieldVal
+                    // Create a new described field to hold the field's value.
+                    let descField = DescribedField(name.contents, declModule, fieldVal.Type, true)
+                    // Mark the newly created field as public.
+                    descField.AddAttribute(AccessAttribute(AccessModifier.Public))
+                    // Create an initialization statement for the newly created field.
+                    let fieldInitStmt = FieldVariable(descField, null).CreateSetStatement(fieldVal)
+                    descField :> IMember, fieldInitStmt
+                else
+                    // We found free unknown types. We'll have to create
+                    // a (parameterless) method for this let-binding.
+                    let descMethod = DescribedBodyMethod(name.contents, declModule)
+                    // Mark the newly created method as static (it does not use a `this` pointer).
+                    descMethod.IsStatic <- true
+                    // Mark the newly created method as public.
+                    descMethod.AddAttribute(AccessAttribute(AccessModifier.Public))
+                    // Mark the newly created method as pure.
+                    descMethod.AddAttribute(PrimitiveAttributes.Instance.ConstantAttribute)
+                    // Bind the free unknown types to generic parameters.
+                    let genParams, resolveType = TypeInference.bindTypes knownTypes unknownTypes descMethod
+                    // Add all generic parameters to the method.
+                    for item in genParams do
+                        descMethod.AddGenericParameter item
+                    
+                    // Now, substitute unknown types in the let-binding's body.
+                    let fieldVal = TypeInference.resolveExpression resolveType fieldVal
+
+                    // Set the newly created method's return type
+                    // to the value's type.
+                    descMethod.ReturnType <- fieldVal.Type
+
+                    // Return the expression's value.
+                    descMethod.Body <- EB.ReturnUnchecked fieldVal |> EB.ToStatement
+
+                    descMethod :> IMember, EmptyStatement.Instance :> IStatement
+
+            Result.map createConstant inferredTypes
+        | _ -> 
+            Error (LogEntry("Unimplemented feature", "Let-binding functions are not supported yet.", srcLoc))

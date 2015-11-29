@@ -330,5 +330,5 @@ module TypeInference =
 
     /// Substitutes all unknown types in the given expression
     /// according to the given mapping function.
-    let substituteTypes (mapping : UnknownType -> IType) (expr : IExpression) : IExpression =
+    let resolveExpression (mapping : UnknownType -> IType) (expr : IExpression) : IExpression =
         MemberNodeVisitor.ConvertTypes(UnknownTypeResolvingVisitor(mapping), expr)
