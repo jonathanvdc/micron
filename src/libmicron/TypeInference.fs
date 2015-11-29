@@ -188,15 +188,57 @@ module TypeInference =
 
         List.fold step (Success LinearMap.empty) relations
 
+    /// A type visitor that tries to find unknown types.
+    type UnknownTypeVisitor(target : HashSet<UnknownType>) =
+        inherit TypeTransformerBase()
+
+        override this.ConvertTypeDefault (ty : IType) : IType =
+            match ty with
+            | :? UnknownType as ty -> target.Add ty |> ignore; ty :> IType
+            | _ -> ty
+
+    /// A node visitor that tries to find all unknown types.
+    type UnknownTypeFinder() =
+        inherit ContextlessVisitorBase()
+
+        let mutable results = HashSet<UnknownType>()
+
+        let tyConv = UnknownTypeVisitor(results)
+        let memConv = MemberConverter(tyConv, new TypeMethodConverter(tyConv), 
+                                      new TypeFieldConverter(tyConv))
+
+        /// Gets the set of unknown types that this unknown type visitor has
+        /// discovered so far.
+        member this.UnknownTypes = results
+
+        override this.Matches(stmt : IStatement) : bool =
+            stmt :? IMemberNode
+        override this.Matches(expr : IExpression) : bool =
+            true
+        
+        override this.Transform(stmt : IStatement) : IStatement =
+            match stmt with
+            | :? IMemberNode as memberNode ->
+                memberNode.ConvertMembers(memConv) |> ignore
+            | _ ->
+                ()
+            stmt.Accept this
+            
+        override this.Transform(expr : IExpression) : IExpression =
+            tyConv.Convert expr.Type |> ignore
+            match expr with
+            | :? IMemberNode as memberNode -> 
+                memberNode.ConvertMembers(memConv) |> ignore
+            | _ -> 
+                ()
+            expr.Accept this
+
     /// Extracts all unknown types from the given expression.
     let findUnknownTypes (expr : IExpression) : LinearSet<UnknownType> =
-        let results = HashSet<UnknownType>()
-        let visitType : IType -> IType = function
-        | :? UnknownType as ty -> results.Add ty |> ignore; ty :> IType
-        | ty -> ty
+        let visitor = UnknownTypeFinder()
 
-        MemberNodeVisitor.ConvertTypes(DelegateConverter(Func<IType, IType>(visitType)), expr) |> ignore
-        LinearSet.ofSeq results
+        visitor.Visit expr |> ignore
+        LinearSet.ofSeq visitor.UnknownTypes
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
@@ -314,7 +356,15 @@ module TypeInference =
         let rec resolveUnknownType ty =
             match LinearMap.tryFind ty genParamMap with
             | Some result -> result :> IType
-            | None -> LinearMap.find ty knownTypes |> toType resolveUnknownType
+            | None -> 
+                match LinearMap.tryFind ty knownTypes with
+                | Some result -> toType resolveUnknownType result
+                | None -> 
+                    let show = createShow()
+                    let unknown = sprintf "%A" (unknownTypes |> LinearSet.toList |> List.map (Variable >> show))
+                    let known = sprintf "%A" (knownTypes |> LinearMap.toList |> List.map (fun (k, v) -> show (Variable k) + " := " + show v))
+                    let bad = show (Variable ty)
+                    raise (InvalidOperationException(sprintf "Found a free unknown type '%s' after type inference. Non-free unknown types: %s. Known types: %s" bad unknown known))
 
         LinearSet.ofList genParamMap.Values, resolveUnknownType
 
