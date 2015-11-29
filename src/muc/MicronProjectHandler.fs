@@ -27,7 +27,7 @@ type MicronProjectHandler() =
         | doc -> 
             let tokens = Lexer.lex doc |> TokenHelpers.foldTrivia
             match parser tokens with
-            | Choice1Of2 tree -> Some tree
+            | Choice1Of2 tree -> Some (Parser.stripGroups tree)
             | Choice2Of2(token :: _) ->
                 parameters.Log.LogError(LogEntry("Syntax error",  "Unexpected token type.", token.sourceLocation))
                 None
@@ -52,6 +52,11 @@ type MicronProjectHandler() =
         member this.GetPassPreferences(log : ICompilerLog) : PassPreferences = 
             PassPreferences(seq [],
                 seq [
+                    PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
+                        LogPass(),
+                        "check-nodes", 
+                        true)
+
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         VerifyingDeadCodePass.Instance,
                         PassExtensions.EliminateDeadCodePassName, 
@@ -83,7 +88,9 @@ type MicronProjectHandler() =
                     return DescribedAssembly(project.Name, binder.Environment) :> IAssembly
                 | Some tree ->
                     // This is a horribly inefficient implementation of a 
-                    // member provider.
+                    // member provider. This is okay right now, because
+                    // we don't use the member provider at this time.
+                    // This may change in the future, though.
                     let memProvider (ty : IType) = ty.GetAllMembers()
                     // Create a global scope
                     let scope = GlobalScope(FunctionalBinder(binder), StrictConversionRules(Analysis.nameType),

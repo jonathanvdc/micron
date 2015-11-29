@@ -218,9 +218,13 @@ module Analysis =
                 if LinearSet.isEmpty unknownTypes then
                     // There are no free unknown types. We can reduce
                     // this let-binding to a field definition.
-                    let resolveType = 
-                        raise (InvalidOperationException("Free unknown type in field definition. " + 
-                                                         "Something went wrong during type inference."))
+                    let rec resolveType ty =
+                        match LinearMap.tryFind ty knownTypes with
+                        | None -> 
+                            raise (InvalidOperationException("Free unknown type in field definition. " + 
+                                                             "Something went wrong during type inference."))
+                        | Some tyConstraint ->
+                            TypeInference.toType resolveType tyConstraint
                     // Resolve unknown types.
                     let fieldVal = TypeInference.resolveExpression resolveType fieldVal
                     // Create a new described field to hold the field's value.
@@ -318,6 +322,9 @@ module Analysis =
         // at run-time before we access any of the 
         // module type's members.
         let staticCtor = DescribedBodyMethod("cctor", moduleType, PrimitiveTypes.Void, true)
+        staticCtor.IsConstructor <- true
+        // Return from the static constructor.
+        initStmts.Add(EB.ToStatement EB.ReturnVoid)
         // Make the list of initialization statements
         // the body of the static constructor.
         staticCtor.Body <- BlockStatement(initStmts)
@@ -334,7 +341,7 @@ module Analysis =
         // If so, then relevant information is extracted.
         let isModule = function
         | ProductionNode(Constant Parser.moduleIdentifier, [TerminalLeaf moduleKeyword; TerminalLeaf ident; contents]) ->
-            Some (ident.contents, Parser.flattenList Parser.identifierListIdentifier contents)
+            Some (ident.contents, Parser.flattenList Parser.letDefinitionListIdentifier contents)
         | _ ->
             None
         

@@ -148,6 +148,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LogPass.fs" />
     <Compile Include="MicronProjectHandler.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
