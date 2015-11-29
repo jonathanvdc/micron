@@ -16,10 +16,9 @@ let showErrors (log : ICompilerLog) (expr : IExpression) =
     visitor.Visit expr
 
 /// Names the given type.
-let nameType (ty : IType) = ty.FullName
+let nameType = Analysis.nameType
 let memProvider (ty : IType) = ty.GetAllMembers()
-let getParameters (func : IMethod option) =
-    Map.empty
+let getParameters = Analysis.getParameters
 
 let parseExpression (log : ICompilerLog) (code : string) =
     // Prefix the list of tokens with `let <identifier> =`.

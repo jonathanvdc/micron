@@ -17,6 +17,54 @@ open System.Collections.Generic
 module Analysis =
     module EB = ExpressionBuilder
 
+    let builtinTypes =
+        Map.ofList
+            [
+                "int8", PrimitiveTypes.Int8
+                "int16", PrimitiveTypes.Int16
+                "int32", PrimitiveTypes.Int32
+                "int64", PrimitiveTypes.Int64
+
+                "uint8", PrimitiveTypes.UInt8
+                "uint16", PrimitiveTypes.UInt16
+                "uint32", PrimitiveTypes.UInt32
+                "uint64", PrimitiveTypes.UInt64
+
+                "float32", PrimitiveTypes.Float32
+                "float64", PrimitiveTypes.Float64
+
+                "bool", PrimitiveTypes.Boolean
+                "char", PrimitiveTypes.Char
+            ]
+
+    /// Names the given type.
+    let rec nameType (ty : IType) : string = 
+        match Map.tryFindKey (fun _ item -> item = ty) builtinTypes with
+        | Some name -> name
+        | None ->
+            match ty with
+            | :? GenericType as ty ->
+                nameType (ty.Declaration) + "<" + (ty.GenericArguments |> Seq.map nameType |> String.concat ", ") + ">"
+            | _ ->
+                match MethodType.GetMethod ty with
+                | null -> ty.FullName
+                | signature -> nameFunction signature.ReturnType (signature.Parameters.GetTypes() |> List.ofSeq)
+    and nameFunction (retTy : IType) = function
+    | [] -> nameType retTy
+    | argTy :: argTys -> 
+        match MethodType.GetMethod argTy with
+        | null -> nameType argTy + " " + nameFunction retTy argTys
+        | _ -> "(" + nameType argTy + ") " + nameFunction retTy argTys
+
+    /// Creates a mapping from names to variables
+    /// that represents the given method option's
+    /// parameter list.
+    let getParameters = function
+    | None -> Map.empty
+    | Some (func : IMethod) ->
+        func.Parameters |> Seq.mapi (fun i param -> param, i)
+                        |> Seq.fold (fun result (param, i) -> Map.add param.Name (ArgumentVariable(param, i) :> IVariable) result) Map.empty
+
     /// Analyzes the given expression parse tree.
     let rec analyzeExpression (scope : LocalScope) : ParseTree<string, Token> -> IExpression = function
     | ProductionNode(Constant Parser.ifThenElseIdentifier,
@@ -279,7 +327,7 @@ module Analysis =
         moduleType :> IType
 
     /// Analyzes an entire program.
-    let analyzeProgram (scope : GlobalScope) (contents : ParseTree<string, Token>) (declAsm : IAssembly) : INamespace =
+    let analyzeProgram (scope : GlobalScope) (contents : ParseTree<string, Token>) (declAsm : IAssembly) : INamespaceBranch =
         let flatDefs = Parser.flattenList Parser.programIdentifier contents
 
         // Checks if a parse tree is a module declaration.
@@ -307,8 +355,15 @@ module Analysis =
         if List.isEmpty topLevelDefs then
             // If there are no top-level declarations,
             // then we're done here.
-            result :> INamespace
+            result :> INamespaceBranch
         else
             // Otherwise, create a `<Program>` module and
             // put them in there.
-            result.WithType(analyzeModule scope "<Program>" topLevelDefs) :> INamespace
+            result.WithType(analyzeModule scope "<Program>" topLevelDefs) :> INamespaceBranch
+
+    /// Analyzes an assembly. This does the same thing as analyzing a program,
+    /// except that the result is wrapped in an assembly of the given name.
+    let analyzeAssembly (scope : GlobalScope) (name : string) (contents : ParseTree<string, Token>) : IAssembly =
+        let asm = DescribedAssembly(name, scope.Environment)
+        asm.MainNamespace <- analyzeProgram scope contents asm
+        asm :> IAssembly
