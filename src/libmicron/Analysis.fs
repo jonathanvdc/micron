@@ -325,7 +325,8 @@ module Analysis =
                 let bodyExpr = TypeInference.resolveExpression resolveType bodyExpr
 
                 // Return the expression's value.
-                descMethod.Body <- EB.ToStatement bodyExpr
+                descMethod.Body <- bodyExpr |> EB.Source (TokenHelpers.treeSourceLocation value) 
+                                            |> EB.ToStatement
 
                 descMethod :> IMember, EmptyStatement.Instance :> IStatement
 
