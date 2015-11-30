@@ -242,7 +242,8 @@ module TypeInference =
 
     /// A node visitor that makes up type constraints
     /// for unknown types.
-    type TypeConstraintVisitor(initialConstraints : (TypeConstraint * TypeConstraint * SourceLocation) list) =
+    type TypeConstraintVisitor(initialConstraints : (TypeConstraint * TypeConstraint * SourceLocation) list,
+                               topLevelRetType : IType) =
         inherit ContextlessVisitorBase()
 
         let mutable constraints = initialConstraints
@@ -250,7 +251,7 @@ module TypeInference =
         /// A variable that remembers the 
         /// current lambda's return type, if
         /// any.
-        let mutable retType : IType = null
+        let mutable retType : IType = topLevelRetType
 
         /// Adds a constraint to this type constraint visitor's constraint list.
         let addConstraint (left : TypeConstraint) (right : TypeConstraint) : unit =
@@ -339,8 +340,8 @@ module TypeInference =
                 expr.Accept this
 
     /// Finds all constraints in the given expression.
-    let findConstraints (expr : IExpression) : (TypeConstraint * TypeConstraint * SourceLocation) list =
-        let visitor = TypeConstraintVisitor([])
+    let findConstraints (retType : IType option) (expr : IExpression) : (TypeConstraint * TypeConstraint * SourceLocation) list =
+        let visitor = TypeConstraintVisitor([], match retType with Some x -> x | None -> null)
         visitor.Visit expr |> ignore
         visitor.Constraints
 
@@ -349,13 +350,13 @@ module TypeInference =
     /// mapped to their known counterparts. 
     /// The remaining unkown types are stored
     /// in a set.
-    let inferTypes (expr : IExpression) : Result<LinearMap<UnknownType, TypeConstraint> * LinearSet<UnknownType>, LogEntry> =
+    let inferTypes (retType : IType option) (expr : IExpression) : Result<LinearMap<UnknownType, TypeConstraint> * LinearSet<UnknownType>, LogEntry> =
         let allUnknowns = findUnknownTypes expr
         let replaceResolved (resolved : LinearMap<UnknownType, TypeConstraint>) =
             resolved, LinearSet.difference allUnknowns resolved.Keys
 
-        findConstraints expr |> resolve
-                             |> Result.map replaceResolved
+        findConstraints retType expr |> resolve
+                                     |> Result.map replaceResolved
 
     /// Binds all items in the set of truly unknown types to
     /// generic parameters, and creates a mapping from

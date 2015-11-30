@@ -211,8 +211,11 @@ module Analysis =
 
             // Analyze the field's value.
             let fieldVal = analyzeExpression (LocalScope(scope)) value
-            // Run type inference.
-            let inferredTypes = TypeInference.inferTypes fieldVal
+            // Run type inference. We don't need
+            // to invent a return type here, because
+            // constants can't call themselves
+            // recursively. Pass None to highlight that fact.
+            let inferredTypes = TypeInference.inferTypes None fieldVal
 
             let createConstant (knownTypes, unknownTypes) = 
                 if LinearSet.isEmpty unknownTypes then
@@ -264,7 +267,72 @@ module Analysis =
 
             Result.map createConstant inferredTypes
         | _ -> 
-            Error (LogEntry("Unimplemented feature", "Let-binding functions are not supported yet.", srcLoc))
+            // One or more parameters. We'll compile this
+            // let-binding down to a method.
+
+            // Let's start by creating a method.
+            let descMethod = DescribedBodyMethod(name.contents, declModule)
+
+            // Mark that method as static, public and pure.
+            descMethod.IsStatic <- true
+            descMethod.AddAttribute(AccessAttribute(AccessModifier.Public))
+            descMethod.AddAttribute(PrimitiveAttributes.Instance.ConstantAttribute)
+
+            // We don't know what the above method's parameter
+            // types are. So instead of creating a parameter list
+            // right now, we'll just invent a bunch of fake parameters.
+            // Later on, we'll run type inference, resolve those
+            // fake parameters' types, and create an actual parameter list.
+            let unknownParamDesc = parameterNames |> List.map (fun tok -> tok.contents, UnknownType())
+            let unknownParams = unknownParamDesc |> List.map (fun (name, ty) -> DescribedParameter(name, ty) :> IParameter)
+
+            // The same goes for the return type. We just
+            // don't know what its type is.
+            let unknownRetType = UnknownType()
+
+            // Create a local scope from the declaring scope.
+            let localScope = LocalScope(scope)
+            // Register the parameter list as variables.
+            let localScope = unknownParams |> List.mapi (fun i p -> i, p)
+                                           |> List.fold (fun (localScope : LocalScope) (i, p) -> 
+                                               localScope.WithVariable (ArgumentVariable(p, i)) p.Name) localScope
+            // Create a delegate to the (recursive) method we're building here.
+            let recDeleg = RecursiveMethodExpression(descMethod, unknownRetType, unknownParams)
+            // Then add that delegate to the local scope.
+            let localScope = localScope.WithVariable (ExpressionVariable(recDeleg)) descMethod.Name
+
+            // Analyze the body expression's value. Also insert a
+            // return node. That way, type inference can take
+            // advantage of it, and infer the correct return type.
+            let bodyExpr = EB.ReturnUnchecked (analyzeExpression localScope value)
+
+            let createFunction (knownTypes, unknownTypes) = 
+                // Bind the free unknown types to generic parameters.
+                let genParams, resolveType = TypeInference.bindTypes knownTypes unknownTypes descMethod
+                // Add all generic parameters to the method.
+                for item in genParams do
+                    descMethod.AddGenericParameter item
+
+                // Add all parameters to the method.
+                for (name, ty) in unknownParamDesc do
+                    descMethod.AddParameter(DescribedParameter(name, resolveType ty))
+                    
+                // Set the newly created method's return type
+                // to the value's type.
+                descMethod.ReturnType <- resolveType unknownRetType
+
+                // Now, substitute unknown types in the let-binding's body.
+                let bodyExpr = TypeInference.resolveExpression resolveType bodyExpr
+
+                // Return the expression's value.
+                descMethod.Body <- EB.ToStatement bodyExpr
+
+                descMethod :> IMember, EmptyStatement.Instance :> IStatement
+
+            // Run type inference.
+            let inferredTypes = TypeInference.inferTypes (Some (unknownRetType :> IType)) bodyExpr
+
+            Result.map createFunction inferredTypes
 
     /// Analyzes a module definition.
     let analyzeModule (scope : GlobalScope) (name : string) (definitions : ParseTree<string, Token> list) (declNs : INamespace) 

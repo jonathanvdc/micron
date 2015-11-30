@@ -87,7 +87,7 @@ type PartialApplication private(target : IExpression, args : IExpression list,
 
     override this.ToString() =
       let totalArgs = target.ToString() :: List.map (fun (x : IExpression) -> x.ToString()) args
-      "apply(" + (String.concat ", " totalArgs) + ")"
+      sprintf "apply(%s)" (String.concat ", " totalArgs)
 
     interface IExpression with
         member this.Optimize() = lowered.Value.Optimize()
