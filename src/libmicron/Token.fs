@@ -30,6 +30,8 @@ type TokenType =
 | Colon
 /// An underscore.
 | Underscore
+/// A comment token.
+| Comment
 /// An equals (`=`) sign.
 | Equals
 /// A left parenthesis.
@@ -115,7 +117,9 @@ module TokenHelpers =
     /// i.e. it should be skipped when parsing.
     let isTrivia : TokenType -> bool =
         function
-        | TokenType.Whitespace | TokenType.EndOfStream -> true
+        | TokenType.Comment
+        | TokenType.Whitespace 
+        | TokenType.EndOfStream -> true
         | _ -> false
 
     /// Finds out if the given token type is a non-trivia type.
