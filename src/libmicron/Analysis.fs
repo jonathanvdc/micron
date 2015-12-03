@@ -128,8 +128,11 @@ module Analysis =
             // This should also support recursion.
             let childScope = scope.ChildScope
             let createBody lambdaScope = analyzeExpression lambdaScope value
-
-            let attributes = [PrimitiveAttributes.Instance.ConstantAttribute]
+            // Add a source location for diagnostics purposes.
+            let attributes = [
+                              PrimitiveAttributes.Instance.ConstantAttribute
+                              SourceLocationAttribute(TokenHelpers.sourceLocation name) :> IAttribute
+                             ]
             let argumentNames = [for t in ParseTree.treeYield argsNode -> t.contents]
 
             // Create a lambda for the defined function.
