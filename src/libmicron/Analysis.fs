@@ -277,6 +277,8 @@ module Analysis =
             descMethod.IsStatic <- true
             descMethod.AddAttribute(AccessAttribute(AccessModifier.Public))
             descMethod.AddAttribute(PrimitiveAttributes.Instance.ConstantAttribute)
+            // Add a source location for diagnostics purposes.
+            descMethod.AddAttribute(SourceLocationAttribute(TokenHelpers.sourceLocation name))
 
             // We don't know what the above method's parameter
             // types are. So instead of creating a parameter list

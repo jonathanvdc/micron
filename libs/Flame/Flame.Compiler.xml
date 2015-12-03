@@ -1799,6 +1799,20 @@
  Gets the member's source location.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.SourceLocationAttribute">
+      <summary>
+ An attribute that encodes a source location. This is a convenient
+ alternative to implementing ISourceMember, but it is less flexible,
+ because the source location cannot be computed on request when
+ using this attribute.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.SourceLocationAttribute.Location">
+      <summary>
+ Gets the actual source location stored in this
+ attribute.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.SourceMemberExtensions.GetSourceLocation(Flame.IMember)">
       <summary>
  Tries to get the given member's source location.
