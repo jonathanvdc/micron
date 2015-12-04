@@ -204,7 +204,7 @@ module Analysis =
     /// Analyzes a let-definition.
     let rec analyzeLetDefinition (scope : GlobalScope) (name : Token) (parameterNames : Token list) 
                                  (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
-                                 (declModule : IType) : Result<IMember * IStatement, LogEntry> =        
+                                 (declModule : IType) : Result<IMember, LogEntry> =        
         match parameterNames with
         | [] -> 
             // Zero parameters. If this let-binding does not
@@ -221,52 +221,35 @@ module Analysis =
             let inferredTypes = TypeInference.inferTypes None fieldVal
 
             let createConstant (knownTypes, unknownTypes) = 
-                if LinearSet.isEmpty unknownTypes then
-                    // There are no free unknown types. We can reduce
-                    // this let-binding to a field definition.
-                    let rec resolveType ty =
-                        match LinearMap.tryFind ty knownTypes with
-                        | None -> 
-                            raise (InvalidOperationException("Free unknown type in field definition. " + 
-                                                             "Something went wrong during type inference."))
-                        | Some tyConstraint ->
-                            TypeInference.toType resolveType tyConstraint
-                    // Resolve unknown types.
-                    let fieldVal = TypeInference.resolveExpression resolveType fieldVal
-                    // Create a new described field to hold the field's value.
-                    let descField = DescribedField(name.contents, declModule, fieldVal.Type, true)
-                    // Mark the newly created field as public.
-                    descField.AddAttribute(AccessAttribute(AccessModifier.Public))
-                    // Create an initialization statement for the newly created field.
-                    let fieldInitStmt = FieldVariable(descField, null).CreateSetStatement(fieldVal)
-                    descField :> IMember, fieldInitStmt
-                else
-                    // We found free unknown types. We'll have to create
-                    // a (parameterless) method for this let-binding.
-                    let descMethod = DescribedBodyMethod(name.contents, declModule)
-                    // Mark the newly created method as static (it does not use a `this` pointer).
-                    descMethod.IsStatic <- true
-                    // Mark the newly created method as public.
-                    descMethod.AddAttribute(AccessAttribute(AccessModifier.Public))
-                    // Mark the newly created method as pure.
-                    descMethod.AddAttribute(PrimitiveAttributes.Instance.ConstantAttribute)
-                    // Bind the free unknown types to generic parameters.
-                    let genParams, resolveType = TypeInference.bindTypes knownTypes unknownTypes descMethod
-                    // Add all generic parameters to the method.
-                    for item in genParams do
-                        descMethod.AddGenericParameter item
+                // We'll create a (parameterless) method for this let-binding.
+                // We *could* also create a field here, but this has some disadvantages:
+                //   * requires initialization --> requires static constructor
+                //   * makes dead member elimination harder 
+                //     (fields are initialized in the static constructor, which cannot be eliminated)
+                let descMethod = DescribedBodyMethod(name.contents, declModule)
+                // Mark the newly created method as static (it does not use a `this` pointer).
+                descMethod.IsStatic <- true
+                // Mark the newly created method as public.
+                descMethod.AddAttribute(AccessAttribute(AccessModifier.Public))
+                // Mark the newly created method as pure.
+                descMethod.AddAttribute(PrimitiveAttributes.Instance.ConstantAttribute)
+                // Bind the free unknown types to generic parameters.
+                let genParams, resolveType = TypeInference.bindTypes knownTypes unknownTypes descMethod
+                // Add all generic parameters to the method.
+                for item in genParams do
+                    descMethod.AddGenericParameter item
                     
-                    // Now, substitute unknown types in the let-binding's body.
-                    let fieldVal = TypeInference.resolveExpression resolveType fieldVal
+                // Now, substitute unknown types in the let-binding's body.
+                let fieldVal = TypeInference.resolveExpression resolveType fieldVal
 
-                    // Set the newly created method's return type
-                    // to the value's type.
-                    descMethod.ReturnType <- fieldVal.Type
+                // Set the newly created method's return type
+                // to the value's type.
+                descMethod.ReturnType <- fieldVal.Type
 
-                    // Return the expression's value.
-                    descMethod.Body <- EB.ReturnUnchecked fieldVal |> EB.ToStatement
+                // Return the expression's value.
+                descMethod.Body <- EB.ReturnUnchecked fieldVal |> EB.ToStatement
 
-                    descMethod :> IMember, EmptyStatement.Instance :> IStatement
+                descMethod :> IMember
 
             Result.map createConstant inferredTypes
         | _ -> 
@@ -333,7 +316,7 @@ module Analysis =
                 descMethod.Body <- bodyExpr |> EB.Source (TokenHelpers.treeSourceLocation value) 
                                             |> EB.ToStatement
 
-                descMethod :> IMember, EmptyStatement.Instance :> IStatement
+                descMethod :> IMember
 
             // Run type inference.
             let inferredTypes = TypeInference.inferTypes (Some (unknownRetType :> IType)) bodyExpr
@@ -348,8 +331,6 @@ module Analysis =
         // ... which we'll mark as static, and public.
         moduleType.AddAttribute(PrimitiveAttributes.Instance.StaticTypeAttribute)
         moduleType.AddAttribute(AccessAttribute(AccessModifier.Public))
-
-        let initStmts = List<IStatement>()
 
         // Iterate over the list of definitions in the module.
         for def in definitions do
@@ -368,16 +349,13 @@ module Analysis =
                 let parameterTokens = ParseTree.treeYield argsNode
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
                 match analyzeLetDefinition scope name parameterTokens value srcLoc moduleType with
-                | Success(:? IMethod as result, init) ->
+                | Success(:? IMethod as result) ->
                     moduleType.AddMethod result
-                    initStmts.Add init
-                | Success(:? IField as result, init) ->
+                | Success(:? IField as result) ->
                     moduleType.AddField result
-                    initStmts.Add init
-                | Success(:? IProperty as result, init) ->
+                | Success(:? IProperty as result) ->
                     moduleType.AddProperty result
-                    initStmts.Add init
-                | Success(_, _) ->
+                | Success(_) ->
                     scope.Log.LogError(LogEntry("Unknown member type", sprintf "Member type of let-binding '%s' was not unexpected." name.contents, srcLoc))
                 | Error msg ->
                     scope.Log.LogError msg
@@ -390,20 +368,6 @@ module Analysis =
                 // Unexpected terminal leaf.
                 // This points to an error in the grammar.
                 scope.Log.LogError(LogEntry("Unexpected raw token", sprintf "Token '%s' was completely unexpected here." term.contents, term.sourceLocation))
-
-        // We're going to need a static constructor to
-        // initialize fields with. This thing will be executed
-        // at run-time before we access any of the 
-        // module type's members.
-        let staticCtor = DescribedBodyMethod("cctor", moduleType, PrimitiveTypes.Void, true)
-        staticCtor.IsConstructor <- true
-        // Return from the static constructor.
-        initStmts.Add(EB.ToStatement EB.ReturnVoid)
-        // Make the list of initialization statements
-        // the body of the static constructor.
-        staticCtor.Body <- BlockStatement(initStmts)
-        // Register the static constructor with the module type.
-        moduleType.AddMethod staticCtor
 
         moduleType :> IType
 
