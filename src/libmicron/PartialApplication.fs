@@ -36,16 +36,15 @@ type PartialApplication private(target : IExpression, args : IExpression list,
 
                  UnknownExpression(resultType) :> IExpression
              else if List.length args < Seq.length targetSignature.Parameters then
-                 // Copy the attributes from the original function.
-                 let methodHeader = FunctionalMemberHeader("", targetSignature.Attributes)
                  // If we already have n arguments, skip the first n parameters.
                  let n = List.length args
                  let newParams = Array.ofSeq (Seq.skip n targetSignature.Parameters)
+
+                 // Copy the attributes from the original function.
                  // Construct the new function's signature...
-                 let newSignature =
-                     FunctionalMethod(methodHeader, null, true)
-                         .WithParameters(fun _ -> Seq.ofArray newParams)
-                         .WithReturnType(fun _ -> targetSignature.ReturnType)
+                 let newSignature = TypeHelpers.createDelegateSignature targetSignature.Attributes 
+                                                                        (Seq.ofArray newParams)
+                                                                        targetSignature.ReturnType
                  // ...and capture all the relevant values in it.
                  let lambdaHeader = LambdaHeader(newSignature, Array.ofList (target :: args))
                  let boundHeaderBlock = LambdaBoundHeaderBlock()

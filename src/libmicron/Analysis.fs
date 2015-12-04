@@ -131,16 +131,13 @@ module Analysis =
             // Add a source location for diagnostics purposes.
             let attributes = [
                               PrimitiveAttributes.Instance.ConstantAttribute
-                              SourceLocationAttribute(TokenHelpers.sourceLocation name) :> IAttribute
+                              SourceLocationAttribute(here) :> IAttribute
                              ]
             let argumentNames = [for t in ParseTree.treeYield argsNode -> t.contents]
 
             // Create a lambda for the defined function.
-            let header = FunctionalMemberHeader("", attributes, here)
             let makeParam argName = Flame.Build.DescribedParameter(argName, UnknownType()) :> IParameter
-            let signature = FunctionalMethod(header, null, true)
-                                .WithParameters(fun _ -> Seq.map makeParam argumentNames)
-                                .WithReturnType(fun _ -> UnknownType() :> IType)
+            let signature = TypeHelpers.createDelegateSignature attributes (Seq.map makeParam argumentNames) (UnknownType() :> IType)
 
             // The lambda's identifier is equivalent to the name token's contents.
             let ident = name.contents
@@ -305,8 +302,7 @@ module Analysis =
                 for (name, ty) in unknownParamDesc do
                     descMethod.AddParameter(DescribedParameter(name, resolveType ty))
                     
-                // Set the newly created method's return type
-                // to the value's type.
+                // Resolve and store the return type.
                 descMethod.ReturnType <- resolveType unknownRetType
 
                 // Now, substitute unknown types in the let-binding's body.
