@@ -230,6 +230,8 @@ module Analysis =
                 descMethod.AddAttribute(AccessAttribute(AccessModifier.Public))
                 // Mark the newly created method as pure.
                 descMethod.AddAttribute(PrimitiveAttributes.Instance.ConstantAttribute)
+                // Add a source location for diagnostics purposes.
+                descMethod.AddAttribute(SourceLocationAttribute(TokenHelpers.sourceLocation name))
                 // Bind the free unknown types to generic parameters.
                 let genParams, resolveType = TypeInference.bindTypes knownTypes unknownTypes descMethod
                 // Add all generic parameters to the method.
