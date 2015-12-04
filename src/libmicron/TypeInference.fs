@@ -340,8 +340,11 @@ module TypeInference =
                 expr.Accept this
 
     /// Finds all constraints in the given expression.
-    let findConstraints (retType : IType option) (expr : IExpression) : (TypeConstraint * TypeConstraint * SourceLocation) list =
-        let visitor = TypeConstraintVisitor([], match retType with Some x -> x | None -> null)
+    /// The expression's result type is optionally associated 
+    /// with an unknown type.
+    let findConstraints (predefinedConstraints : (TypeConstraint * TypeConstraint * SourceLocation) list) 
+                        (expr : IExpression) : (TypeConstraint * TypeConstraint * SourceLocation) list =
+        let visitor = TypeConstraintVisitor(predefinedConstraints, null)
         visitor.Visit expr |> ignore
         visitor.Constraints
 
@@ -350,13 +353,14 @@ module TypeInference =
     /// mapped to their known counterparts. 
     /// The remaining unkown types are stored
     /// in a set.
-    let inferTypes (retType : IType option) (expr : IExpression) : Result<LinearMap<UnknownType, TypeConstraint> * LinearSet<UnknownType>, LogEntry> =
+    let inferTypes (predefinedConstraints : (TypeConstraint * TypeConstraint * SourceLocation) list) 
+                   (expr : IExpression) : Result<LinearMap<UnknownType, TypeConstraint> * LinearSet<UnknownType>, LogEntry> =
         let allUnknowns = findUnknownTypes expr
         let replaceResolved (resolved : LinearMap<UnknownType, TypeConstraint>) =
             resolved, LinearSet.difference allUnknowns resolved.Keys
 
-        findConstraints retType expr |> resolve
-                                     |> Result.map replaceResolved
+        findConstraints predefinedConstraints expr |> resolve
+                                                   |> Result.map replaceResolved
 
     /// Binds all items in the set of truly unknown types to
     /// generic parameters, and creates a mapping from

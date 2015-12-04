@@ -215,7 +215,7 @@ module Analysis =
             // to invent a return type here, because
             // constants can't call themselves
             // recursively. Pass None to highlight that fact.
-            let inferredTypes = TypeInference.inferTypes None fieldVal
+            let inferredTypes = TypeInference.inferTypes [] fieldVal
 
             let createConstant (knownTypes, unknownTypes) = 
                 // We'll create a (parameterless) method for this let-binding.
@@ -286,10 +286,8 @@ module Analysis =
             // Then add that delegate to the local scope.
             let localScope = localScope.WithVariable (ExpressionVariable(recDeleg)) descMethod.Name
 
-            // Analyze the body expression's value. Also insert a
-            // return node. That way, type inference can take
-            // advantage of it, and infer the correct return type.
-            let bodyExpr = EB.ReturnUnchecked (analyzeExpression localScope value)
+            // Analyze the body expression's value.
+            let bodyExpr = analyzeExpression localScope value
 
             let createFunction (knownTypes, unknownTypes) = 
                 // Bind the free unknown types to generic parameters.
@@ -309,13 +307,19 @@ module Analysis =
                 let bodyExpr = TypeInference.resolveExpression resolveType bodyExpr
 
                 // Return the expression's value.
-                descMethod.Body <- bodyExpr |> EB.Source (TokenHelpers.treeSourceLocation value) 
+                descMethod.Body <- bodyExpr |> EB.ReturnUnchecked
+                                            |> EB.Source (TokenHelpers.treeSourceLocation value) 
                                             |> EB.ToStatement
 
                 descMethod :> IMember
 
+            /// Constrain the function's return type to the
+            /// function body's result type.
+            let initConstraints = [TypeInference.Variable unknownRetType,
+                                   TypeInference.toConstraint bodyExpr.Type, 
+                                   srcLoc]
             // Run type inference.
-            let inferredTypes = TypeInference.inferTypes (Some (unknownRetType :> IType)) bodyExpr
+            let inferredTypes = TypeInference.inferTypes initConstraints bodyExpr
 
             Result.map createFunction inferredTypes
 
