@@ -26,16 +26,42 @@ module TypeHelpers =
             Seq.filter (fun (attr : IAttribute) -> 
                 attr.AttributeType <> PrimitiveAttributes.Instance.ConstantAttribute.AttributeType) attrs
 
-    /// Uncurries the given method signature.
-    let uncurry (signature : IMethod) : IMethod =
-        let rec getInfo (signature : IMethod) : IParameter list * IType * bool =
+    /// Uncurries the given method signature, along with a body.
+    /// The body is also uncurried step-by-step by repeatedly calling
+    /// the given body-uncurrying function parameter on the body,
+    /// providing the index of the first parameter and a contiguous list
+    /// of parameters that belong to the current step in the uncurrying 
+    /// process. Methods and their bodies are uncurried from the 
+    /// inside out.
+    let uncurry (uncurryBody : int -> IParameter list -> 'a -> 'a) (body : 'a) (signature : IMethod) : IMethod * 'a =
+        // Uncurries the given body, but only if it is
+        // not top-level.
+        let maybeUncurry (isTopLevel : bool) (index : int) (parameterList : IParameter list) (body : 'a) : 'a =
+            if isTopLevel then
+                body
+            else
+                uncurryBody index parameterList body
+
+        let rec getInfo (signature : IMethod) (body : 'a) (paramCount : int) (isTopLevel : bool) : IParameter list * IType * bool * 'a =
             match MethodType.GetMethod(signature.ReturnType) with
             | null ->
-                List.ofSeq signature.Parameters, signature.ReturnType, signature.get_IsConstant()
+                let paramList = List.ofSeq signature.Parameters
+                paramList, signature.ReturnType, signature.get_IsConstant(), maybeUncurry isTopLevel paramCount paramList body
             | other ->
-                let innerParams, innerRetType, innerPurity = getInfo other
-                List.append (List.ofSeq signature.Parameters) innerParams, innerRetType, signature.get_IsConstant() && innerPurity
+                // Create a list of outer parameters.
+                let outerParams = List.ofSeq signature.Parameters
+                // Compute the total number of outer parameters.
+                let totalOuterParamCount = paramCount + List.length outerParams
+                // Process the inner method body.
+                let innerParams, innerRetType, innerPurity, body = getInfo other body totalOuterParamCount false
+                // Uncurry the outer method's body.
+                let body = maybeUncurry isTopLevel totalOuterParamCount outerParams body
+                List.append outerParams innerParams, innerRetType, signature.get_IsConstant() && innerPurity, body
 
-        let parameters, retType, isPure = getInfo signature
+        let parameters, retType, isPure, body = getInfo signature body 0 true
         let attrs = filterPurity isPure signature.Attributes
-        createDelegateSignature attrs parameters retType
+        createDelegateSignature attrs parameters retType, body
+
+    /// Uncurries the given method signature.
+    let uncurrySignature (signature : IMethod) = 
+        uncurry (fun _ _ x -> x) () signature
