@@ -95,8 +95,8 @@ type PartialApplication private(target : IExpression, args : IExpression list,
         | :? PartialApplication as target when not target.IsTotalApplication ->
             // Coalesce partial application expressions. 
             // Don't coalesce total applications, though!
-            let optInner = target.Coalesced
-            PartialApplication(target.Target, List.append target.Arguments args, resultType)
+            let optInner : PartialApplication = target.Coalesced
+            PartialApplication(optInner.Target, List.append optInner.Arguments args, resultType)
         | _ ->
             // At some point, partial applications cannot
             // be coalesced any further.
