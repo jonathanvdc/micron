@@ -31,8 +31,7 @@ module TypeHelpers =
     /// the given body-uncurrying function parameter on the body,
     /// providing the index of the first parameter and a contiguous list
     /// of parameters that belong to the current step in the uncurrying 
-    /// process. Methods and their bodies are uncurried from the 
-    /// inside out.
+    /// process. Methods and their bodies are uncurried in a top-down fashion.
     let uncurry (uncurryBody : int -> IParameter list -> 'a -> 'a) (body : 'a) (signature : IMethod) : IMethod * 'a =
         // Uncurries the given body, but only if it is
         // not top-level.
@@ -52,10 +51,11 @@ module TypeHelpers =
                 let outerParams = List.ofSeq signature.Parameters
                 // Compute the total number of outer parameters.
                 let totalOuterParamCount = paramCount + List.length outerParams
-                // Process the inner method body.
-                let innerParams, innerRetType, innerPurity, body = getInfo other body totalOuterParamCount false
-                // Uncurry the outer method's body.
+                // Uncurry the outer method's body first.
                 let body = maybeUncurry isTopLevel totalOuterParamCount outerParams body
+                // Process the inner method and its body.
+                let innerParams, innerRetType, innerPurity, body = getInfo other body totalOuterParamCount false
+                // Concatenate the results
                 List.append outerParams innerParams, innerRetType, signature.get_IsConstant() && innerPurity, body
 
         let parameters, retType, isPure, body = getInfo signature body 0 true
