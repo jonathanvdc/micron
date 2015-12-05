@@ -22,6 +22,11 @@ let compose =
     let h x = x in
     f g h
 
+let multiInvoke =
+    let f x y = 0 in
+    let g x = f in
+    g 2 3
+
 let infiniteRecursion x =
     infiniteRecursion x
 
