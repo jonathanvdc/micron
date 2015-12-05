@@ -58,6 +58,7 @@
     <Compile Include="Lexer.fs" />
     <Compile Include="UnkownType.fs" />
     <Compile Include="TypeHelpers.fs" />
+    <Compile Include="ExpressionHelpers.fs" />
     <Compile Include="RecursiveMethodExpression.fs" />
     <Compile Include="PartialApplication.fs" />
     <Compile Include="TypeInference.fs" />
