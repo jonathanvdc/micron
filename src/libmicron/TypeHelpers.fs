@@ -63,5 +63,5 @@ module TypeHelpers =
         createDelegateSignature attrs parameters retType, body
 
     /// Uncurries the given method signature.
-    let uncurrySignature (signature : IMethod) = 
-        uncurry (fun _ _ x -> x) () signature
+    let uncurrySignature (signature : IMethod) : IMethod = 
+        uncurry (fun _ _ x -> x) () signature |> fst

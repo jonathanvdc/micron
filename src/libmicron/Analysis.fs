@@ -162,21 +162,10 @@ module Analysis =
         let funcExpr = analyzeExpression scope left
         let argExpr = analyzeExpression scope right
 
-        (match funcExpr.GetEssentialExpression() with
-        (*| :? PartialApplication as appl ->
-            // Try to combine partial applications as much as possible.
-            // This may discard *some* debug information, but I think that's
-            // a fair trade-off, even in a debug build ([-g] or [-Og]):
-            // once lamba expressions are lowered, they create really
-            // hard-to-read stack traces.
-            (PartialApplication(appl.Target, List.append appl.Arguments [argExpr])) :> IExpression*)
-        | _ ->
-            // You can't win 'em all, I guess. However,
-            // we do want to preserve the left-hand side's debug
-            // info, if any - we don't have a lot to gain by discarding
-            // source locations here.
-            (AutoInvokeExpression(PartialApplication(funcExpr, [argExpr]))) :> IExpression
-        ) |> EB.Source (TokenHelpers.treeSourceLocation node)
+        // Create a partial application expression, and wrap that
+        // in an auto-invoke expression.
+        AutoInvokeExpression(PartialApplication(funcExpr, [argExpr]))
+            |> EB.Source (TokenHelpers.treeSourceLocation node)
     | ProductionNode(Constant Parser.identifierIdentifier,
                      [TerminalLeaf ident]) ->
         // Identifier
