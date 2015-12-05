@@ -1337,6 +1337,11 @@
  Gets the default value for this type.
  </summary>
     </member>
+    <member name="P:Flame.MethodType.SignatureName">
+      <summary>
+ Gets a string that describes this method type's signature.
+ </summary>
+    </member>
     <member name="P:Flame.MethodType.Method">
       <summary>
  Gets the method this method type is based on.
