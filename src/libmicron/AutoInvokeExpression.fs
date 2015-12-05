@@ -33,6 +33,11 @@ type AutoInvokeExpression(target : IExpression) =
     /// auto-invoke expression.
     member this.Target = target
 
+    /// Checks if this auto-invoke expression is
+    /// trivial, i.e. it doesn't do anything
+    /// on its own.
+    member this.IsTrivial = lowered.Value = target
+
     /// Gets this auto-invoke expression's
     /// type.
     member this.Type = lowered.Value.Type

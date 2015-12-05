@@ -175,7 +175,7 @@ module Analysis =
             // we do want to preserve the left-hand side's debug
             // info, if any - we don't have a lot to gain by discarding
             // source locations here.
-            (PartialApplication(funcExpr, [argExpr])) :> IExpression
+            (AutoInvokeExpression(PartialApplication(funcExpr, [argExpr]))) :> IExpression
         ) |> EB.Source (TokenHelpers.treeSourceLocation node)
     | ProductionNode(Constant Parser.identifierIdentifier,
                      [TerminalLeaf ident]) ->

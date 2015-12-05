@@ -84,12 +84,47 @@ type PartialApplication private(target : IExpression, args : IExpression list,
     /// Gets this partial application expression's type.
     member this.Type = lowered.Value.Type
 
+    /// Coalesces this partial application, i.e.
+    /// tries to fold multiple partial applications
+    /// into one. A target expression is given.
+    member private this.Coalesce (target : IExpression) : PartialApplication =
+        match target.GetEssentialExpression() with
+        | :? AutoInvokeExpression as target when target.IsTrivial -> 
+            // Just get rid of trivial auto-invoke expressions.
+            this.Coalesce target.Target
+        | :? PartialApplication as target when not target.IsTotalApplication ->
+            // Coalesce partial application expressions. 
+            // Don't coalesce total applications, though!
+            let optInner = target.Coalesced
+            PartialApplication(target.Target, List.append target.Arguments args, resultType)
+        | _ ->
+            // At some point, partial applications cannot
+            // be coalesced any further.
+            this
+
+    /// Creates a coalesced version of this
+    /// partial application expression.
+    member this.Coalesced = this.Coalesce target
+
+    /// Creates a lowered version of this partial
+    /// application expression.
+    member this.Lowered = lowered.Value
+
+    /// Tests if this partial application expression
+    /// is really just a total application expression,
+    /// i.e. a normal invocation.
+    member this.IsTotalApplication =
+        targetSignature <> null &&
+        List.length args = Seq.length targetSignature.Parameters
+
     override this.ToString() =
       let totalArgs = target.ToString() :: List.map (fun (x : IExpression) -> x.ToString()) args
       sprintf "apply(%s)" (String.concat ", " totalArgs)
 
     interface IExpression with
-        member this.Optimize() = lowered.Value.Optimize()
+        // Optimize by coalescing, lowering, and optimizing
+        // the lowered version.
+        member this.Optimize() = this.Coalesced.Lowered.Optimize()
         member this.Evaluate() = lowered.Value.Evaluate()
         member this.IsConstant = lowered.Value.IsConstant
         member this.Emit(cg) = lowered.Value.Emit(cg)
