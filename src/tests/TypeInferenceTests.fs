@@ -104,7 +104,7 @@ type TypeInferenceTests () =
         let local = LateBoundVariable(idunnoty)
         let stmt = local.CreateSetStatement(local.CreateGetExpression())
         let expr = InitializedExpression(stmt, VoidExpression.Instance)
-        let constraints = TypeInference.findConstraints expr
+        let constraints = TypeInference.findConstraints [] expr
         let results = TypeInference.resolve constraints
         let expected = LinearSet.empty<UnknownType * TypeInference.TypeConstraint>
 
