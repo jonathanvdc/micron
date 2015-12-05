@@ -42,6 +42,9 @@ type AutoInvokeExpression(target : IExpression) =
     /// type.
     member this.Type = lowered.Value.Type
 
+    override this.ToString() = 
+        sprintf "auto-invoke(%O)" target
+
     interface IExpression with
         member this.Type = lowered.Value.Type
         member this.IsConstant = lowered.Value.IsConstant
