@@ -23,21 +23,25 @@ module ExpressionHelpers =
             | _ ->
                 stmt.Accept(this)
 
+    /// Uncurries all return statements in the given body.
+    let uncurryReturnStatements (firstParamIndex : int) (parameters : IParameter list) (stmt : IStatement) : IStatement =
+        // Create a list of argument-expressions for the given parameter list.
+        let argList = List.mapi (fun i x -> ArgumentVariable(x, firstParamIndex + i).CreateGetExpression()) parameters
+        let visitReturn (stmt : ReturnStatement) : IStatement =
+            // Rewrite return statements by inserting a call.
+            // Use a partial application instead of a direct
+            // invocation, because partial applications will try
+            // to coalesce first, which may be desirable.
+            ReturnStatement(PartialApplication(stmt.Value, argList)) :> IStatement
+
+        // Now rewrite all return statements.
+        let visitor = ReturnNodeVisitor(visitReturn)
+        visitor.Visit(stmt)
+
     /// Uncurries the given lambda expression.
     let uncurryLambda (expr : LambdaExpression) : IExpression =
-        /// Rewrites all return statements in the given body.
-        let rewriteReturnStatements (firstParamIndex : int) (parameters : IParameter list) (stmt : IStatement) : IStatement =
-            // Create a list of argument-expressions for the given parameter list.
-            let argList = List.mapi (fun i x -> ArgumentVariable(x, firstParamIndex + i).CreateGetExpression()) parameters
-            let visitReturn (stmt : ReturnStatement) : IStatement =
-                // Rewrite return statements by inserting a call.
-                ReturnStatement(InvocationExpression(stmt.Value, argList)) :> IStatement
-
-            // Now rewrite all return statements.
-            let visitor = ReturnNodeVisitor(visitReturn)
-            visitor.Visit(stmt)
         // Curry the lambda, and rewrite return statements.
-        let signature, body = TypeHelpers.uncurry rewriteReturnStatements expr.Body expr.Signature
+        let signature, body = TypeHelpers.uncurry uncurryReturnStatements expr.Body expr.Signature
         // Create a new lambda header.
         let lambdaHeader = LambdaHeader(signature, expr.Header.CaptureList)
         // Create a new lambda expression from the curried body,

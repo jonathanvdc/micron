@@ -190,7 +190,26 @@ module Analysis =
     /// Analyzes a let-definition.
     let rec analyzeLetDefinition (scope : GlobalScope) (name : Token) (parameterNames : Token list) 
                                  (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
-                                 (declModule : IType) : Result<IMember, LogEntry> =        
+                                 (declModule : IType) : Result<IMember, LogEntry> =  
+                                 
+        /// Sets the given described method's body statement, uncurrying
+        /// its signature in the process.
+        let setBody (target : DescribedBodyMethod) (body : IStatement) : unit =
+            // A single step in the uncurrying process.
+            let uncurryStep (firstParamIndex : int) (parameters : IParameter list) (body : IStatement) : IStatement =
+                // Step 1: insert those parameters!
+                for item in parameters do
+                    target.AddParameter item
+                // Step 2: uncurry all return statements.
+                ExpressionHelpers.uncurryReturnStatements firstParamIndex parameters body
+
+            // Now uncurry the signature and body.
+            let signature, body = TypeHelpers.uncurry uncurryStep body target
+            // Set the return type.
+            target.ReturnType <- signature.ReturnType
+            // Set the body.
+            target.Body <- body
+                                       
         match parameterNames with
         | [] -> 
             // Zero parameters. If this let-binding does not
@@ -235,7 +254,7 @@ module Analysis =
                 descMethod.ReturnType <- fieldVal.Type
 
                 // Return the expression's value.
-                descMethod.Body <- EB.ReturnUnchecked fieldVal |> EB.ToStatement
+                setBody descMethod (EB.ReturnUnchecked fieldVal |> EB.ToStatement)
 
                 descMethod :> IMember
 
@@ -298,9 +317,9 @@ module Analysis =
                 let bodyExpr = TypeInference.resolveExpression resolveType bodyExpr
 
                 // Return the expression's value.
-                descMethod.Body <- bodyExpr |> EB.ReturnUnchecked
-                                            |> EB.Source (TokenHelpers.treeSourceLocation value) 
-                                            |> EB.ToStatement
+                setBody descMethod (bodyExpr |> EB.ReturnUnchecked
+                                             |> EB.Source (TokenHelpers.treeSourceLocation value) 
+                                             |> EB.ToStatement)
 
                 descMethod :> IMember
 
