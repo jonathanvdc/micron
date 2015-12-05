@@ -6213,6 +6213,153 @@
  </summary>
       <param name="Generator" />
     </member>
+    <member name="T:Flame.Compiler.Variables.LocalVariable">
+      <summary>
+ A type for local variables.
+ </summary>
+      <remarks>
+ This type is intended to someday replace LateBoundVariable.
+ </remarks>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.#ctor(Flame.Compiler.IVariableMember,Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates a new local variable from the given variable member and
+ unique tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.#ctor(Flame.Compiler.IVariableMember)">
+      <summary>
+ Creates a new local variable from the given variable member.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.#ctor(Flame.IType)">
+      <summary>
+ Creates a new local variable from the given type.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.#ctor(System.String,Flame.IType)">
+      <summary>
+ Creates a new local variable from the given name and type.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.GetEmitVariable(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Gets the emit variable for this local variable, in
+ the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.ConvertType(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts this local variable's type by applying the given
+ member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.CreateGetExpression">
+      <summary>
+ Creates an expression that returns this variable's value.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.CreateSetStatement(Flame.Compiler.IExpression)">
+      <summary>
+ Creates a statement that assigns the given value to this variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.CreateAddressOfExpression">
+      <summary>
+ Creates an expression that returns the address in memory of this variable.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalVariable.CreateReleaseStatement">
+      <summary>
+ Creates a release statement for this variable. Release statements
+ flag this variable for re-use within the scope of the current method.
+ The actual re-use of the variable is the variable and the code generator's
+ prerogative.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Variables.LocalVariable.Type">
+      <summary>
+ Gets this local variable's type.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Variables.LocalVariable.Tag">
+      <summary>
+ Gets this local variable's unique tag.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Variables.LocalVariable.Member">
+      <summary>
+ Gets this local variable's associated variable member.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalGetExpression.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalGetExpression.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalGetExpression.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalAddressOfExpression.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalAddressOfExpression.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalAddressOfExpression.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalSetStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalSetStatement.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalReleaseStatement.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.LocalReleaseStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.Variables.FieldVariable">
       <summary>
  A type of variable that represents a field of a target value. This value can
