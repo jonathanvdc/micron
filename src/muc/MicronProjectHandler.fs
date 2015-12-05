@@ -51,7 +51,7 @@ type MicronProjectHandler() =
             project
 
         member this.GetPassPreferences(log : ICompilerLog) : PassPreferences = 
-            PassPreferences(seq [ SlimLambdaPass.SlimLambdaPassName ],
+            PassPreferences(seq [ SlimLambdaPass.SlimLambdaPassName; FlattenInitializationPass.FlattenInitializationPassName ],
                 seq [
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         LogPass(),

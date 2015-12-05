@@ -151,6 +151,41 @@
  Gets or sets the current flow state.
  </summary>
     </member>
+    <member name="T:Flame.Optimization.FlattenInitializationVisitor">
+      <summary>
+ A node visitor that attempts to flatten initialization expressions, by
+ moving them higher up the node tree.
+ </summary>
+      <remarks>
+ This can benefit node trees such as:
+
+     #invoke({ init; expr }, args...)
+
+ which will be transformed into the semantically equivalent:
+
+     { init; #invoke(expr, args) }
+
+ In many ways, this visitor is a less demanding version of
+ -fimperative-code's visitor.
+ </remarks>
+    </member>
+    <member name="P:Flame.Optimization.FlattenInitializationVisitor.TransformedLocations">
+      <summary>
+ Gets the source locations belonging to initialization expressions
+ that have been moved around in the expression tree.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.FlattenInitializationPass">
+      <summary>
+ A pass that attempts to flatten initialization expressions, by
+ moving them higher up the node tree.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.FlattenInitializationPass.FlattenInitializationPassName">
+      <summary>
+ This pass' name string.
+ </summary>
+    </member>
     <member name="T:Flame.Optimization.SpillableExpression">
       <summary>
  Defines an expression that can be "spilled", i.e. store its value in
