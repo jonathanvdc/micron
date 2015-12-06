@@ -169,6 +169,11 @@
  -fimperative-code's visitor.
  </remarks>
     </member>
+    <member name="M:Flame.Optimization.FlattenInitializationVisitor.SpillFinalization">
+      <summary>
+ Spills finalization statements.
+ </summary>
+    </member>
     <member name="P:Flame.Optimization.FlattenInitializationVisitor.TransformedLocations">
       <summary>
  Gets the source locations belonging to initialization expressions
