@@ -312,6 +312,12 @@ module Analysis =
             let bodyExpr = analyzeExpression previousDefinitions localScope value
 
             let createFunction (knownTypes, unknownTypes) = 
+                // Add unknown parameter types if necessary
+                let unknownTypes = unknownParamDesc |> List.fold (fun unknownTypes (_, ty) -> 
+                    if LinearMap.containsKey ty knownTypes 
+                        then unknownTypes 
+                        else LinearSet.add ty unknownTypes) unknownTypes
+
                 // Bind the free unknown types to generic parameters.
                 let genParams, resolveType = TypeInference.bindTypes knownTypes unknownTypes descMethod
                 // Add all generic parameters to the method.
