@@ -9,6 +9,7 @@ open Flame.Compiler.Expressions
 open Flame.Compiler.Statements
 open Flame.Compiler.Variables
 open Flame.Functional
+open Pixie
 open System
 open System.Collections.Generic
 
@@ -368,8 +369,39 @@ module Analysis =
         // Add a method to the DefinitionMap `defined`, but raise a warning
         // if it already has a previous definition.
         let addMethod (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
-            if Map.containsKey (func.Name) defined then
-                scope.Log.LogWarning(LogEntry("Shadowed definition", sprintf "This definition of '%s' shadows a previous one:" func.Name, func.GetSourceLocation()))
+            match Map.tryFind func.Name defined with
+            | Some predef when func.DeclaringType = predef.DeclaringType ->
+                // Don't allow redefinitions in the same module, because
+                // this could introduce more than one method with the same
+                // signature -- other modules wouldn't be able to differentiate
+                // between the newer and the older version. Plus, declaring a
+                // method with the same signature more than once is invalid IR.
+                // We'll log an error, which we'll format like so:
+                //
+                // <message>
+                // <diagnostic>
+                // <remark>
+
+                let message = MarkupNode(NodeConstants.TextNodeType, sprintf "'%s' is defined more than once in the same module. " func.Name) :> IMarkupNode
+                let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
+                let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
+                scope.Log.LogError(LogEntry("Redefinition", seq [message; diagnostics; remark]))
+            | Some predef when Warnings.Instance.Shadow.UseWarning(scope.Log.Options) ->
+                // Log a warning if the new method shadows a previous method.
+                //
+                // We'll format that warning like so:
+                //
+                // <message> [-Wshadows]
+                // <diagnostic>
+                // <remark>
+
+                let message = MarkupNode(NodeConstants.TextNodeType, sprintf "This definition of '%s' shadows a previous one. " func.Name) :> IMarkupNode
+                let cause = Warnings.Instance.Shadow.CauseNode
+                let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
+                let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
+                scope.Log.LogWarning(LogEntry("Shadowed definition", seq [message; cause; diagnostics; remark]))
+            | _ ->
+                ()
             Map.add func.Name func defined
 
         // Iterate over the list of definitions in the module.
