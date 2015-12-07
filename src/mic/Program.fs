@@ -47,7 +47,7 @@ let parseExpression (log : ICompilerLog) (code : string) =
         | ProductionNode("program", [ProductionNode("let-definition", [_; _; _; _; result]); ProductionNode("program", [])]) ->
             let globalScope = GlobalScope(FunctionalBinder(null), StrictConversionRules(nameType), log, nameType, memProvider, getParameters)
             let scope = LocalScope(globalScope)
-            Analysis.analyzeExpression scope (Parser.stripGroups result)
+            Analysis.analyzeExpression Map.empty scope (Parser.stripGroups result)
         | _ ->
             raise (System.Exception("Parser error."))
     | Choice2Of2 _ -> ExpressionBuilder.VoidError (new LogEntry("Invalid syntax",  "Could not parse expression.", SourceLocation(doc, 0, doc.CharacterCount)))

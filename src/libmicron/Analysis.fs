@@ -65,14 +65,16 @@ module Analysis =
         func.Parameters |> Seq.mapi (fun i param -> param, i)
                         |> Seq.fold (fun result (param, i) -> Map.add param.Name (ArgumentVariable(param, i) :> IVariable) result) Map.empty
 
+    type DefinitionMap = Map<string, IMethod>
+
     /// Analyzes the given expression parse tree.
-    let rec analyzeExpression (scope : LocalScope) : ParseTree<string, Token> -> IExpression = function
+    let rec analyzeExpression (previousDefinitions : DefinitionMap) (scope : LocalScope) : ParseTree<string, Token> -> IExpression = function
     | ProductionNode(Constant Parser.ifThenElseIdentifier,
                      [TerminalLeaf ifKeyword; cond; _; ifExpr; _; elseExpr]) ->
         // A simple if-then-else expression
-        EB.Select scope (analyzeExpression scope cond)
-                        (analyzeExpression scope ifExpr)
-                        (analyzeExpression scope elseExpr)
+        EB.Select scope (analyzeExpression previousDefinitions scope cond)
+                        (analyzeExpression previousDefinitions scope ifExpr)
+                        (analyzeExpression previousDefinitions scope elseExpr)
             |> EB.Source (TokenHelpers.sourceLocation ifKeyword)
     | ProductionNode(Constant Parser.literalIntIdentifier,
                      [TerminalLeaf token]) ->
@@ -95,7 +97,7 @@ module Analysis =
     | ProductionNode(Constant Parser.parenIdentifier,
                      [TerminalLeaf lParen; expr; TerminalLeaf rParen]) ->
         // Parentheses
-        analyzeExpression scope expr
+        analyzeExpression previousDefinitions scope expr
             |> EB.Source (CompilerLogExtensions.Concat(TokenHelpers.sourceLocation lParen,
                                                        TokenHelpers.sourceLocation rParen))
     | ProductionNode(Constant Parser.letIdentifier,
@@ -115,11 +117,11 @@ module Analysis =
             let childScope = scope.ChildScope
 
             // First, bind `value` to `name`.
-            let localValue = analyzeExpression childScope value
+            let localValue = analyzeExpression previousDefinitions childScope value
             let defLocal, updatedScope = EB.Quickbind childScope localValue name.contents
             let defLocal = EB.Source (TokenHelpers.sourceLocation eq) defLocal
             // Take care of the `in expr` clause
-            let innerExpr = analyzeExpression updatedScope expr
+            let innerExpr = analyzeExpression previousDefinitions updatedScope expr
             let result = EB.Initialize defLocal innerExpr
 
             EB.Scope result updatedScope |> EB.Source here
@@ -127,7 +129,7 @@ module Analysis =
             // Local function declaration:  let name args = value in expr
             // This should also support recursion.
             let childScope = scope.ChildScope
-            let createBody lambdaScope = analyzeExpression lambdaScope value
+            let createBody lambdaScope = analyzeExpression previousDefinitions lambdaScope value
             // Add a source location for diagnostics purposes.
             let attributes = [
                               PrimitiveAttributes.Instance.ConstantAttribute
@@ -149,7 +151,7 @@ module Analysis =
             let defLocal = EB.Source (TokenHelpers.sourceLocation eq) defLocal
 
             // Take care of the `in expr` clause
-            let innerExpr = analyzeExpression updatedScope expr
+            let innerExpr = analyzeExpression previousDefinitions updatedScope expr
             let result = EB.Initialize defLocal innerExpr
 
             EB.Scope result updatedScope |> EB.Source here
@@ -159,8 +161,8 @@ module Analysis =
 
         // Left-hand side is the function to apply. Right-hand side is
         // the argument to apply the function to. Analyze both.
-        let funcExpr = analyzeExpression scope left
-        let argExpr = analyzeExpression scope right
+        let funcExpr = analyzeExpression previousDefinitions scope left
+        let argExpr = analyzeExpression previousDefinitions scope right
 
         // Create a partial application expression, and wrap that
         // in an auto-invoke expression.
@@ -169,11 +171,23 @@ module Analysis =
     | ProductionNode(Constant Parser.identifierIdentifier,
                      [TerminalLeaf ident]) ->
         // Identifier
-        (match scope.GetVariable ident.contents with
+        let name = ident.contents
+        (match scope.GetVariable name with
         | Some local ->
             local.CreateGetExpression()
         | None ->
-            EB.VoidError (LogEntry("Unresolved identifier", sprintf "Identifier '%s' could not be resolved." ident.contents))
+            // If it's not a local, maybe we defined it earlier?
+            match Map.tryFind name previousDefinitions with
+            | Some func ->
+                let func' =
+                    if Seq.isEmpty func.GenericParameters
+                        then func
+                        else func.MakeGenericMethod(func.GenericParameters
+                                                    |> Seq.map (fun _ -> UnknownType() :> IType))
+
+                GetMethodExpression(func', null) :> IExpression
+            | None ->
+                EB.VoidError (LogEntry("Unresolved identifier", sprintf "Identifier '%s' could not be resolved." name))
         ) |> EB.Source (TokenHelpers.sourceLocation ident)
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
@@ -188,7 +202,8 @@ module Analysis =
             |> EB.Source (TokenHelpers.sourceLocation term)
 
     /// Analyzes a let-definition.
-    let rec analyzeLetDefinition (scope : GlobalScope) (name : Token) (parameterNames : Token list) 
+    let rec analyzeLetDefinition (previousDefinitions : DefinitionMap) (scope : GlobalScope)
+                                 (name : Token) (parameterNames : Token list) 
                                  (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
                                  (declModule : IType) : Result<IMember, LogEntry> =  
                                  
@@ -212,13 +227,10 @@ module Analysis =
                                        
         match parameterNames with
         | [] -> 
-            // Zero parameters. If this let-binding does not
-            // contain any free unknown types, then we
-            // can compile this down to a field. Otherwise,
-            // we'll have to turn it into a method.
+            // Zero parameters.
 
             // Analyze the field's value.
-            let fieldVal = analyzeExpression (LocalScope(scope)) value
+            let fieldVal = analyzeExpression previousDefinitions (LocalScope(scope)) value
             // Run type inference. We don't need
             // to invent a return type here, because
             // constants can't call themselves
@@ -297,7 +309,7 @@ module Analysis =
             let localScope = localScope.WithVariable (ExpressionVariable(recDeleg)) descMethod.Name
 
             // Analyze the body expression's value.
-            let bodyExpr = analyzeExpression localScope value
+            let bodyExpr = analyzeExpression previousDefinitions localScope value
 
             let createFunction (knownTypes, unknownTypes) = 
                 // Bind the free unknown types to generic parameters.
@@ -342,6 +354,18 @@ module Analysis =
         moduleType.AddAttribute(PrimitiveAttributes.Instance.StaticTypeAttribute)
         moduleType.AddAttribute(AccessAttribute(AccessModifier.Public))
 
+        // Keep track of defined methods, so that definitions further
+        // down the module may make use of them.
+        let mutable defined : DefinitionMap =
+            Map.empty
+
+        // Add a method to the DefinitionMap `defined`, but raise a warning
+        // if it already has a previous definition.
+        let addMethod (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
+            if Map.containsKey (func.Name) defined then
+                scope.Log.LogWarning(LogEntry("Shadowed definition", sprintf "This definition of '%s' shadows a previous one:" func.Name, func.GetSourceLocation()))
+            Map.add func.Name func defined
+
         // Iterate over the list of definitions in the module.
         for def in definitions do
             match def with
@@ -358,9 +382,10 @@ module Analysis =
                 // statement list.
                 let parameterTokens = ParseTree.treeYield argsNode
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
-                match analyzeLetDefinition scope name parameterTokens value srcLoc moduleType with
+                match analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType with
                 | Success(:? IMethod as result) ->
                     moduleType.AddMethod result
+                    defined <- addMethod result defined
                 | Success(:? IField as result) ->
                     moduleType.AddField result
                 | Success(:? IProperty as result) ->
