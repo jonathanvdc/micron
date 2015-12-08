@@ -280,11 +280,24 @@ module Lexer =
                 then None 
                 else Some (token, stream)
         
+    /// Tries to read a comment token
+    let tryReadCommentToken (stream : SourceStream) : (Token * SourceStream) option =
+        let startPos = stream.pos
+        match tryReadChar ((=) '/') stream with
+        | Some (_, stream) -> 
+            match tryReadChar ((=) '/') stream with
+            | Some(_, steam) ->
+                let stream = readRange ((<>) '\n') stream
+                Some (sliceToken startPos stream TokenType.Comment, stream)
+            | None -> None
+        | None -> None
+
 
     /// A list of functions that are succesively applied
     /// to a source stream whenever a token is to be read.
     let private lexerFunctions = 
         [
+            tryReadCommentToken
             tryReadRangeToken System.Char.IsWhiteSpace TokenType.Whitespace
             tryReadDoubleToken
             tryReadRangeToken System.Char.IsDigit TokenType.Integer
