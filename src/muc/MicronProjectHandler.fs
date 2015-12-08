@@ -56,7 +56,11 @@ type MicronProjectHandler() =
                     // Run -fslim-lambda at -O1 or above
                     PassCondition(SlimLambdaPass.SlimLambdaPassName, fun optInfo -> optInfo.OptimizeMinimal)
                     // Run -fflatten-init at -O1 or above
-                    PassCondition(FlattenInitializationPass.FlattenInitializationPassName , fun optInfo -> optInfo.OptimizeMinimal)
+                    PassCondition(FlattenInitializationPass.FlattenInitializationPassName, fun optInfo -> optInfo.OptimizeMinimal)
+                    // -ftail-recursion is enabled by default at -O2 or above,
+                    // but we'll enable it at -O1 or above, because this optimization
+                    // is essential for functional programming languages.
+                    PassCondition(TailRecursionPass.TailRecursionPassName, fun optInfo -> optInfo.OptimizeMinimal)
                     // Run -fcheck-nodes no matter what
                     PassCondition("check-nodes", fun _ -> true)
                     // Run -fdead-code-elimination at -O1 or above, or if -g is enabled.
