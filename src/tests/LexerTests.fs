@@ -68,3 +68,9 @@ type LexerTests () =
         lex "let _ = letter" |> TokenHelpers.foldTrivia
                              |> checkTypes [TokenType.LetKeyword; TokenType.Underscore; TokenType.Equals; 
                                             TokenType.Identifier]
+
+    [<TestMethod>]
+    member this.Comments () =
+        lex "let // This is a comment\n//This is another comment" 
+            |> checkTypes [TokenType.LetKeyword; TokenType.Whitespace; TokenType.Comment; 
+                           TokenType.Whitespace; TokenType.Comment]
