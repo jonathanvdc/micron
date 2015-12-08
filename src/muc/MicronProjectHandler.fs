@@ -53,21 +53,31 @@ type MicronProjectHandler() =
         member this.GetPassPreferences(log : ICompilerLog) : PassPreferences = 
             PassPreferences(
                 seq [ 
+                    // Run -fslim-lambda at -O1 or above
                     PassCondition(SlimLambdaPass.SlimLambdaPassName, fun optInfo -> optInfo.OptimizeMinimal)
+                    // Run -fflatten-init at -O1 or above
                     PassCondition(FlattenInitializationPass.FlattenInitializationPassName , fun optInfo -> optInfo.OptimizeMinimal)
+                    // Run -fcheck-nodes no matter what
                     PassCondition("check-nodes", fun _ -> true)
+                    // Run -fdead-code-elimination at -O1 or above, or if -g is enabled.
                     PassCondition(PassExtensions.EliminateDeadCodePassName, fun optInfo -> optInfo.OptimizeMinimal || optInfo.OptimizeDebug)
+                    // Run -finfinite-recursion if it is useful (i.e. the warning it is associated with is active) 
                     PassCondition(InfiniteRecursionPass.InfiniteRecursionPassName, fun optInfo -> InfiniteRecursionPass.IsUseful(optInfo.Log))
                     ],
                 seq [
+                    // A pass that logs errors/warnings in method bodies.
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         LogPass(),
                         "check-nodes")
 
+                    // A pass that removes dead code, and logs a warning
+                    // when it finds unreachable source code.
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         VerifyingDeadCodePass.Instance,
                         PassExtensions.EliminateDeadCodePassName)
 
+                    // A pass that tries to find infinite recursion, and
+                    // logs a warning when it does.
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         InfiniteRecursionPass.Instance,
                         InfiniteRecursionPass.InfiniteRecursionPassName)
