@@ -51,22 +51,26 @@ type MicronProjectHandler() =
             project
 
         member this.GetPassPreferences(log : ICompilerLog) : PassPreferences = 
-            PassPreferences(seq [ SlimLambdaPass.SlimLambdaPassName; FlattenInitializationPass.FlattenInitializationPassName ],
+            PassPreferences(
+                seq [ 
+                    PassCondition(SlimLambdaPass.SlimLambdaPassName, fun optInfo -> optInfo.OptimizeMinimal)
+                    PassCondition(FlattenInitializationPass.FlattenInitializationPassName , fun optInfo -> optInfo.OptimizeMinimal)
+                    PassCondition("check-nodes", fun _ -> true)
+                    PassCondition(PassExtensions.EliminateDeadCodePassName, fun optInfo -> optInfo.OptimizeMinimal || optInfo.OptimizeDebug)
+                    PassCondition(InfiniteRecursionPass.InfiniteRecursionPassName, fun optInfo -> InfiniteRecursionPass.IsUseful(optInfo.Log))
+                    ],
                 seq [
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         LogPass(),
-                        "check-nodes", 
-                        true)
+                        "check-nodes")
 
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         VerifyingDeadCodePass.Instance,
-                        PassExtensions.EliminateDeadCodePassName, 
-                        fun optInfo isPref -> optInfo.OptimizeMinimal || optInfo.OptimizeDebug)
+                        PassExtensions.EliminateDeadCodePassName)
 
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
                         InfiniteRecursionPass.Instance,
-                        InfiniteRecursionPass.InfiniteRecursionPassName,
-                        fun optInfo isPref -> InfiniteRecursionPass.IsUseful(log))
+                        InfiniteRecursionPass.InfiniteRecursionPassName)
                 ])
 
         member this.CompileAsync(project : IProject, parameters : CompilationParameters) : Task<IAssembly> = 
