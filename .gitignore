@@ -214,3 +214,7 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+# xbuild/MonoDevelop
+packages/
+*.userprefs
