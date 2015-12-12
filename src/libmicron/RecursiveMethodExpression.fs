@@ -25,7 +25,7 @@ type RecursiveMethodExpression(declMethod : IMethod, returnType : IType, paramet
     /// Lowers the method this recursive method will
     /// create a delegate for.
     member this.Target =
-        if declMethod.get_IsGeneric() then
+        if declMethod.GetIsGeneric() then
             declMethod.MakeGenericMethod(declMethod.GenericParameters |> Seq.cast)
         else
             declMethod

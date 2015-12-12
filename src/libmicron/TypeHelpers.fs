@@ -45,7 +45,7 @@ module TypeHelpers =
             match MethodType.GetMethod(signature.ReturnType) with
             | null ->
                 let paramList = List.ofSeq signature.Parameters
-                paramList, signature.ReturnType, signature.get_IsConstant(), maybeUncurry isTopLevel paramCount paramList body
+                paramList, signature.ReturnType, signature.GetIsConstant(), maybeUncurry isTopLevel paramCount paramList body
             | other ->
                 // Create a list of outer parameters.
                 let outerParams = List.ofSeq signature.Parameters
@@ -56,7 +56,7 @@ module TypeHelpers =
                 // Process the inner method and its body.
                 let innerParams, innerRetType, innerPurity, body = getInfo other body totalOuterParamCount false
                 // Concatenate the results
-                List.append outerParams innerParams, innerRetType, signature.get_IsConstant() && innerPurity, body
+                List.append outerParams innerParams, innerRetType, signature.GetIsConstant() && innerPurity, body
 
         let parameters, retType, isPure, body = getInfo signature body 0 true
         let attrs = filterPurity isPure signature.Attributes

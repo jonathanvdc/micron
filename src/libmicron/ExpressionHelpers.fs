@@ -62,7 +62,7 @@ module ExpressionHelpers =
     | expr ->
         match MethodType.GetMethod(expr.Type) with
         | signature when signature <> null && 
-                         signature.ReturnType.get_IsDelegate() ->
+                         signature.ReturnType.GetIsDelegate() ->
             // Well, this is a somewhat sad situation.
             // The only real way to fix this is to create
             // a lambda that captures the expression, and
