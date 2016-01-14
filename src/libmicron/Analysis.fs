@@ -18,46 +18,6 @@ open System.Collections.Generic
 module Analysis =
     module EB = ExpressionBuilder
 
-    let builtinTypes =
-        Map.ofList
-            [
-                "int8", PrimitiveTypes.Int8
-                "int16", PrimitiveTypes.Int16
-                "int32", PrimitiveTypes.Int32
-                "int64", PrimitiveTypes.Int64
-
-                "uint8", PrimitiveTypes.UInt8
-                "uint16", PrimitiveTypes.UInt16
-                "uint32", PrimitiveTypes.UInt32
-                "uint64", PrimitiveTypes.UInt64
-
-                "float32", PrimitiveTypes.Float32
-                "float64", PrimitiveTypes.Float64
-
-                "bool", PrimitiveTypes.Boolean
-                "char", PrimitiveTypes.Char
-                "void", PrimitiveTypes.Void
-            ]
-
-    /// Names the given type.
-    let rec nameType (ty : IType) : string = 
-        match Map.tryFindKey (fun _ item -> item = ty) builtinTypes with
-        | Some name -> name
-        | None ->
-            match ty with
-            | :? GenericType as ty ->
-                nameType (ty.Declaration) + "<" + (ty.GenericArguments |> Seq.map nameType |> String.concat ", ") + ">"
-            | _ ->
-                match MethodType.GetMethod ty with
-                | null -> ty.FullName
-                | signature -> nameFunction signature.ReturnType (signature.Parameters.GetTypes() |> List.ofSeq)
-    and nameFunction (retTy : IType) = function
-    | [] -> nameType retTy
-    | argTy :: argTys -> 
-        match MethodType.GetMethod argTy with
-        | null -> nameType argTy + " " + nameFunction retTy argTys
-        | _ -> "(" + nameType argTy + ") " + nameFunction retTy argTys
-
     /// Creates a mapping from names to variables
     /// that represents the given method option's
     /// parameter list.
@@ -68,6 +28,13 @@ module Analysis =
                         |> Seq.fold (fun result (param, i) -> Map.add param.Name (ArgumentVariable(param, i) :> IVariable) result) Map.empty
 
     type DefinitionMap = { functions : Map<string, IMethod>; prec : Map<string, Parser.OpFixity> }
+
+    /// Creates an error expression whose type should be
+    /// fixed by type inference. This can be preferable to
+    /// EB.VoidError: the type inference algorithm won't complain
+    /// about type mismatches if this is used.
+    let unknownError (entry : LogEntry) =
+        EB.Error entry (UnknownExpression(UnknownType()))
 
     /// Tries to resolve a name.
     let resolveName (nameType : string) (previousDefinitions : DefinitionMap) (scope : LocalScope) (token : Token) =
@@ -87,7 +54,7 @@ module Analysis =
 
                 GetMethodExpression(func', null) :> IExpression
             | None ->
-                EB.VoidError (LogEntry("Unresolved " + nameType, sprintf "'%s' could not be resolved." name))
+                unknownError (LogEntry("Unresolved " + nameType, sprintf "'%s' could not be resolved." name))
 
     /// Tries to resolve an identifier.
     let resolveIdentifier = resolveName "identifier"

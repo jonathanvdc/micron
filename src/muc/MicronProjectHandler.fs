@@ -112,8 +112,8 @@ type MicronProjectHandler() =
                     // This may change in the future, though.
                     let memProvider (ty : IType) = ty.GetAllMembers()
                     // Create a global scope
-                    let scope = GlobalScope(FunctionalBinder(binder), StrictConversionRules(Analysis.nameType),
-                                            parameters.Log, Analysis.nameType, memProvider, Analysis.getParameters)
+                    let scope = GlobalScope(FunctionalBinder(binder), StrictConversionRules(TypeInference.nameType),
+                                            parameters.Log, TypeInference.nameType, memProvider, Analysis.getParameters)
                     // Analyze the assembly
                     return Analysis.analyzeAssembly scope project.Name tree
             } |> Async.StartAsTask

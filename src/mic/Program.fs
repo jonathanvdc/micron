@@ -16,7 +16,7 @@ let showErrors (log : ICompilerLog) (expr : IExpression) =
     visitor.Visit expr
 
 /// Names the given type.
-let nameType = Analysis.nameType
+let nameType = TypeInference.nameType
 let memProvider (ty : IType) = ty.GetAllMembers()
 let getParameters = Analysis.getParameters
 
@@ -47,7 +47,8 @@ let parseExpression (log : ICompilerLog) (code : string) =
         | ProductionNode("program", [ProductionNode("let-definition", [_; _; _; _; result]); ProductionNode("program", [])]) ->
             let globalScope = GlobalScope(FunctionalBinder(null), StrictConversionRules(nameType), log, nameType, memProvider, getParameters)
             let scope = LocalScope(globalScope)
-            Analysis.analyzeExpression Map.empty scope (Parser.stripGroups result)
+            let defs : Analysis.DefinitionMap = { functions = Map.empty; prec = Map.empty }
+            Analysis.analyzeExpression defs scope (Parser.stripGroups result)
         | _ ->
             raise (System.Exception("Parser error."))
     | Choice2Of2 _ -> ExpressionBuilder.VoidError (new LogEntry("Invalid syntax",  "Could not parse expression.", SourceLocation(doc, 0, doc.CharacterCount)))
