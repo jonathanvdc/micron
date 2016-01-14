@@ -199,7 +199,7 @@ module Analysis =
 
     /// Analyzes a let-definition.
     let rec analyzeLetDefinition (previousDefinitions : DefinitionMap) (scope : GlobalScope)
-                                 (name : Token) (parameterNames : Token list) 
+                                 (memberName : string) (name : Token) (parameterNames : Token list) 
                                  (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
                                  (declModule : IType) : Result<DescribedBodyMethod, LogEntry> =  
                                  
@@ -222,7 +222,7 @@ module Analysis =
             target.Body <- body
 
         // Let's start by creating a method.
-        let descMethod = DescribedBodyMethod(name.contents, declModule)
+        let descMethod = DescribedBodyMethod(memberName, declModule)
 
         // Mark that method as static, public and pure.
         descMethod.IsStatic <- true
@@ -300,8 +300,8 @@ module Analysis =
     
     // Add a method to a DefinitionMap, but raise a warning
     // if it already has a previous definition.
-    let addMethod (log : ICompilerLog) (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
-        match Map.tryFind func.Name defined.functions with
+    let addMethod (log : ICompilerLog) (name : string) (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
+        match Map.tryFind name defined.functions with
         | Some predef when func.DeclaringType = predef.DeclaringType ->
             // Don't allow redefinitions in the same module, because
             // this could introduce more than one method with the same
@@ -314,7 +314,7 @@ module Analysis =
             // <diagnostic>
             // <remark>
 
-            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "'%s' is defined more than once in the same module. " func.Name) :> IMarkupNode
+            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "'%s' is defined more than once in the same module. " name) :> IMarkupNode
             let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
             let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
             log.LogError(LogEntry("Redefinition", seq [message; diagnostics; remark]))
@@ -327,15 +327,18 @@ module Analysis =
             // <diagnostic>
             // <remark>
 
-            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "This definition of '%s' shadows a previous one. " func.Name) :> IMarkupNode
+            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "This definition of '%s' shadows a previous one. " name) :> IMarkupNode
             let cause = Warnings.Instance.Shadow.CauseNode
             let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
             let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
             log.LogWarning(LogEntry("Shadowed definition", seq [message; cause; diagnostics; remark]))
         | _ ->
             ()
-        let newFunctions = Map.add func.Name func defined.functions
+        let newFunctions = Map.add name func defined.functions
         { defined with functions = newFunctions }
+
+    /// A warning for badly formatted mangled names.
+    let badNameWarning = WarningDescription("bad-name", Warnings.Instance.Build)
 
     /// Opens the module with the given name, and imports its contents.
     /// An error is reported if something goes wrong.
@@ -354,8 +357,23 @@ module Analysis =
             // Import all static methods.
             let foldMethod defined (item : IMethod) =
                  if item.IsStatic then
-                    // Import this.
-                    addMethod scope.Log item defined
+                    if NameHelpers.isOperatorName item.Name then
+                        match NameHelpers.tryDemangleOperatorName item.Name with
+                        | Success (opName, opFixity) ->
+                            // Import this as an operator.
+                            { addMethod scope.Log opName item defined with prec = Map.add opName opFixity defined.prec }
+                        | Error e ->
+                            // This thing looked like an operator, but its name wasn't mangled correctly.
+                            if badNameWarning.UseWarning(scope.Log.Options) then
+                                let msg = badNameWarning.CreateMessage( 
+                                             sprintf "Function '%s' in module '%s' looks like an operator, but its name was incorrectly formatted. Skipping it. " item.Name moduleName.contents)
+                                let remark = MarkupNode(NodeConstants.RemarksNodeType, e) :> IMarkupNode
+                                // Found an operator with badly mangled name. Can't do anything with this.
+                                scope.Log.LogWarning(LogEntry("Bad operator name", MarkupNode("#group", [| msg; remark |]), TokenHelpers.sourceLocation moduleName))
+                            defined
+                    else
+                        // Import this as a function.
+                        addMethod scope.Log item.Name item defined
                  else
                     // Don't import instance methods.
                     defined
@@ -431,10 +449,10 @@ module Analysis =
                 // member to the module type.
                 let parameterTokens = ParseTree.treeYield argsNode
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
-                match analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType with
+                match analyzeLetDefinition defined scope name.contents name parameterTokens value srcLoc moduleType with
                 | Success result ->
                     moduleType.AddMethod result
-                    defined <- addMethod scope.Log result defined
+                    defined <- addMethod scope.Log result.Name result defined
                 | Error msg ->
                     scope.Log.LogError msg
             | ProductionNode(Constant Parser.letDefinitionIdentifier,
@@ -450,10 +468,11 @@ module Analysis =
                 let parameterTokens = [leftArg; rightArg]
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
                 let fixitySpec = readFixitySpecification scope spec
-                match analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType with
+                let mangledName = NameHelpers.mangleOperatorName name.contents fixitySpec
+                match analyzeLetDefinition defined scope mangledName name parameterTokens value srcLoc moduleType with
                 | Success result ->
                     moduleType.AddMethod result
-                    defined <- addMethod scope.Log result defined
+                    defined <- addMethod scope.Log name.contents result defined
                     // Update precedence map as well
                     let newPrec = Map.add name.contents fixitySpec defined.prec
                     defined <- { defined with prec = newPrec }
