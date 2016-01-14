@@ -16,6 +16,8 @@ module Parser =
     let parenIdentifier = "paren"
     let programIdentifier = "program"
     let moduleIdentifier = "module"
+    /// A nonterminal name for open-module declarations.
+    let openModuleIdentifier = "open-module"
     let operatorIdentifier = "operator"
     /// A nonterminal name for identifiers. This is
     /// the Moon-Moon of the micron parser.
@@ -29,7 +31,7 @@ module Parser =
     /// A nonterminal name for let-definitions.
     let letDefinitionIdentifier = "let-definition"
     /// A nonterminal name for let-definition lists.
-    let letDefinitionListIdentifier = "let-definition..."
+    let definitionListIdentifier = "definition..."
     /// A nonterminal name for infix specifiers (infixl(n)/infixr(n)).
     let infixSpecifierIdentifier = "infix-specifier"
     /// A nonterminal name for infix specifier keywords (infixl/infixr).
@@ -38,6 +40,7 @@ module Parser =
     let literalIntIdentifier = "literal-int"
     /// A nonterminal name for double literals.
     let literalDoubleIdentifier = "literal-double"
+
 
     // All expressions starting with a dollar sign exist
     // solely to group other nonterminals, or for precedence reasons.
@@ -147,15 +150,21 @@ module Parser =
                 infixKeywordIdentifier --> [Terminal TokenType.InfixlKeyword]
                 infixKeywordIdentifier --> [Terminal TokenType.InfixrKeyword]
 
+                // open-module -> <open> <identifier>
+                openModuleIdentifier --> [Terminal TokenType.OpenKeyword
+                                          Terminal TokenType.Identifier]
+
                 // identifier... -> ε | <identifier> identifier...
                 identifierListIdentifier --> []
                 identifierListIdentifier --> [Terminal TokenType.Identifier
                                               Nonterminal identifierListIdentifier]
 
-                // let-definition... -> ε | let-definition let-definition...
-                letDefinitionListIdentifier --> []
-                letDefinitionListIdentifier --> [Nonterminal letDefinitionIdentifier
-                                                 Nonterminal letDefinitionListIdentifier]
+                // definition... -> ε | definition definition... | open-module definition...
+                definitionListIdentifier --> []
+                definitionListIdentifier --> [Nonterminal letDefinitionIdentifier
+                                              Nonterminal definitionListIdentifier]
+                definitionListIdentifier --> [Nonterminal openModuleIdentifier
+                                              Nonterminal definitionListIdentifier]
 
                 // identifier -> <identifier>
                 identifierIdentifier --> [Terminal TokenType.Identifier]
@@ -188,7 +197,7 @@ module Parser =
                 // module -> <module> <identifier> let-definition...
                 moduleIdentifier --> [Terminal TokenType.ModuleKeyword
                                       Terminal TokenType.Identifier
-                                      Nonterminal letDefinitionListIdentifier]
+                                      Nonterminal definitionListIdentifier]
 
                 // etc
             ]

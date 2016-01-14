@@ -1,5 +1,7 @@
 module Application
 
+open Constant
+
 let apply =
     let f x = 0 in
     let g x = f in

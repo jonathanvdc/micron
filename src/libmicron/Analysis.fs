@@ -352,6 +352,69 @@ module Analysis =
 
             Result.map createFunction inferredTypes
 
+    
+    // Add a method to a DefinitionMap, but raise a warning
+    // if it already has a previous definition.
+    let addMethod (log : ICompilerLog) (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
+        match Map.tryFind func.Name defined with
+        | Some predef when func.DeclaringType = predef.DeclaringType ->
+            // Don't allow redefinitions in the same module, because
+            // this could introduce more than one method with the same
+            // signature -- other modules wouldn't be able to differentiate
+            // between the newer and the older version. Plus, declaring a
+            // method with the same signature more than once is invalid IR.
+            // We'll log an error, which we'll format like so:
+            //
+            // <message>
+            // <diagnostic>
+            // <remark>
+
+            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "'%s' is defined more than once in the same module. " func.Name) :> IMarkupNode
+            let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
+            let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
+            log.LogError(LogEntry("Redefinition", seq [message; diagnostics; remark]))
+        | Some predef when Warnings.Instance.Shadow.UseWarning(log.Options) ->
+            // Log a warning if the new method shadows a previous method.
+            //
+            // We'll format that warning like so:
+            //
+            // <message> [-Wshadows]
+            // <diagnostic>
+            // <remark>
+
+            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "This definition of '%s' shadows a previous one. " func.Name) :> IMarkupNode
+            let cause = Warnings.Instance.Shadow.CauseNode
+            let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
+            let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
+            log.LogWarning(LogEntry("Shadowed definition", seq [message; cause; diagnostics; remark]))
+        | _ ->
+            ()
+        Map.add func.Name func defined
+
+    /// Opens the module with the given name, and imports its contents.
+    /// An error is reported if something goes wrong.
+    let openModule (scope : GlobalScope) (moduleName : Token) (defined : DefinitionMap) : DefinitionMap =
+        // Try to bind the module name to a type.
+        let moduleTy = scope.Binder.Bind moduleName.contents
+        match moduleTy with
+        | null ->
+            // We couldn't resolve the given module name. That's too bad.
+            // Create a log entry to report this.
+            scope.Log.LogError(LogEntry("Unresolved module name", 
+                                        sprintf "Could not resolve module '%s'." moduleName.contents, 
+                                        TokenHelpers.sourceLocation moduleName))
+            defined
+        | _ ->
+            // Import all static methods.
+            let foldMethod defined (item : IMethod) =
+                 if item.IsStatic then
+                    // Import this.
+                    addMethod scope.Log item defined
+                 else
+                    // Don't import instance methods.
+                    defined
+            Seq.fold foldMethod defined moduleTy.Methods
+
     /// Analyzes a module definition.
     let analyzeModule (scope : GlobalScope) (name : string) (definitions : ParseTree<string, Token> list) (declNs : INamespace) 
                       : IType =
@@ -365,44 +428,6 @@ module Analysis =
         // down the module may make use of them.
         let mutable defined : DefinitionMap =
             Map.empty
-
-        // Add a method to the DefinitionMap `defined`, but raise a warning
-        // if it already has a previous definition.
-        let addMethod (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
-            match Map.tryFind func.Name defined with
-            | Some predef when func.DeclaringType = predef.DeclaringType ->
-                // Don't allow redefinitions in the same module, because
-                // this could introduce more than one method with the same
-                // signature -- other modules wouldn't be able to differentiate
-                // between the newer and the older version. Plus, declaring a
-                // method with the same signature more than once is invalid IR.
-                // We'll log an error, which we'll format like so:
-                //
-                // <message>
-                // <diagnostic>
-                // <remark>
-
-                let message = MarkupNode(NodeConstants.TextNodeType, sprintf "'%s' is defined more than once in the same module. " func.Name) :> IMarkupNode
-                let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
-                let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
-                scope.Log.LogError(LogEntry("Redefinition", seq [message; diagnostics; remark]))
-            | Some predef when Warnings.Instance.Shadow.UseWarning(scope.Log.Options) ->
-                // Log a warning if the new method shadows a previous method.
-                //
-                // We'll format that warning like so:
-                //
-                // <message> [-Wshadows]
-                // <diagnostic>
-                // <remark>
-
-                let message = MarkupNode(NodeConstants.TextNodeType, sprintf "This definition of '%s' shadows a previous one. " func.Name) :> IMarkupNode
-                let cause = Warnings.Instance.Shadow.CauseNode
-                let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
-                let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
-                scope.Log.LogWarning(LogEntry("Shadowed definition", seq [message; cause; diagnostics; remark]))
-            | _ ->
-                ()
-            Map.add func.Name func defined
 
         // Iterate over the list of definitions in the module.
         for def in definitions do
@@ -423,7 +448,7 @@ module Analysis =
                 match analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType with
                 | Success(:? IMethod as result) ->
                     moduleType.AddMethod result
-                    defined <- addMethod result defined
+                    defined <- addMethod scope.Log result defined
                 | Success(:? IField as result) ->
                     moduleType.AddField result
                 | Success(:? IProperty as result) ->
@@ -432,6 +457,13 @@ module Analysis =
                     scope.Log.LogError(LogEntry("Unknown member type", sprintf "Member type of let-binding '%s' was not unexpected." name.contents, srcLoc))
                 | Error msg ->
                     scope.Log.LogError msg
+            | ProductionNode(Constant Parser.openModuleIdentifier, 
+                             [TerminalLeaf openKeyword
+                              TerminalLeaf name]) ->
+                // Try to import the module's contents. If something
+                // goes wrong, then we'll just throw an error message
+                // in the users' face.
+                defined <- openModule scope name defined
             | ProductionNode(nonterm, _) as node ->
                 // Unimplemented node type.
                 // This just means that a construct has been defined in the grammar,
@@ -452,7 +484,7 @@ module Analysis =
         // If so, then relevant information is extracted.
         let isModule = function
         | ProductionNode(Constant Parser.moduleIdentifier, [TerminalLeaf moduleKeyword; TerminalLeaf ident; contents]) ->
-            Some (ident.contents, Parser.flattenList Parser.letDefinitionListIdentifier contents)
+            Some (ident.contents, Parser.flattenList Parser.definitionListIdentifier contents)
         | _ ->
             None
         

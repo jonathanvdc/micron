@@ -111,6 +111,7 @@ module Lexer =
                        "infixr", TokenType.InfixrKeyword
                        "in", TokenType.InKeyword
                        "module", TokenType.ModuleKeyword
+                       "open", TokenType.OpenKeyword
                    ]
 
     /// Tries to read a static token from the source stream.

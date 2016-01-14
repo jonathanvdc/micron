@@ -58,6 +58,8 @@ type TokenType =
 | InKeyword
 /// The "module" keyword.
 | ModuleKeyword
+/// The "open" keyword.
+| OpenKeyword
 
 /// A single token is a structure consisting of a source
 /// string, a token type, and a location in the source document,
