@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>e80ae7c3-d8b2-4b45-8178-170ba6d390a0</ProjectGuid>
+    <ProjectGuid>{E80AE7C3-D8B2-4B45-8178-170BA6D390A0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>libmicron</RootNamespace>
     <AssemblyName>libmicron</AssemblyName>
@@ -58,6 +57,7 @@
     <Compile Include="Lexer.fs" />
     <Compile Include="UnkownType.fs" />
     <Compile Include="TypeHelpers.fs" />
+    <Compile Include="NameHelpers.fs" />
     <Compile Include="AutoInvokeExpression.fs" />
     <Compile Include="RecursiveMethodExpression.fs" />
     <Compile Include="PartialApplication.fs" />
@@ -81,7 +81,6 @@
     </Reference>
     <Reference Include="FSharp.Data">
       <HintPath>..\packages\FSharp.Data.2.2.5\lib\net40\FSharp.Data.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="libcontextfree">
       <HintPath>..\..\libs\libcontextfree\libcontextfree.dll</HintPath>
@@ -90,9 +89,6 @@
       <HintPath>..\..\libs\Flame\Loyc.Syntax.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Pixie">
       <HintPath>..\..\libs\Flame\Pixie.dll</HintPath>
     </Reference>
@@ -100,6 +96,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="FSharp.Core">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

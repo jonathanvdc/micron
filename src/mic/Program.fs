@@ -16,7 +16,7 @@ let showErrors (log : ICompilerLog) (expr : IExpression) =
     visitor.Visit expr
 
 /// Names the given type.
-let nameType = TypeInference.nameType
+let nameType = NameHelpers.nameType
 let memProvider (ty : IType) = ty.GetAllMembers()
 let getParameters = Analysis.getParameters
 

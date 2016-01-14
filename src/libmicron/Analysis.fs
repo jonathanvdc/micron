@@ -201,7 +201,7 @@ module Analysis =
     let rec analyzeLetDefinition (previousDefinitions : DefinitionMap) (scope : GlobalScope)
                                  (name : Token) (parameterNames : Token list) 
                                  (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
-                                 (declModule : IType) : Result<IMember, LogEntry> =  
+                                 (declModule : IType) : Result<DescribedBodyMethod, LogEntry> =  
                                  
         /// Sets the given described method's body statement, uncurrying
         /// its signature in the process.
@@ -285,7 +285,7 @@ module Analysis =
                                          |> EB.Source (TokenHelpers.treeSourceLocation value) 
                                          |> EB.ToStatement)
 
-            descMethod :> IMember
+            descMethod
 
         /// Constrain the function's return type to the
         /// function body's result type.
@@ -361,25 +361,49 @@ module Analysis =
                     defined
             Seq.fold foldMethod defined moduleTy.Methods
 
-    /// Adds a definition to its defining module.
-    let addToModule (scope : GlobalScope) (def : Result<IMember, LogEntry>) (moduleType : DescribedType) (defined : DefinitionMap) =
-        match def with
-        | Success(:? IMethod as result) ->
-            moduleType.AddMethod result
-            addMethod scope.Log result defined
-        | Success(:? IField as result) ->
-            moduleType.AddField result
-            defined
-        | Success(:? IProperty as result) ->
-            moduleType.AddProperty result
-            defined
-        | Success(result) ->
-            scope.Log.LogError(LogEntry("Unknown member type", sprintf "Member type of module member '%s' was unexpected." result.Name, result.GetSourceLocation()))
-            defined
-        | Error msg ->
-            scope.Log.LogError msg
-            defined
-
+    /// Reads the fixity specification encoded in the given parse tree.
+    let readFixitySpecification (scope : GlobalScope) (spec : ParseTree<string, Token>) : Parser.OpFixity =
+        match spec with
+        | ProductionNode(Constant Parser.infixSpecifierIdentifier, 
+                         [ProductionNode(Constant Parser.infixKeywordIdentifier, [TerminalLeaf infixKeyword])
+                          TerminalLeaf lParen
+                          TerminalLeaf precDecl
+                          TerminalLeaf rParen]) ->
+            // Parse the fixity declaration's precedence:
+            //     
+            //     infix?(?)
+            //            ^
+            let precInt = 
+                match System.Int32.TryParse precDecl.contents with
+                | (true, result) -> result
+                | (false, _) -> 
+                    scope.Log.LogError(LogEntry("Invalid precedence specification",
+                                                sprintf "'%s' could not be parsed as a valid integer literal." precDecl.contents,
+                                                TokenHelpers.sourceLocation precDecl))
+                    9
+            // Parse the fixity:
+            //
+            //    infix?(?)
+            //    ^~~~~~
+            match infixKeyword.tokenType with
+            | TokenType.InfixlKeyword ->
+                // infixl
+                Parser.InfixLeft precInt
+            | TokenType.InfixrKeyword ->
+                // infixr
+                Parser.InfixRight precInt
+            | _ ->
+                // Pick infixl if something goes wrong.
+                scope.Log.LogError(LogEntry("Invalid fixity specification",
+                                            sprintf "'%s' was not a valid fixity keyword." infixKeyword.contents,
+                                            TokenHelpers.sourceLocation infixKeyword))
+                Parser.InfixLeft precInt
+        | _ ->
+            // How does that even happen?
+            scope.Log.LogError(LogEntry("Invalid fixity specification",
+                                        "This node was not formatted as a valid fixity declaration.",
+                                        TokenHelpers.treeSourceLocation spec))
+            Parser.InfixLeft 9
     /// Analyzes a module definition.
     let analyzeModule (scope : GlobalScope) (name : string) (definitions : ParseTree<string, Token> list) (declNs : INamespace) 
                       : IType =
@@ -407,19 +431,34 @@ module Analysis =
                 // member to the module type.
                 let parameterTokens = ParseTree.treeYield argsNode
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
-                let def = analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType
-                defined <- addToModule scope def moduleType defined
+                match analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType with
+                | Success result ->
+                    moduleType.AddMethod result
+                    defined <- addMethod scope.Log result defined
+                | Error msg ->
+                    scope.Log.LogError msg
             | ProductionNode(Constant Parser.letDefinitionIdentifier,
                              [TerminalLeaf letKeyword
                               ProductionNode(Constant Parser.infixSpecifierIdentifier, _) as spec
-                              leftArg
+                              TerminalLeaf leftArg
                               TerminalLeaf name
-                              rightArg
+                              TerminalLeaf rightArg
                               TerminalLeaf eq
                               value]) ->
                 // Binary operator let-binding. We'll do the 
                 // same analyze-add dance as above.
-                scope.Log.LogError(LogEntry("Unimplemented node type", "Operator definitions have not been implemented yet.", TokenHelpers.sourceLocation letKeyword))
+                let parameterTokens = [leftArg; rightArg]
+                let srcLoc = TokenHelpers.sourceLocation letKeyword
+                let fixitySpec = readFixitySpecification scope spec
+                match analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType with
+                | Success result ->
+                    moduleType.AddMethod result
+                    defined <- addMethod scope.Log result defined
+                    // Update precedence map as well
+                    let newPrec = Map.add name.contents fixitySpec defined.prec
+                    defined <- { defined with prec = newPrec }
+                | Error msg ->
+                    scope.Log.LogError msg
             | ProductionNode(Constant Parser.openModuleIdentifier, 
                              [TerminalLeaf openKeyword
                               TerminalLeaf name]) ->

@@ -131,16 +131,16 @@ module Parser =
                                              Terminal TokenType.Equals
                                              Nonterminal exprGroupIdentifier]
 
-                // let-definition -> <let> <fixity> identifier <op> identifier <=> $expr
+                // let-definition -> <let> <fixity> <identifier> <op> <identifier> <=> $expr
                 letDefinitionIdentifier --> [Terminal TokenType.LetKeyword
                                              Nonterminal infixSpecifierIdentifier
-                                             Nonterminal identifierIdentifier
+                                             Terminal TokenType.Identifier
                                              Terminal TokenType.OperatorToken
-                                             Nonterminal identifierIdentifier
+                                             Terminal TokenType.Identifier
                                              Terminal TokenType.Equals
                                              Nonterminal exprGroupIdentifier]
 
-                // infix-specifier -> infix-keyword <left-parenthesis> <literal-int> <right-parenthesis
+                // infix-specifier -> infix-keyword <left-parenthesis> <literal-int> <right-parenthesis>
                 infixSpecifierIdentifier --> [Nonterminal infixKeywordIdentifier
                                               Terminal TokenType.LParen
                                               Terminal TokenType.Integer

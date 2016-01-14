@@ -9,5 +9,5 @@ let const x y = x
 let compose g f x = g (f x)
 
 // Function composition operators.
-// let infixl(3) f >> g = compose g f
-// let infixl(3) f << g = compose f g
+let infixl(3) f >> g = compose g f
+let infixl(3) f << g = compose f g
