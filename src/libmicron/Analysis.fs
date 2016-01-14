@@ -411,6 +411,25 @@ module Analysis =
                     defined
             Seq.fold foldMethod defined moduleTy.Methods
 
+    /// Adds a definition to its defining module.
+    let addToModule (scope : GlobalScope) (def : Result<IMember, LogEntry>) (moduleType : DescribedType) (defined : DefinitionMap) =
+        match def with
+        | Success(:? IMethod as result) ->
+            moduleType.AddMethod result
+            addMethod scope.Log result defined
+        | Success(:? IField as result) ->
+            moduleType.AddField result
+            defined
+        | Success(:? IProperty as result) ->
+            moduleType.AddProperty result
+            defined
+        | Success(result) ->
+            scope.Log.LogError(LogEntry("Unknown member type", sprintf "Member type of module member '%s' was unexpected." result.Name, result.GetSourceLocation()))
+            defined
+        | Error msg ->
+            scope.Log.LogError msg
+            defined
+
     /// Analyzes a module definition.
     let analyzeModule (scope : GlobalScope) (name : string) (definitions : ParseTree<string, Token> list) (declNs : INamespace) 
                       : IType =
@@ -435,24 +454,22 @@ module Analysis =
                               TerminalLeaf eq
                               value]) ->
                 // Let-binding. We'll analyze it, and add the resulting
-                // member to the module type. If we need some
-                // kind of initialization for this member, then
-                // we'll add a statement to this initialization 
-                // statement list.
+                // member to the module type.
                 let parameterTokens = ParseTree.treeYield argsNode
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
-                match analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType with
-                | Success(:? IMethod as result) ->
-                    moduleType.AddMethod result
-                    defined <- addMethod scope.Log result defined
-                | Success(:? IField as result) ->
-                    moduleType.AddField result
-                | Success(:? IProperty as result) ->
-                    moduleType.AddProperty result
-                | Success(_) ->
-                    scope.Log.LogError(LogEntry("Unknown member type", sprintf "Member type of let-binding '%s' was not unexpected." name.contents, srcLoc))
-                | Error msg ->
-                    scope.Log.LogError msg
+                let def = analyzeLetDefinition defined scope name parameterTokens value srcLoc moduleType
+                defined <- addToModule scope def moduleType defined
+            | ProductionNode(Constant Parser.letDefinitionIdentifier,
+                             [TerminalLeaf letKeyword
+                              ProductionNode(Constant Parser.infixSpecifierIdentifier, _) as spec
+                              leftArg
+                              TerminalLeaf name
+                              rightArg
+                              TerminalLeaf eq
+                              value]) ->
+                // Binary operator let-binding. We'll do the 
+                // same analyze-add dance as above.
+                scope.Log.LogError(LogEntry("Unimplemented node type", "Operator definitions have not been implemented yet.", TokenHelpers.sourceLocation letKeyword))
             | ProductionNode(Constant Parser.openModuleIdentifier, 
                              [TerminalLeaf openKeyword
                               TerminalLeaf name]) ->
