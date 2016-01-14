@@ -36,6 +36,7 @@ module Analysis =
 
                 "bool", PrimitiveTypes.Boolean
                 "char", PrimitiveTypes.Char
+                "void", PrimitiveTypes.Void
             ]
 
     /// Names the given type.
@@ -66,7 +67,33 @@ module Analysis =
         func.Parameters |> Seq.mapi (fun i param -> param, i)
                         |> Seq.fold (fun result (param, i) -> Map.add param.Name (ArgumentVariable(param, i) :> IVariable) result) Map.empty
 
-    type DefinitionMap = Map<string, IMethod>
+    type DefinitionMap = { functions : Map<string, IMethod>; prec : Map<string, Parser.OpFixity> }
+
+    /// Tries to resolve a name.
+    let resolveName (nameType : string) (previousDefinitions : DefinitionMap) (scope : LocalScope) (token : Token) =
+        let name = token.contents
+        match scope.GetVariable name with
+        | Some local ->
+            local.CreateGetExpression()
+        | None ->
+            // If it's not a local, maybe we defined it earlier?
+            match Map.tryFind name previousDefinitions.functions with
+            | Some func ->
+                let func' =
+                    if Seq.isEmpty func.GenericParameters
+                        then func
+                        else func.MakeGenericMethod(func.GenericParameters
+                                                    |> Seq.map (fun _ -> UnknownType() :> IType))
+
+                GetMethodExpression(func', null) :> IExpression
+            | None ->
+                EB.VoidError (LogEntry("Unresolved " + nameType, sprintf "'%s' could not be resolved." name))
+
+    /// Tries to resolve an identifier.
+    let resolveIdentifier = resolveName "identifier"
+
+    /// Tries to resolve an operator.
+    let resolveOperator = resolveName "operator"
 
     /// Analyzes the given expression parse tree.
     let rec analyzeExpression (previousDefinitions : DefinitionMap) (scope : LocalScope) : ParseTree<string, Token> -> IExpression = function
@@ -172,24 +199,25 @@ module Analysis =
     | ProductionNode(Constant Parser.identifierIdentifier,
                      [TerminalLeaf ident]) ->
         // Identifier
-        let name = ident.contents
-        (match scope.GetVariable name with
-        | Some local ->
-            local.CreateGetExpression()
-        | None ->
-            // If it's not a local, maybe we defined it earlier?
-            match Map.tryFind name previousDefinitions with
-            | Some func ->
-                let func' =
-                    if Seq.isEmpty func.GenericParameters
-                        then func
-                        else func.MakeGenericMethod(func.GenericParameters
-                                                    |> Seq.map (fun _ -> UnknownType() :> IType))
-
-                GetMethodExpression(func', null) :> IExpression
-            | None ->
-                EB.VoidError (LogEntry("Unresolved identifier", sprintf "Identifier '%s' could not be resolved." name))
-        ) |> EB.Source (TokenHelpers.sourceLocation ident)
+        resolveIdentifier previousDefinitions scope ident 
+            |> EB.Source (TokenHelpers.sourceLocation ident)
+    | ProductionNode(Constant Parser.operatorIdentifier, _) as node ->
+        // Operator application
+        let prec name = 
+            match Map.tryFind name previousDefinitions.prec with
+            | Some x -> x
+            | None -> Parser.InfixLeft 9
+        match Parser.reassociate prec node with
+        | ProductionNode(Constant Parser.operatorIdentifier, [left; TerminalLeaf op; right])
+          when op.tokenType = TokenType.OperatorToken ->
+            let leftExpr = analyzeExpression previousDefinitions scope left
+            let rightExpr = analyzeExpression previousDefinitions scope right
+            let funcExpr = resolveOperator previousDefinitions scope op 
+                            |> EB.Source (TokenHelpers.sourceLocation op)
+            PartialApplication(funcExpr, [leftExpr; rightExpr])
+                |> EB.Source (TokenHelpers.treeSourceLocation node)
+        | _ ->
+            EB.VoidError (LogEntry("Something went wrong", "Invalid operator reassociation.", TokenHelpers.treeSourceLocation node))
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
         // This just means that a construct has been defined in the grammar,
@@ -356,7 +384,7 @@ module Analysis =
     // Add a method to a DefinitionMap, but raise a warning
     // if it already has a previous definition.
     let addMethod (log : ICompilerLog) (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
-        match Map.tryFind func.Name defined with
+        match Map.tryFind func.Name defined.functions with
         | Some predef when func.DeclaringType = predef.DeclaringType ->
             // Don't allow redefinitions in the same module, because
             // this could introduce more than one method with the same
@@ -389,7 +417,8 @@ module Analysis =
             log.LogWarning(LogEntry("Shadowed definition", seq [message; cause; diagnostics; remark]))
         | _ ->
             ()
-        Map.add func.Name func defined
+        let newFunctions = Map.add func.Name func defined.functions
+        { defined with functions = newFunctions }
 
     /// Opens the module with the given name, and imports its contents.
     /// An error is reported if something goes wrong.
@@ -427,7 +456,7 @@ module Analysis =
         // Keep track of defined methods, so that definitions further
         // down the module may make use of them.
         let mutable defined : DefinitionMap =
-            Map.empty
+            { functions = Map.empty; prec = Map.empty }
 
         // Iterate over the list of definitions in the module.
         for def in definitions do
