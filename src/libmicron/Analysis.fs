@@ -41,7 +41,7 @@ module Analysis =
         let name = token.contents
         match scope.GetVariable name with
         | Some local ->
-            local.CreateGetExpression()
+            AutoInvokeExpression(local.CreateGetExpression()) :> IExpression
         | None ->
             // If it's not a local, maybe we defined it earlier?
             match Map.tryFind name previousDefinitions.functions with
@@ -52,7 +52,7 @@ module Analysis =
                         else func.MakeGenericMethod(func.GenericParameters
                                                     |> Seq.map (fun _ -> UnknownType() :> IType))
 
-                GetMethodExpression(func', null) :> IExpression
+                AutoInvokeExpression(GetMethodExpression(func', null)) :> IExpression
             | None ->
                 unknownError (LogEntry("Unresolved " + nameType, sprintf "'%s' could not be resolved." name))
 
