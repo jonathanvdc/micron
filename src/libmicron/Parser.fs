@@ -172,8 +172,8 @@ module Parser =
                 literalIntIdentifier --> [Terminal TokenType.Integer]
                 // literal-double -> <double>
                 literalDoubleIdentifier --> [Terminal TokenType.Double]
-                // operator -> $expr <op> $paren
-                operatorIdentifier --> [Nonterminal parenGroupIdentifier
+                // operator -> $apply <op> $expr
+                operatorIdentifier --> [Nonterminal applyGroupIdentifier
                                         Terminal TokenType.OperatorToken
                                         Nonterminal exprGroupIdentifier]
             ]
