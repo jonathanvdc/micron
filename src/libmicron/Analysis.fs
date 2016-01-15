@@ -350,7 +350,7 @@ module Analysis =
             // We couldn't resolve the given module name. That's too bad.
             // Create a log entry to report this.
             scope.Log.LogError(LogEntry("Unresolved module name", 
-                                        sprintf "Could not resolve module '%s'." moduleName.contents, 
+                                        sprintf "Could not resolve module '%s'. Did you forget to link it or list it as a library dependency?" moduleName.contents, 
                                         TokenHelpers.sourceLocation moduleName))
             defined
         | _ ->
