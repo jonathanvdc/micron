@@ -7,6 +7,9 @@ open primops
 /// A function that always returns its first argument.
 let const x y = x
 
+/// Flips the given function's first two operands.
+let flip f x y = f y x
+
 /// Function composition
 let compose g f x = g (f x)
 
