@@ -74,6 +74,6 @@ public static class primops
     // Boolean negation
     public static bool notb(bool flag)
     {
-        return flag;
+        return !flag;
     }
 }
