@@ -13,6 +13,11 @@ type PartialApplication private(target : IExpression, args : IExpression list,
 
     let targetSignature = MethodType.GetMethod target.Type
 
+    /// Curry arguments differently, if necessary.
+    let curryArgs (args : IExpression list) =
+        List.zip (targetSignature.Parameters.GetTypes() |> List.ofSeq) args
+            |> List.map ((<||) TypeHelpers.recurryType)
+
     /// If this PartialApplication still needs more arguments, make it a LambdaExpression.
     /// If it has all the arguments it needs, it can be a call.
     let lowered =
@@ -61,14 +66,14 @@ type PartialApplication private(target : IExpression, args : IExpression list,
                  // Our new lambda's result is then the following call:
                  let invoc = InvocationExpression(
                                  capture 0,
-                                 [for i in 1..n -> capture i] @ List.ofArray arguments
+                                 curryArgs ([for i in 1..n -> capture i] @ List.ofArray arguments)
                              ) :> IExpression
 
                  // We have everything we need to build the partially-applied lambda!
                  LambdaExpression(lambdaHeader, ReturnStatement(invoc), boundHeaderBlock) :> IExpression
              else
                  // We have all the arguments we need for a call.
-                 InvocationExpression(target, args) :> IExpression
+                 InvocationExpression(target, curryArgs args) :> IExpression
 
     /// Creates a new partial application expression from the given
     /// target expression and list of argument expressions.
