@@ -86,31 +86,12 @@ module ExpressionHelpers =
         | _ ->
             expr
 
-    /// Gets this (curried) function signature's parameters, as well
-    /// as its eventual return type.
-    let rec getCurriedParametersAndReturnType (signature : IMethod) : seq<IParameter> list * IType =
-        let parameters = signature.Parameters
-        let retType = signature.ReturnType
-        match MethodType.GetMethod(retType) with
-        | null -> [parameters], retType
-        | retFunc -> 
-            let innerParams, innerRetType = getCurriedParametersAndReturnType retFunc
-            parameters :: innerParams, innerRetType
-
-    /// Gets this (curried) function signature's parameters.
-    let getCurriedParameters =
-        getCurriedParametersAndReturnType >> fst
-
-    /// Gets the number of arguments a function accepts at a time.
-    let getCurriedParameterCounts =
-        getCurriedParameters >> List.map Seq.length
-
     /// Uncurries and re-curries the given expression to have it match
     /// the given function signature.
     let recurry (signature : IMethod) (expr : IExpression) : IExpression = 
         // Let's check if we really have to do this first. This construction
         // is kind of expensive, so we should use it sparingly.
-        if getCurriedParameterCounts signature = getCurriedParameterCounts (MethodType.GetMethod(expr.Type)) then
+        if TypeHelpers.getCurriedParameterCounts signature = TypeHelpers.getCurriedParameterCounts (MethodType.GetMethod(expr.Type)) then
             expr
         else
             // Re-curries a fully uncurried expression to match the 
@@ -167,7 +148,7 @@ module ExpressionHelpers =
         match MethodType.GetMethod(expr.Type) with
         | null -> expr
         | func ->
-            let parameters, retType = getCurriedParametersAndReturnType func
+            let parameters, retType = TypeHelpers.getCurriedParametersAndReturnType func
             let addParam (retType : IType) (param : IParameter) : IType =
                 TypeHelpers.createDelegateSignature func.Attributes [| param |] retType |> MethodType.Create
             let curriedTy = parameters |> Seq.concat

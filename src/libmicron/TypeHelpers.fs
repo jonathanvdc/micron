@@ -65,3 +65,22 @@ module TypeHelpers =
     /// Uncurries the given method signature.
     let uncurrySignature (signature : IMethod) : IMethod = 
         uncurry (fun _ _ x -> x) () signature |> fst
+
+    /// Gets this (curried) function signature's parameters, as well
+    /// as its eventual return type.
+    let rec getCurriedParametersAndReturnType (signature : IMethod) : seq<IParameter> list * IType =
+        let parameters = signature.Parameters
+        let retType = signature.ReturnType
+        match MethodType.GetMethod(retType) with
+        | null -> [parameters], retType
+        | retFunc -> 
+            let innerParams, innerRetType = getCurriedParametersAndReturnType retFunc
+            parameters :: innerParams, innerRetType
+
+    /// Gets this (curried) function signature's parameters.
+    let getCurriedParameters : IMethod -> seq<IParameter> list =
+        getCurriedParametersAndReturnType >> fst
+
+    /// Gets the number of arguments a function accepts at a time.
+    let getCurriedParameterCounts : IMethod -> int list =
+        getCurriedParameters >> List.map Seq.length
