@@ -155,6 +155,13 @@ module ExpressionHelpers =
             // Use the fancy lambda construction to uncurry this.
             recurryStep signature Seq.empty expr :> IExpression
 
+    /// Optionally re-curries the given expression to match the 
+    /// given type.
+    let recurryType (ty : IType) (expr : IExpression) : IExpression =
+        match MethodType.GetMethod(ty) with
+        | null -> expr
+        | func -> recurry func expr
+
     /// Fully curries the given expression.
     let curry (expr : IExpression) : IExpression =
         match MethodType.GetMethod(expr.Type) with
