@@ -55,7 +55,7 @@ module TypeHelpers =
                 // Compute the total number of outer parameters.
                 let totalOuterParamCount = paramCount + List.length outerParams
                 // Uncurry the outer method's body first.
-                let body = maybeUncurry isTopLevel totalOuterParamCount outerParams body
+                let body = maybeUncurry isTopLevel paramCount outerParams body
                 // Process the inner method and its body.
                 let innerParams, innerRetType, innerPurity, body = getInfo other body totalOuterParamCount false
                 // Concatenate the results

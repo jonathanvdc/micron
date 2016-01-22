@@ -415,11 +415,11 @@ module TypeInference =
             | :? UnknownType as ty -> this.Convert(mapping ty)
             | _ -> ty
 
-        override this.ConvertDelegateType (ty : IType) : IType =
+        (* override this.ConvertDelegateType (ty : IType) : IType =
             // Be sure to write all types in uncurried form.
             let signature = MethodType.GetMethod(base.ConvertDelegateType(ty))
             let newSig = TypeHelpers.uncurrySignature signature
-            MethodType.Create newSig
+            MethodType.Create newSig *)
 
     /// Substitutes all unknown types in the given expression
     /// according to the given mapping function. The entire
