@@ -13,6 +13,9 @@ let flip f x y = f y x
 /// Function composition
 let compose g f x = g (f x)
 
+// Boolean negation
+let not flag = notb flag
+
 // Function composition operators
 let infixl(1) f >> g = compose g f
 let infixl(1) f << g = compose f g
@@ -42,14 +45,13 @@ let infixl(4) x <= y = lei x y
 let infixl(4) x > y = gti x y
 let infixl(4) x >= y = gei x y
 
+// Boolean constants
+// Note: these have to stay here, because
+// && and || rely on them.
+let true = 0 == 0
+let false = not true
+
 // TODO: make these compiler intrinsics,
 //       to enforce short-circuiting.
 let infixl(3) x && y = if x then y else false
 let infixl(2) x || y = if x then true else y
-
-// Boolean negation
-let not flag = notb flag
-
-// Boolean constants
-let true = 0 == 0
-let false = not true
