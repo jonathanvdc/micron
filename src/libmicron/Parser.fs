@@ -254,10 +254,11 @@ module Parser =
         let rec subReassociate : (ParseTree<string, Token> * Token) list * ParseTree<string, Token> -> ParseTree<string, Token> = function
             | [], suf -> suf
             | items, suf -> 
-                let _, maxPrec = List.maxBy (fun (_, op) -> precedence (prec op.contents)) items
-                let exprComp  (expr, op) = if op.contents = maxPrec.contents then Some expr else None
+                // Look for the "topmost" operator in the tree, i.e. the one with the lowest precedence.
+                let _, minPrec = List.minBy (fun (_, op) -> precedence (prec op.contents)) items
+                let exprComp  (expr, op) = if op.contents = minPrec.contents then Some expr else None
                 let lTree, rTree = 
-                    match prec maxPrec.contents with
+                    match prec minPrec.contents with
                     | InfixLeft _ -> 
                         let ls, mid, rs = Option.get (ListHelpers.splitAtFirst exprComp items)
                         subReassociate (ls, mid), subReassociate (rs, suf)
@@ -265,7 +266,7 @@ module Parser =
                         let ls, mid, rs = Option.get (ListHelpers.splitAtLast exprComp items)
                         subReassociate (ls, mid), subReassociate (rs, suf)
 
-                ProductionNode("operator", [lTree; TerminalLeaf maxPrec; rTree])
+                ProductionNode("operator", [lTree; TerminalLeaf minPrec; rTree])
 
         let flattened = flattenOps tree
         subReassociate flattened
