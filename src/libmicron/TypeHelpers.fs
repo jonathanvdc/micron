@@ -141,9 +141,10 @@ module TypeHelpers =
     /// Optionally re-curries the given expression to match the 
     /// given type.
     let recurryType (ty : IType) (expr : IExpression) : IExpression =
-        match MethodType.GetMethod(ty) with
-        | null -> expr
-        | func -> recurry func expr
+        match MethodType.GetMethod(ty), MethodType.GetMethod(expr.Type) with
+        | null, _  
+        | _, null -> expr
+        | func, _ -> recurry func expr
 
     /// Fully curries the given expression.
     let curry (expr : IExpression) : IExpression =
