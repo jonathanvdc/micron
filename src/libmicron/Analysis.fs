@@ -185,6 +185,9 @@ module Analysis =
                 |> EB.Source (TokenHelpers.treeSourceLocation node)
         | _ ->
             EB.VoidError (LogEntry("Something went wrong", "Invalid operator reassociation.", TokenHelpers.treeSourceLocation node))
+    | ProductionNode(Constant Parser.parenOperatorIdentifier, [_; TerminalLeaf op; _]) as node ->
+        resolveOperator previousDefinitions scope op 
+         |> EB.Source (TokenHelpers.treeSourceLocation node)
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
         // This just means that a construct has been defined in the grammar,

@@ -40,7 +40,8 @@ module Parser =
     let literalIntIdentifier = "literal-int"
     /// A nonterminal name for double literals.
     let literalDoubleIdentifier = "literal-double"
-
+    /// A nonterminal name for parenthesized operators.
+    let parenOperatorIdentifier = "paren-operator"
 
     // All expressions starting with a dollar sign exist
     // solely to group other nonterminals, or for precedence reasons.
@@ -101,11 +102,17 @@ module Parser =
                                      Nonterminal parenGroupIdentifier]
 
                 // $paren -> paren | identifier | literal-int | literal-double
+                parenGroupIdentifier --> [Nonterminal parenOperatorIdentifier]
                 parenGroupIdentifier --> [Nonterminal parenIdentifier]
                 parenGroupIdentifier --> [Nonterminal identifierIdentifier]
                 parenGroupIdentifier --> [Nonterminal literalIntIdentifier]
                 parenGroupIdentifier --> [Nonterminal literalDoubleIdentifier]
                 
+                // paren-operator -> <(> <op> <)>
+                parenOperatorIdentifier --> [Terminal TokenType.LParen
+                                             Terminal TokenType.OperatorToken
+                                             Terminal TokenType.RParen]
+
                 // paren -> <(> $expr <)>
                 parenIdentifier --> [Terminal TokenType.LParen
                                      Nonterminal exprGroupIdentifier
