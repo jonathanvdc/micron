@@ -63,6 +63,7 @@
     <Compile Include="RecursiveMethodExpression.fs" />
     <Compile Include="PartialApplication.fs" />
     <Compile Include="ExpressionHelpers.fs" />
+    <Compile Include="RecurryExpression.fs" />
     <Compile Include="TypeInference.fs" />
     <Compile Include="StrictConversionRules.fs" />
     <Compile Include="Analysis.fs" />
