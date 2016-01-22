@@ -7,4 +7,4 @@
 fecs primops.cs -platform ir -runtime clr -o bin/primops.flo -repeat-command $@
 # Then, compile the stdlib module, and link it with the
 # primops module.
-muc stdlib.mu bin/primops.flo -platform ir -indirect-platform clr -o bin/stdlib.flo -repeat-command $@
+muc stdlib.mu bin/primops.flo -platform ir -runtime clr -o bin/stdlib.flo -repeat-command $@
