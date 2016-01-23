@@ -14,5 +14,5 @@ let main =
         // value, and convert it to a string.
         let msg = showInt (fib num) in
         // Print that string.
-        writeLine msg in
+        composeIO (writeLine "The fibonacci number you asked for is:") (writeLine msg) in
     composeIO (writeLine "Hello, world!") (readLine >>= binder)
