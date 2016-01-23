@@ -508,8 +508,47 @@ module Analysis =
 
         moduleType :> IType
 
+    let topLevelModuleName = "<Program>"
+    let entryPointFunctionName = "__entry_point"
+    let IOMonadActionField = "Action" 
+
+    /// Tries to create an entry point.
+    let tryCreateEntryPoint (scope : GlobalScope) (programModule : IType) : IMethod option =
+        // We're looking for a parameterless static method called '__entry_point'.
+        match programModule.GetMethod(true, [||]) with
+        | null -> None
+        | mainFunc -> 
+            // Construct the following function:
+            //
+            // public static void __entry_point(string[] Args)
+            // {
+            //     main().Action();
+            //     return;
+            // }
+
+            // Construct the `public static void __entry_point(string[] Args)`
+            // signature.
+            let epFunc = DescribedBodyMethod(entryPointFunctionName, programModule, PrimitiveTypes.Void, true)
+
+            // Construct the `main().Action()` call
+            let mainCall = InvocationExpression(mainFunc, null, Seq.empty)
+            let localScope = LocalScope(FunctionScope(scope, epFunc))
+            let accessedField = EB.AccessNamedMembers localScope IOMonadActionField (EB.GetAccessedExpression mainCall)
+            if EB.IsError accessedField then
+                // main function was bad. Log an error message.
+                scope.Log.LogError(LogEntry("Invalid 'main' value", 
+                                            sprintf "'main' should have been an IO monad. Instead, its type was '%s'." (NameHelpers.nameType mainCall.Type), 
+                                            mainFunc.GetSourceLocation()))
+                None
+            else
+                // Make the call.
+                let actionCall = EB.Invoke localScope accessedField Seq.empty |> EB.Pop
+                // Then return void.
+                epFunc.Body <- EB.Initialize actionCall EB.ReturnVoid |> EB.ToStatement
+                Some (epFunc :> IMethod)
+
     /// Analyzes an entire program.
-    let analyzeProgram (scope : GlobalScope) (contents : ParseTree<string, Token>) (declAsm : IAssembly) : INamespaceBranch =
+    let analyzeProgram (scope : GlobalScope) (contents : ParseTree<string, Token>) (declAsm : IAssembly) : INamespaceBranch * IMethod option =
         let flatDefs = Parser.flattenList Parser.programIdentifier contents
 
         // Checks if a parse tree is a module declaration.
@@ -536,16 +575,22 @@ module Analysis =
 
         if List.isEmpty topLevelDefs then
             // If there are no top-level declarations,
-            // then we're done here.
-            result :> INamespaceBranch
+            // then we're done here. Also, there is no entry point.
+            result :> INamespaceBranch, None
         else
             // Otherwise, create a `<Program>` module and
             // put them in there.
-            result.WithType(analyzeModule scope "<Program>" topLevelDefs) :> INamespaceBranch
+            let resultNs = result.WithType(analyzeModule scope topLevelModuleName topLevelDefs)
+            let program = resultNs.GetAllTypes() |> Seq.find (fun (x : IType) -> x.Name = topLevelModuleName)
+            resultNs :> INamespaceBranch, tryCreateEntryPoint scope program
 
     /// Analyzes an assembly. This does the same thing as analyzing a program,
     /// except that the result is wrapped in an assembly of the given name.
     let analyzeAssembly (scope : GlobalScope) (name : string) (contents : ParseTree<string, Token>) : IAssembly =
         let asm = DescribedAssembly(name, scope.Environment)
-        asm.MainNamespace <- analyzeProgram scope contents asm
+        let mainNs, ep = analyzeProgram scope contents asm
+        asm.MainNamespace <- mainNs
+        match ep with
+        | Some ep -> asm.EntryPoint <- ep
+        | None -> ()
         asm :> IAssembly

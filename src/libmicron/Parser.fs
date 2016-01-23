@@ -200,9 +200,11 @@ module Parser =
         let rules = 
             let (-->) A β = ProductionRule(A, β)
             [
-                // program -> ε | let-definition program | module
+                // program -> ε | let-definition program | open-module program | module
                 programIdentifier --> []
                 programIdentifier --> [Nonterminal letDefinitionIdentifier
+                                       Nonterminal programIdentifier]
+                programIdentifier --> [Nonterminal openModuleIdentifier
                                        Nonterminal programIdentifier]
                 programIdentifier --> [Nonterminal moduleIdentifier]
 
