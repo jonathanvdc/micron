@@ -530,8 +530,9 @@ module Analysis =
             // signature.
             let epFunc = DescribedBodyMethod(entryPointFunctionName, programModule, PrimitiveTypes.Void, true)
 
-            // Construct the `main().Action()` call
-            let mainCall = InvocationExpression(mainFunc, null, Seq.empty)
+            // Construct the `main().Action()` call. Instantiate the main function
+            // with all int32s if it is generic.
+            let mainCall = InvocationExpression(mainFunc.MakeGenericMethod(mainFunc.GenericParameters |> Seq.map (fun _ -> PrimitiveTypes.Int32)), null, Seq.empty)
             let localScope = LocalScope(FunctionScope(scope, epFunc))
             let accessedField = EB.AccessNamedMembers localScope IOMonadActionField (EB.GetAccessedExpression mainCall)
             if EB.IsError accessedField then
