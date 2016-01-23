@@ -89,6 +89,14 @@ module Analysis =
                                            sprintf "'%s' could not be parsed as a valid double literal." token.contents))
                                  (EB.ConstantFloat64 0.0)
         ) |> EB.Source (TokenHelpers.sourceLocation token)
+    | ProductionNode(Constant Parser.literalStringIdentifier,
+                     [TerminalLeaf token]) ->
+        // String literal
+        // TODO: implement escape sequence analysis
+
+        // Get rid of the quotes (first and last characters)
+        let stringVal = token.contents.Substring(1, token.contents.Length - 2)
+        EB.ConstantString stringVal |> EB.Source (TokenHelpers.sourceLocation token)
     | ProductionNode(Constant Parser.parenIdentifier,
                      [TerminalLeaf lParen; expr; TerminalLeaf rParen]) ->
         // Parentheses
