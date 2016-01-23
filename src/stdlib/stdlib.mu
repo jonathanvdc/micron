@@ -46,6 +46,9 @@ let infixl(4) x <= y = lei x y
 let infixl(4) x > y = gti x y
 let infixl(4) x >= y = gei x y
 
+// String concatenation
+let infixl(5) l ++ r = sconcat l r
+
 // Boolean constants
 // Note: these have to stay here, because
 // && and || rely on them.

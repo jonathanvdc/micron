@@ -76,6 +76,12 @@ public module primops
     {
         return !flag;
     }
+    
+    // String concatenation
+    public string sconcat(string l, string r)
+    {
+        return l + r;
+    }
 
     // Conversion functions
     public string conv_i4_s(int Value)
