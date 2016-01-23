@@ -205,12 +205,16 @@ module ExpressionHelpers =
         override this.Transform (expr : IExpression) =
             match expr with
             | :? PartialApplication as expr ->
-                let parameters = expr.TargetSignature.Parameters.GetTypes() 
-                                    |> List.ofSeq
-                                    |> List.take (List.length expr.Arguments)
-                let recurriedArgs = List.zip parameters expr.Arguments
-                                    |> List.map ((<||) recurryType)
-                PartialApplication(expr.Target, recurriedArgs) :> IExpression
+                match expr.TargetSignature with
+                | Some targetSig ->
+                    let parameters = targetSig.Parameters.GetTypes() 
+                                        |> List.ofSeq
+                                        |> List.take (List.length expr.Arguments)
+                    let recurriedArgs = List.zip parameters expr.Arguments
+                                        |> List.map ((<||) recurryType)
+                    PartialApplication(expr.Target, recurriedArgs) :> IExpression
+                | None ->
+                    (expr :> IExpression).Accept(this)
             | _ ->
                 expr.Accept(this)
 
