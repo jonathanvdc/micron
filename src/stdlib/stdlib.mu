@@ -3,6 +3,7 @@
 module stdlib
 
 open primops
+open primio
 
 /// A function that always returns its first argument.
 let const x y = x
@@ -55,3 +56,25 @@ let false = not true
 //       to enforce short-circuiting.
 let infixl(3) x && y = if x then y else false
 let infixl(2) x || y = if x then true else y
+
+// Conversion functions
+let showInt x = conv_i4_s x
+let parseInt x = conv_s_i4 x
+
+// IO monad functions
+
+// Monadic bind
+let infixl(1) m >>= f = bindIO m f
+// Monad creation
+let return value = returnIO value
+// Exception monad creation
+let fail errorMessage = failIO errorMessage
+
+// Monadic map
+let mapIO m f =
+    let binder x = return (f x) in
+    m >>= binder
+
+// IO functions
+let writeLine message = writeLineIO message
+let readLine = readLineIO

@@ -1,0 +1,90 @@
+
+public module primops
+{
+    // Integer arithmetic
+    public int addi(int x, int y)
+    {
+        return x + y;
+    }
+    public int subi(int x, int y)
+    {
+        return x - y;
+    }
+    public int muli(int x, int y)
+    {
+        return x * y;
+    }
+    public int divi(int x, int y)
+    {
+        return x / y;
+    }
+    public int modi(int x, int y)
+    {
+        return x % y;
+    }
+
+    // Integer bitwise ops
+    public int ori(int x, int y)
+    {
+        return x | y;
+    }
+    public int andi(int x, int y)
+    {
+        return x & y;
+    }
+    public int xori(int x, int y)
+    {
+        return x ^ y;
+    }
+    public int shri(int x, int y)
+    {
+        return x >> y;
+    }
+    public int shli(int x, int y)
+    {
+        return x << y;
+    }
+
+    // Integer comparison
+    public bool eqi(int x, int y)
+    {
+        return x == y;
+    }
+    public bool neqi(int x, int y)
+    {
+        return x != y;
+    }
+    public bool lti(int x, int y)
+    {
+        return x < y;
+    }
+    public bool lei(int x, int y)
+    {
+        return x <= y;
+    }
+    public bool gti(int x, int y)
+    {
+        return x > y;
+    }
+    public bool gei(int x, int y)
+    {
+        return x >= y;
+    }
+
+    // Boolean negation
+    public bool notb(bool flag)
+    {
+        return !flag;
+    }
+
+    // Conversion functions
+    public string conv_i4_s(int Value)
+    {
+        return Value.ToString();
+    }
+
+    public int conv_s_i4(string Value)
+    {
+        return int.Parse(Value);
+    }
+}
