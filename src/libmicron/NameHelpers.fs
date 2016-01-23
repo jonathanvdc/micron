@@ -35,7 +35,7 @@ module NameHelpers =
         | None ->
             match ty with
             | :? GenericType as ty ->
-                nameType (ty.Declaration) + "<" + (ty.GenericArguments |> Seq.map nameType |> String.concat ", ") + ">"
+                GenericNameExtensions.ChangeTypeArguments(nameType (ty.Declaration), (ty.GenericArguments |> Seq.map nameType))
             | _ ->
                 match MethodType.GetMethod ty with
                 | null -> ty.FullName
