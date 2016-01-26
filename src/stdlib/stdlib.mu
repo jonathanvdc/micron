@@ -24,7 +24,7 @@ let infixl(1) f << g = compose f g
 
 // Forward and backward pipe
 let infixl(1) x |> f = f x
-let infixl(1) f <| x = f x
+let infixr(1) f <| x = f x
 
 // Integer arithmetic
 let infixl(8) x + y = addi x y
@@ -46,6 +46,11 @@ let infixl(4) x < y = lti x y
 let infixl(4) x <= y = lei x y
 let infixl(4) x > y = gti x y
 let infixl(4) x >= y = gei x y
+
+// Misc. integer stuff
+let even x = x % 2 == 0
+let odd x = x % 2 == 1
+let square x = x * x
 
 // String concatenation
 let infixl(5) l ++ r = sconcat l r
@@ -81,10 +86,9 @@ let mapIO m f =
     let binder x = return (f x) in
     m >>= binder
 
-// Monad composition
-let composeIO m1 m2 =
-    let binder m = m2 in
-    m1 >>= binder
+// Compose IO actions, throwing away the first result.
+let infixl(1) m1; m2 =
+    m1 >>= (let k x = m2 in k)
 
 // IO functions
 let writeLine message = writeLineIO message
@@ -106,3 +110,56 @@ let singleton x = x :: nil
 // String manipulation functions
 let splitString s cs = l_splitString s cs
 let toCharList s = l_toCharList s
+
+// Show a List<a>, using some function that shows an a.
+let showListWith show l =
+  let helper comma l =
+    if isNil l
+      then "]"
+      else (if comma then ", " else "") ++ show (head l) ++ helper true (tail l)
+  in "[" ++ helper false l
+
+// Show a list of integers.
+let showIntList l = showListWith showInt l
+
+// Turn (a :: b :: c :: nil) into (f a (f b (f c z))).
+let foldr f z l =
+  if isNil l then z else f (head l) (foldr f z (tail l))
+
+// Apply f to each element in a list.
+let map f l =
+  let g h t = f h :: t
+  in foldr g nil l
+
+// Filter a list using condition f.
+let filter f l =
+  let g h t = if f h then h :: t else t
+  in foldr g nil l
+
+// Sum a list of integers.
+let sum l = foldr (+) 0 l
+
+// Get a list's length.
+let length l =
+  let g x a = 1 + a
+  in foldr g 0 l
+
+// List concatenation.
+let infixl(7) x :+ y = foldr (::) y x
+
+// Create a list of n copies of some element.
+let repeat n a =
+  if n == 0 then nil else a :: repeat (n-1) a
+
+// Create an ascending list of integers from a up to and including b.
+let range a b =
+  if a > b then nil else a :: range (a+1) b
+
+// If leq (≤) is a total order on the elements in the list, sort the list in ascending order.
+let sort leq xs =
+  if isNil xs then nil
+  else let h = head xs in
+       let t = tail xs in
+       let isLesser x = leq x h in
+       let isGreater x = not (leq x h) in
+       sort leq (filter isLesser t) :+ (h :: sort leq (filter isGreater t))
