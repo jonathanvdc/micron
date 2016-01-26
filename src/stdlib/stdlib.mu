@@ -115,17 +115,6 @@ let toCharList s = l_toCharList s
 let trimString s = stringTrim s
 let isEmptyString s = stringIsEmpty s
 
-// Show a List<a>, using some function that shows an a.
-let showListWith show l =
-  let helper comma l =
-    if isNil l
-      then "]"
-      else (if comma then ", " else "") ~ show (head l) ~ helper true (tail l)
-  in "[" ~ helper false l
-
-// Show a list of integers.
-let showIntList l = showListWith showInt l
-
 // Turn (a :: b :: c :: nil) into (f a (f b (f c z))).
 let foldr f z l =
   if isNil l then z else f (head l) (foldr f z (tail l))
@@ -193,3 +182,16 @@ let sort leq xs =
        let isLesser x = leq x h in
        let isGreater x = not (leq x h) in
        sort leq (filter isLesser t) ++ (h :: sort leq (filter isGreater t))
+
+// Join a list of strings with x: join x (a::b::c::nil) == a ~ x ~ b ~ x ~ c.
+let join x l =
+  if isNil l then ""
+  else let j a b = a ~ x ~ b
+       in head l ~ foldl j "" (tail l)
+
+// Show a List<a>, using some function that shows an a.
+let showListWith show l = "[" ~ join ", " (map show l) ~ "]"
+
+// Show a list of integers.
+let showIntList l = showListWith showInt l
+
