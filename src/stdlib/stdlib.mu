@@ -86,3 +86,6 @@ let composeIO m1 m2 =
 // IO functions
 let writeLine message = writeLineIO message
 let readLine = readLineIO
+
+// Unit
+let unit = getUnit

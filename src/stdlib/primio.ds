@@ -58,6 +58,14 @@ public class BindClosure<T1, T2>
 
 public module primio
 {
+    /// <summary>
+    /// Gets the 'unit' singleton value.
+    /// </summary>
+    public Unit getUnit()
+    {
+        return Unit;
+    }
+
     public static T performIO<T>(IO<T> Monad)
     {
         return Monad.Action();
