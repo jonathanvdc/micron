@@ -51,6 +51,8 @@ let infixl(4) x >= y = gei x y
 let even x = x % 2 == 0
 let odd x = x % 2 == 1
 let square x = x * x
+let max x y = if x > y then x else y
+let min x y = if x < y then x else y
 
 // String concatenation
 let infixl(5) l ++ r = sconcat l r
@@ -165,6 +167,23 @@ let repeat n a =
 // Create an ascending list of integers from a up to and including b.
 let range a b =
   if a > b then nil else a :: range (a+1) b
+
+// Return the largest/smallest element in the list.
+// These functions assume the list is non-empty!
+let maximum l = foldr max (head l) (tail l)
+let minimum l = foldr min (head l) (tail l)
+
+// Take the first n elements from a list.
+let take n l =
+  if (n <= 0 || isNil l)
+    then nil
+    else head l :: take (n-1) (tail l)
+
+// Drop the first n elements from a list.
+let drop n l =
+  if (n <= 0 || isNil l)
+    then l
+    else drop (n-1) (tail l)
 
 // If leq (≤) is a total order on the elements in the list, sort the list in ascending order.
 let sort leq xs =
