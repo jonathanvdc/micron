@@ -32,8 +32,10 @@ let qsort leq xs =
   if isNil xs then nil
   else let h = head xs in
        let t = tail xs in
-       let lesser  = filter (flip leq h) t in
-       let greater = filter (flip leq h >> not) t in
+       let leqh x = leq x h in
+       let nleqh x = not (leqh x) in
+       let lesser  = filter leqh t in
+       let greater = filter nleqh t in
        qsort leq lesser :+ (h :: nil) :+ qsort leq greater
 
 let main = writeLine (showIntList (qsort (<=) (1::7::4::5::2::9::3::6::8::nil)))
