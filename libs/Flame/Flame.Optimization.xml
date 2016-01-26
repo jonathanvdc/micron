@@ -125,6 +125,17 @@
  A node visitor that finds SSA variables whose values are used.
  </summary>
     </member>
+    <member name="M:Flame.Optimization.SSAVariableUseFinder.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSAVariableUseFinder.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
     <member name="P:Flame.Optimization.SSAVariableUseFinder.UsedVariables">
       <summary>
  Gets the set of variables that have been used by nodes visited
@@ -135,6 +146,11 @@
       <summary>
  Gets a dictionary that maps SSA variables to the number of times
  their values have been loaded.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSAVariableUseFinder.ArgumentVariables">
+      <summary>
+ Gets the set of all variables that are known to be used as arguments.
  </summary>
     </member>
     <member name="T:Flame.Optimization.IgnoredBranch">
@@ -449,6 +465,18 @@
  A flow graph visitor that eliminates dead blocks.
  </summary>
     </member>
+    <member name="M:Flame.Optimization.DeadBlockEliminationVisitor.#ctor">
+      <summary>
+ Creates a dead block eliminating visitor that does not
+ log anything.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadBlockEliminationVisitor.#ctor(Flame.Compiler.ICompilerLog,Flame.IMethod)">
+      <summary>
+ Creates a dead block eliminating visitor that logs warnings about
+ the given declaring method to the given log.
+ </summary>
+    </member>
     <member name="M:Flame.Optimization.DeadBlockEliminationVisitor.WarnDeadBlock(Flame.Compiler.Flow.BasicBlock)">
       <summary>
  Emits a warning that informs the user that the given basic
@@ -459,6 +487,13 @@
       <summary>
  Emits a warning that advises the user to insert a flow-terminating
  statement, such as a "return".
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DeadBlockEliminationVisitor.ShouldLog">
+      <summary>
+ Tests if this dead block eliminating visitor's compiler log
+ is not null, which indicates that logging warnings is expected
+ of us if we run into fishy code.
  </summary>
     </member>
     <member name="P:Flame.Optimization.DeadBlockEliminationVisitor.Log">
@@ -482,6 +517,12 @@
     <member name="F:Flame.Optimization.DeadBlockEliminationPass.DeadBlockEliminationPassName">
       <summary>
  This pass' name string.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SilentDeadBlockEliminationPass">
+      <summary>
+ A pass that eliminates dead blocks from flow graphs. No diagnostics
+ are ever issued by this pass.
  </summary>
     </member>
     <member name="T:Flame.Optimization.DeadStoreEliminatingVisitor">
@@ -1042,6 +1083,144 @@
  Finds out whether a call to the given method can be inlined.
  </summary>
     </member>
+    <member name="T:Flame.Optimization.DissectedCall">
+      <summary>
+ A method call that has been decomposed into a callee, a 'this' object,
+ and a sequence of arguments.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DissectedCall.#ctor(Flame.Compiler.IExpression,Flame.IMethod,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
+      <summary>
+ Creates a new dissected call from the given 'this' value,
+ callee, and sequence of arguments.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DissectedCall.ThisValue">
+      <summary>
+ Gets the expression that produces the 'this' object for
+ this call.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DissectedCall.Method">
+      <summary>
+ Gets the callee of this call.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DissectedCall.Arguments">
+      <summary>
+ Gets the sequence of arguments that are passed to the
+ callee.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.InliningPassBase">
+      <summary>
+ A pass that performs a number of iterations, which consist of
+ inlining followed by whole-body optimization.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningPassBase.GetInliningCriteria(Flame.Compiler.Visitors.BodyPassArgument)">
+      <summary>
+ Creates a delegate that determines whether the given dissected
+ direct call should be inlined.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningPassBase.GetBodyOptimizer(Flame.Compiler.Visitors.BodyPassArgument)">
+      <summary>
+ Creates a statement optimizer. Note that this should perform
+ simple intraprocedural optimizations, rather than more advance
+ optimizations, such as inlining.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningPassBase.GetMaxRecursion(Flame.Compiler.Visitors.BodyPassArgument)">
+      <summary>
+ Gets the number of times this pass is allowed to
+ inline functions recursively. This corresponds
+ to the maximal number of inline-optimize iterations this pass makes.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningPassBase.NameMethod(Flame.IMethod)">
+      <summary>
+ Names the given method. This includes any quotation marks, or other
+ delimiters.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningPassBase.LogInlinedCall(Flame.Compiler.Visitors.BodyPassArgument,Flame.Compiler.SourceLocation,Flame.Optimization.DissectedCall,System.Int32)">
+      <summary>
+ Logs a message that proclaims that an inlining operation
+ has occurred.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningPassBase.Apply(Flame.Compiler.Visitors.BodyPassArgument)">
+      <summary>
+ Applies this pass to the given body pass argument.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.InliningPassBase.InliningRemarksOption">
+      <summary>
+ The remarks option for inlining: applying this pass to
+ a function will emit a message if this is option set to true.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.InliningPassBase.InliningPassName">
+      <summary>
+ Gets the default inlining pass name.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.InliningVisitor">
+      <summary>
+ A visitor that inlines direct calls, if they meet certain criteria.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningVisitor.Inline(Flame.Optimization.DissectedCall)">
+      <summary>
+ Inlines the given dissected call: its arguments and return value
+ are replaced by local variables, and control will resume when the
+ inlined callee is done. Null is returned if the inlining operation
+ could not be performed.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.InliningVisitor.CurrentMethod">
+      <summary>
+ Gets the current method, whose body is being processed.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.InliningVisitor.HasInlined">
+      <summary>
+ Checks if this inlining visitor has inlined anything yet.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.InliningVisitor.InlinedCount">
+      <summary>
+ Gets a read-only dictionary that maps methods to the number
+ of times they have been inlined by this visitor.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.InliningVisitor.InlinedCallLocations">
+      <summary>
+ Gets all call locations that have been inlined.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.InliningVisitor.PassArgument">
+      <summary>
+ Gets this visitor's body pass argument.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.InliningVisitor.ShouldInline">
+      <summary>
+ Determines whether the given dissected direct call should be inlined.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningVariableVisitor.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.InliningVariableVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
     <member name="T:Flame.Optimization.JumpThreadingVisitor">
       <summary>
  A branch visitor that tries to replace argumentless indirect branches
@@ -1176,6 +1355,54 @@
  </remarks>
     </member>
     <member name="F:Flame.Optimization.RemoveTrivialPhiPass.RemoveTrivialPhiPassName">
+      <summary>
+ This pass' name.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.ReturnMotionVisitor">
+      <summary>
+ A visitor that attempts to "push down" return statements.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ReturnMotionVisitor.PushDownReturn(Flame.Compiler.IExpression)">
+      <summary>
+ Creates a logical return statement, which is pushed down
+ as far as possible.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.ReturnMotionVisitor.MatchedLocations">
+      <summary>
+ Gets a sequence of source locations that identify the sites where
+ 'return' statements were successfully pushed down.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.ReturnMotionPass">
+      <summary>
+ A pass that attempts to "push down" 'return-select', 'return-source-expr' and
+ 'return-initialized' expressions. Running this pass before applying
+ -ftail-recursion should improve the latter's effectiveness, especially
+ for expression-based languages.
+ </summary>
+      <remarks>
+ The following transformations are made, which can be recursive:
+
+     return(select(flag, x, y))
+ --&gt; if-else(flag, return(x), return(y))
+
+     return(initialized(init, val, {}))
+ --&gt; { init, return(val) }
+
+     return(source-expr(val))
+ --&gt; source-stmt(return(val))
+ </remarks>
+    </member>
+    <member name="P:Flame.Optimization.ReturnMotionPass.ReturnMotionRemarksOption">
+      <summary>
+ The remarks option for return motion: applying this pass to
+ a function will emit a message if this is option set to true.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.ReturnMotionPass.ReturnMotionPassName">
       <summary>
  This pass' name.
  </summary>
@@ -1408,7 +1635,13 @@
     <member name="M:Flame.Optimization.StackIntrinsicsPass.ComputeBlockLocalVariables(Flame.Compiler.Flow.FlowGraph)">
       <summary>
  Finds all variables in the given flow graph that are used only
- in the block that defines them.
+ in the block that defines them. The result is a tuple that
+ consists of the given values:
+     1. A dictionary that maps block-local variables to
+        their use count.
+     2. A dictionary that maps basic block tags to a set
+        of variables that includes the block's
+        block-local variables.
  </summary>
     </member>
     <member name="F:Flame.Optimization.StackIntrinsicsPass.StackIntrinsicsPassName">
@@ -1439,6 +1672,7 @@
     <member name="T:Flame.Optimization.TailRecursionVisitor">
       <summary>
  A statement visitor that rewrites tail recursion as iteration.
+ Also works for lambdas.
  </summary>
       <remarks>
  Rewrites
@@ -1464,6 +1698,21 @@
  ...
  continue OuterTag;
  </remarks>
+    </member>
+    <member name="M:Flame.Optimization.TailRecursionVisitor.MatchesSelfCall(Flame.Compiler.IExpression)">
+      <summary>
+ Determines whether the given expression is a self-call.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.TailRecursionVisitor.VisitBody(Flame.Compiler.IExpression,Flame.IMethod)">
+      <summary>
+ Visits the given expression, which logically belongs to the given method.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.TailRecursionVisitor.VisitBody(Flame.Compiler.IStatement,Flame.IMethod)">
+      <summary>
+ Visits the given statement, which logically belongs to the given method.
+ </summary>
     </member>
     <member name="P:Flame.Optimization.TailRecursionVisitor.MatchedLocations">
       <summary>
@@ -1547,6 +1796,46 @@
     <member name="M:Flame.Optimization.UnwrapBoundVariablesPass.Apply(Flame.Compiler.IStatement)">
       <summary>
  Applies this pass to the given statement.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.ValuePropagatingVisitor.UseCounts">
+      <summary>
+ Gets the use counts associated with block-local variables by
+ this value propagating visitor.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.ValuePropagationPass">
+      <summary>
+ A pass that propagates block-local SSA variable definitions.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ValuePropagationPass.CanDelayTopLevelExpression(Flame.Compiler.IExpression)">
+      <summary>
+ Tests if the given top-level expression can be delayed.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ValuePropagationPass.CanDelayTopLevelStatement(Flame.Compiler.IStatement)">
+      <summary>
+ Tests if the given top-level expression can be delayed.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ValuePropagationPass.IsPropagateAlwaysExpression(Flame.Compiler.IExpression)">
+      <summary>
+ Tells if this expression is a propagate-always expression:
+ an expression that should always be propagated, regardless
+ of use count.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ValuePropagationPass.IsPropagateOnceExpression(Flame.Compiler.IExpression)">
+      <summary>
+ Tells if this expression is a propagate-always expression:
+ an expression that should always be propagated, provided
+ its use count is one.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.ValuePropagationPass.ValuePropagationPassName">
+      <summary>
+ Gets this pass' name.
  </summary>
     </member>
     <member name="T:Flame.Optimization.Variables.AccessCount">
