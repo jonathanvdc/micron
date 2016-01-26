@@ -32,4 +32,27 @@ public module primlist
     public List<T> l_tail<T>(List<T> l) {
         return l.Tail;
     }
+
+    public List<T> l_arrayToList<T>(T[] arr) {
+        var result = l_nil<T>();
+        for (int i = arr.Length - 1; i >= 0; i--)
+        {
+            result = l_cons<T>(arr[i], result);
+        }
+        return result;
+    }
+
+    public T[] l_listToArray<T>(List<T> list) {
+        var result = new System.Collections.Generic.List<T>();
+        while (!l_isNil<T>(list))
+        {
+            result.Add(l_head<T>(list));
+            list = l_tail<T>(list);
+        }
+        return result.ToArray();
+    }
+
+    public List<string> l_splitString(string val, List<char> sep) {
+        return l_arrayToList<string>(val.Split(l_listToArray<char>(sep)));
+    }
 }

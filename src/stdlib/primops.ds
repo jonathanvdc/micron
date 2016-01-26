@@ -76,7 +76,7 @@ public module primops
     {
         return !flag;
     }
-    
+
     // String concatenation
     public string sconcat(string l, string r)
     {
@@ -92,5 +92,15 @@ public module primops
     public int conv_s_i4(string Value)
     {
         return int.Parse(Value);
+    }
+
+    public string conv_c_s(char Value)
+    {
+        return Value.ToString();
+    }
+
+    public char conv_s_c(string Value)
+    {
+        return char.Parse(Value);
     }
 }

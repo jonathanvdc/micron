@@ -64,6 +64,8 @@ let infixl(2) x || y = if x then true else y
 // Conversion functions
 let showInt x = conv_i4_s x
 let parseInt x = conv_s_i4 x
+let showChar c = conv_c_s c
+let parseChar c = conv_s_c c
 
 // IO monad functions
 
@@ -99,3 +101,7 @@ let isNil = l_isNil
 let head = l_head
 let tail = l_tail
 let nil = l_nil
+let singleton x = x :: nil
+
+// String manipulation functions
+let splitString s cs = l_splitString
