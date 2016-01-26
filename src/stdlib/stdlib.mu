@@ -4,6 +4,7 @@ module stdlib
 
 open primops
 open primio
+open primlist
 
 /// A function that always returns its first argument.
 let const x y = x
@@ -89,3 +90,12 @@ let readLine = readLineIO
 
 // Unit
 let unit = getUnit
+
+///////////////////////////////////////
+// List functions
+
+let infixr(1) x :- y = l_cons x y
+let isNil = l_isNil
+let head = l_head
+let tail = l_tail
+let nil = l_nil

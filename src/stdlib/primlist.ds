@@ -1,0 +1,35 @@
+using System;
+
+/// <summary>
+/// The list type. If `Head == null`, this is the empty list.
+/// </summary>
+public class List<T>
+{
+    public this(T head, List<T> tail)
+    {
+        this.Head = head;
+        this.Tail = tail;
+    }
+
+    public T Head;
+    public List<T> Tail;
+}
+
+public module primlist
+{
+    public List<T> l_nil<T>() {
+        return null;
+    }
+    public List<T> l_cons<T>(T h, List<T> t) {
+        return new List<T>(h, t);
+    }
+    public bool l_isNil<T>(List<T> l) {
+        return l == null;
+    }
+    public T l_head<T>(List<T> l) {
+        return l.Head;
+    }
+    public List<T> l_tail<T>(List<T> l) {
+        return l.Tail;
+    }
+}
