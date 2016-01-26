@@ -1,10 +1,11 @@
 open stdlib
 
 // type: unit -> IO<a>
-let echo x =
+let echo u =
     // Read a line, and echo it,
     // then call this function recursively.
-    (readLine >>= writeLine) >>= echo
+    readLine >>= writeLine
+             >>= echo
 
 // Main function just kicks the 'echo'
 // function into action.
