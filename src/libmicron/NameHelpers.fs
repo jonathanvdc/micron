@@ -33,20 +33,23 @@ module NameHelpers =
         match Map.tryFindKey (fun _ item -> item = ty) builtinTypes with
         | Some name -> name
         | None ->
-            match ty with
-            | :? GenericType as ty ->
-                GenericNameExtensions.ChangeTypeArguments(nameType (ty.Declaration), (ty.GenericArguments |> Seq.map nameType))
-            | _ ->
-                match MethodType.GetMethod ty with
-                | null -> ty.FullName
-                | signature -> nameFunction signature.ReturnType (signature.Parameters.GetTypes() |> List.ofSeq)
+            match MethodType.GetMethod ty with
+            | null -> 
+                match ty with
+                | :? GenericType as ty ->
+                    GenericNameExtensions.ChangeTypeArguments(nameType (ty.Declaration), (ty.GenericArguments |> Seq.map nameType))
+                | _ -> ty.FullName
+            | signature -> nameFunction signature.ReturnType (signature.Parameters.GetTypes() |> List.ofSeq)
+
     /// Names the given function.
     and nameFunction (retTy : IType) = function
     | [] -> nameType retTy
     | argTy :: argTys -> 
-        match MethodType.GetMethod argTy with
-        | null -> nameType argTy + " " + nameFunction retTy argTys
-        | _ -> "(" + nameType argTy + ") " + nameFunction retTy argTys
+        let format = 
+            match MethodType.GetMethod argTy with
+            | null -> sprintf "%s -> %s"
+            | _ -> sprintf "(%s) -> %s"
+        format (nameType argTy) (nameFunction retTy argTys)
 
     /// A mapping of reserved symbols to their mangled versions.
     let mangleMapping =
