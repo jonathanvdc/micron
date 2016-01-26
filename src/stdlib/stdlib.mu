@@ -105,3 +105,4 @@ let singleton x = x :: nil
 
 // String manipulation functions
 let splitString s cs = l_splitString s cs
+let toCharList s = l_toCharList s

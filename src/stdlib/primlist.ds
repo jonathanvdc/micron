@@ -55,4 +55,13 @@ public module primlist
     public List<string> l_splitString(string val, List<char> sep) {
         return l_arrayToList<string>(val.Split(l_listToArray<char>(sep)));
     }
+
+    public List<char> l_toCharList(string val) {
+        var result = l_nil<char>();
+        for (int i = val.Length - 1; i >= 0; i--)
+        {
+            result = l_cons<char>(val[i], result);
+        }
+        return result;
+    }
 }
