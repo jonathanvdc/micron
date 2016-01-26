@@ -3,7 +3,7 @@ using System;
 /// <summary>
 /// The IO monad type.
 /// </summary>
-public class IOMonad<T>
+public class IO<T>
 {
     public this(T() Action)
     {
@@ -34,16 +34,16 @@ public class WriteLineClosure
 
 public class BindClosure<T1, T2>
 {
-    public this(set IOMonad<T1> monad, set IOMonad<T2>(T1) binder);
+    public this(set IO<T1> monad, set IO<T2>(T1) binder);
 
     /// <summary>
     /// This bind closure's inner monad.
     /// </summary>
-    private IOMonad<T1> monad;
+    private IO<T1> monad;
     /// <summary>
     /// The bind function.
     /// </summary>
-    private IOMonad<T2>(T1) binder;
+    private IO<T2>(T1) binder;
 
     /// <summary>
     /// Performs the action contained in the field monad first, then
@@ -58,14 +58,14 @@ public class BindClosure<T1, T2>
 
 public module primio
 {
-    public static T performIO<T>(IOMonad<T> Monad)
+    public static T performIO<T>(IO<T> Monad)
     {
         return Monad.Action();
     }
 
-    public IOMonad<string> readLineIO()
+    public IO<string> readLineIO()
     {
-        return new IOMonad<string>(Console.ReadLine);
+        return new IO<string>(Console.ReadLine);
     }
 
     private Unit PerformWriteLine(string Contents)
@@ -74,24 +74,24 @@ public module primio
         return Unit;
     }
 
-    public IOMonad<Unit> writeLineIO(string Contents)
+    public IO<Unit> writeLineIO(string Contents)
     {
-        return new IOMonad<Unit>(new WriteLineClosure(Contents).WriteLine);
+        return new IO<Unit>(new WriteLineClosure(Contents).WriteLine);
     }
 
-    public IOMonad<T2> bindIO<T1, T2>(IOMonad<T1> Monad, IOMonad<T2>(T1) Function)
+    public IO<T2> bindIO<T1, T2>(IO<T1> Monad, IO<T2>(T1) Function)
     {
-        return new IOMonad<T2>(new BindClosure<T1, T2>(Monad, Function).Perform);
+        return new IO<T2>(new BindClosure<T1, T2>(Monad, Function).Perform);
     }
 
-    public IOMonad<T> returnIO<T>(T Value)
+    public IO<T> returnIO<T>(T Value)
     {
-        return new IOMonad<T>(T() => Value);
+        return new IO<T>(T() => Value);
     }
 
-    public IOMonad<T> failIO<T>(string ErrorMessage)
+    public IO<T> failIO<T>(string ErrorMessage)
     {
-        return new IOMonad<T>(T() =>
+        return new IO<T>(T() =>
         {
             throw new Exception(ErrorMessage);
         });

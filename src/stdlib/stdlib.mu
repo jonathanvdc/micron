@@ -78,6 +78,11 @@ let mapIO m f =
     let binder x = return (f x) in
     m >>= binder
 
+// Monad composition
+let composeIO m1 m2 =
+    let binder m = m2 in
+    m1 >>= binder
+
 // IO functions
 let writeLine message = writeLineIO message
 let readLine = readLineIO

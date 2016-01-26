@@ -53,7 +53,7 @@ module TypeInference =
 
     /// Converts the given type to a type constraint.
     let rec toConstraint : IType -> TypeConstraint = function
-    | :? GenericType as ty when containsUnknown ty ->
+    | :? GenericType as ty ->
         Instance(toConstraint ty.Declaration, ty.GenericArguments |> Seq.map toConstraint |> List.ofSeq)
     | :? UnknownType as ty ->
         Variable ty
@@ -113,7 +113,7 @@ module TypeInference =
             match x with
             | Function(_, _) -> "(" + show x + ")" + " -> " + show y
             | _ -> show x + " -> " + show y
-        | Instance(x, ys) -> show x + "<" + (ys |> List.map show |> String.concat ", ") + ">"
+        | Instance(x, ys) -> GenericNameExtensions.ChangeTypeArguments(show x, ys |> List.map show)
 
         show
 

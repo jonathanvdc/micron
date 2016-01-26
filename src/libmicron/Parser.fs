@@ -40,6 +40,8 @@ module Parser =
     let literalIntIdentifier = "literal-int"
     /// A nonterminal name for double literals.
     let literalDoubleIdentifier = "literal-double"
+    /// A nonterminal name for string literals.
+    let literalStringIdentifier = "literal-string"
     /// A nonterminal name for parenthesized operators.
     let parenOperatorIdentifier = "paren-operator"
 
@@ -101,12 +103,13 @@ module Parser =
                 applyIdentifier --> [Nonterminal applyGroupIdentifier
                                      Nonterminal parenGroupIdentifier]
 
-                // $paren -> paren | identifier | literal-int | literal-double
+                // $paren -> paren | identifier | literal-int | literal-double | literal-string
                 parenGroupIdentifier --> [Nonterminal parenOperatorIdentifier]
                 parenGroupIdentifier --> [Nonterminal parenIdentifier]
                 parenGroupIdentifier --> [Nonterminal identifierIdentifier]
                 parenGroupIdentifier --> [Nonterminal literalIntIdentifier]
                 parenGroupIdentifier --> [Nonterminal literalDoubleIdentifier]
+                parenGroupIdentifier --> [Nonterminal literalStringIdentifier]
                 
                 // paren-operator -> <(> <op> <)>
                 parenOperatorIdentifier --> [Terminal TokenType.LParen
@@ -179,6 +182,8 @@ module Parser =
                 literalIntIdentifier --> [Terminal TokenType.Integer]
                 // literal-double -> <double>
                 literalDoubleIdentifier --> [Terminal TokenType.Double]
+                // literal-string -> <string>
+                literalStringIdentifier --> [Terminal TokenType.String]
                 // operator -> $apply <op> $expr
                 operatorIdentifier --> [Nonterminal applyGroupIdentifier
                                         Terminal TokenType.OperatorToken
@@ -195,9 +200,11 @@ module Parser =
         let rules = 
             let (-->) A β = ProductionRule(A, β)
             [
-                // program -> ε | let-definition program | module
+                // program -> ε | let-definition program | open-module program | module
                 programIdentifier --> []
                 programIdentifier --> [Nonterminal letDefinitionIdentifier
+                                       Nonterminal programIdentifier]
+                programIdentifier --> [Nonterminal openModuleIdentifier
                                        Nonterminal programIdentifier]
                 programIdentifier --> [Nonterminal moduleIdentifier]
 

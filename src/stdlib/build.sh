@@ -7,4 +7,4 @@
 dsc primops.ds -platform ir -runtime clr -o bin/primops.flo -repeat-command $@
 dsc primio.ds -platform ir -runtime clr -o bin/primio.flo -repeat-command $@
 # Then, compile the stdlib module, and link it with the primitive modules.
-muc stdlib.mu bin/primops.flo bin/primio.flo -platform ir -runtime clr -o bin/stdlib.flo -repeat-command $@
+muc stdlib.mu bin/primops.flo bin/primio.flo -platform ir -runtime clr -flower-lambda -o bin/stdlib.flo -repeat-command $@

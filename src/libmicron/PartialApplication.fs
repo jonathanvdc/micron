@@ -78,7 +78,10 @@ type PartialApplication private(target : IExpression, args : IExpression list,
     /// Gets this partial application expression's target.
     member this.Target = target
 
-    member this.TargetSignature = targetSignature
+    member this.TargetSignature = 
+        match targetSignature with
+        | null -> None
+        | x -> Some x
 
     /// Gets this partial application expression's argument list.
     member this.Arguments = args
