@@ -126,6 +126,15 @@ let showIntList l = showListWith showInt l
 let foldr f z l =
   if isNil l then z else f (head l) (foldr f z (tail l))
 
+// if the list is empty, the result is the initial value; else
+// we recurse immediately, making the new initial value the result
+// of combining the old initial value with the first element.
+let foldl f z l =
+  if isNil l then z else foldl f (f z (head l)) (tail l)
+
+// Reverses a list.
+let reverse xs = let g t h = h :: t in foldl g nil xs
+
 // Apply f to each element in a list.
 let map f l =
   let g h t = f h :: t
