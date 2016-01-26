@@ -19,6 +19,40 @@
  Tells if invalid access has been detected.
  </summary>
     </member>
+    <member name="T:Flame.Optimization.ConcatBlocksPass">
+      <summary>
+ A visitor that concatenates blocks that have a 1:1 successor-predecessor
+ relationship.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConcatBlocksPass.GetBlock(System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,Flame.Compiler.Flow.BasicBlock},Flame.Compiler.Flow.FlowGraph,Flame.Compiler.UniqueTag)">
+      <summary>
+ Preferably gets a block from the results dictionary. If said
+ dictionary does not contain any block identified by the given tag,
+ then the block is retrieved from the graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConcatBlocksPass.HasExactlyOnePredecessor(Flame.Compiler.UniqueTag,Flame.Compiler.Flow.FlowGraph,System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.UniqueTag,System.Collections.Generic.IEnumerable`1{System.Tuple`2{Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable}}}})">
+      <summary>
+ Figures out if the block identified by the given tag has
+ exactly one predecessor.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConcatBlocksPass.ConcatBlocks(Flame.Compiler.Flow.BasicBlock,Flame.Compiler.Flow.BasicBlock,Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Concatenates the given blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConcatBlocksPass.ProcessBlock(Flame.Compiler.Flow.FlowGraph,System.Collections.Generic.HashSet`1{Flame.Compiler.UniqueTag},System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,Flame.Compiler.Flow.BasicBlock},System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.UniqueTag,System.Collections.Generic.IEnumerable`1{System.Tuple`2{Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable}}}})">
+      <summary>
+ Processes a single block in the worklist.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.ConcatBlocksPass.ConcatBlocksPassName">
+      <summary>
+ The pass name for this pass.
+ </summary>
+    </member>
     <member name="T:Flame.Optimization.ConciseFlowPass">
       <summary>
  Defines a pass that makes control flow more concise.
@@ -38,6 +72,700 @@
    * Convert `while (Condition1) { ... }` loops that start with `if (Condition2) { break; }`
      into `while (Condition1 &amp;&amp; !Condition2) { ... }` loops.
  </remarks>
+    </member>
+    <member name="T:Flame.Optimization.VariableDefinition">
+      <summary>
+ A data structure that represents an SSA variable definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.VariableDefinition.AddDefinition(Flame.Compiler.IExpression)">
+      <summary>
+ Registers the given expression as a variable definition.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.VariableDefinition.Definitions">
+      <summary>
+ Gets all definitions for this variable.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.VariableDefinition.IsUnknown">
+      <summary>
+ Checks if this variable's value is unknown.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.VariableDefinition.IsConstant">
+      <summary>
+ Checks if this variable's value is constant.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.VariableDefinition.IsVariable">
+      <summary>
+ Checks if this variable is known to vary.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.VariableDefinition.ConstantDefinition">
+      <summary>
+ Gets this variable's constant definition, assuming it is indeed
+ constant. Otherwise, a null reference is returned.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SSAVariableDefFinder">
+      <summary>
+ A node visitor that finds SSA variable definitions.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSAVariableDefFinder.Definitions">
+      <summary>
+ Gets a mapping of variables to definitions, procured by this node
+ visitor.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SSAVariableUseFinder">
+      <summary>
+ A node visitor that finds SSA variables whose values are used.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSAVariableUseFinder.UsedVariables">
+      <summary>
+ Gets the set of variables that have been used by nodes visited
+ by this object.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSAVariableUseFinder.LoadCount">
+      <summary>
+ Gets a dictionary that maps SSA variables to the number of times
+ their values have been loaded.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.IgnoredBranch">
+      <summary>
+ Defines a data structure that represents a (potentially)
+ ignored branch.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.IgnoredBranch.HasChased">
+      <summary>
+ Gets a boolean value that tells whether this branch has been
+ chased yet.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.IgnoredBranch.Branch">
+      <summary>
+ Gets the actual branch that is (potentially) ignored.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.IsPropagateAlwaysTypeCore(Flame.IType)">
+      <summary>
+ Checks if the given type is a propagate-always type, which can
+ safely be propagated anywhere.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.IsPropagateAlwaysType(Flame.IType)">
+      <summary>
+ Checks if the given type is a propagate-always type, which can
+ safely be propagated anywhere.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.IsLiteralExpression(Flame.Compiler.IExpression)">
+      <summary>
+ Checks if the given expression is a literal, which can always
+ be propagated.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.Evaluate(Flame.Compiler.IExpression)">
+      <summary>
+ Tries to evaluate the given expression. If that can't be done,
+ null is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.AddDefinition(Flame.Compiler.Variables.SSAVariable,Flame.Compiler.IExpression)">
+      <summary>
+ Adds a definition for this given SSA variable to this
+ constant propagation data structure.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.ChaseBranch(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ "Chases" the given branch by marking its target block as
+ reachable and turning its arguments into definitions for
+ the the target block parameters.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.IgnoreBranch(Flame.Compiler.Flow.BlockBranch,Flame.Compiler.IExpression)">
+      <summary>
+ Ignores the given branch for now. It is registered as dependent
+ on the SSA variables in its condition expression, which is
+ optimistically constant for now.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.MarkReachable(Flame.Compiler.UniqueTag)">
+      <summary>
+ Marks the given tag as reachable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstantPropagationData.PopBlock">
+      <summary>
+ Pops a block tag from the CFG worklist.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.ConstantPropagationData.ConstantReplacingVisitor">
+      <summary>
+ Gets a node visitor that tries to replace SSA variables loads
+ by constant definitions.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.ConstantPropagationData.IsDone">
+      <summary>
+ Checks if this constant propagation pass instance is "done", i.e.
+ its CFG worklist has become empty.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.ConstantPropagationData.Graph">
+      <summary>
+ Gets this constant propagation instance's flow graph.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.ConstantPropagationPass">
+      <summary>
+ A pass that implements sparse conditional constant propagation.
+ This transformation is applied to control flow graphs in SSA form.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.ConstantPropagationPass.ConstantPropagationPassName">
+      <summary>
+ This pass' name.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.IdentityVariableFinder">
+      <summary>
+ A node visitor that finds all variables that have the identity property,
+ i.e. they have a unique address - which means they cannot be
+ replaced by SSA variables.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.IdentityVariableFinder.IdentityVariables">
+      <summary>
+ Gets the set of variables encountered by this variable
+ finder that have the identity property.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.IdentityVariableFinder.IsEligible">
+      <summary>
+ A delegate that tells whether the user of this class is interested
+ in a given variable or not. If this is not the case, then it will
+ not be inserted in the identity variables set.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.LocalSSAConstructionVisitor">
+      <summary>
+ A visitor that promotes (normal) variables to SSA variables.
+ This particular visitor is intended to be used for a single
+ basic block.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LocalSSAConstructionVisitor.AddParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Adds the given SSA local to this block's parameter list.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LocalSSAConstructionVisitor.MapVariable(Flame.Compiler.IVariable,Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Maps the given variable to an SSA local.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.LocalSSAConstructionVisitor.ParameterVariables">
+      <summary>
+ Gets the parameter list for this SSA constructing visitor's
+ associated block.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.LocalSSAConstructionVisitor.BlockTag">
+      <summary>
+ Gets this local SSA constructing visitor's associated block tag.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.LocalSSAConstructionVisitor.CanPromote">
+      <summary>
+ A delegate that tests if a given variable can be promoted to
+ an SSA variable.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.LocalSSAConstructionVisitor.ImportVariable">
+      <summary>
+ A delegate that "imports" a non-local variable. The variable to
+ import and this instance are given.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.BranchArgAppendingVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.GlobalSSAConstructionVisitor">
+      <summary>
+ A visitor that promotes (normal) variables to SSA variables. This
+ type of SSA constructing visitor is applied to control-flow graphs.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.CanPromote(Flame.Compiler.IVariable)">
+      <summary>
+ Tests if the given variable can be promoted to an SSA variable.
+ This method also makes sure that this variable is not blacklisted.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.GetExtraArgumentList(Flame.Compiler.UniqueTag,Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the extra-argument list for this given source and target
+ block combination.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.isSealed(Flame.Compiler.UniqueTag)">
+      <summary>
+ Checks if the block belonging to the given tag has been sealed.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.sealBlock(Flame.Compiler.UniqueTag)">
+      <summary>
+ Seals the given block. A block is called 'sealed' when all of its
+ predecessors have been filled.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.isFilled(Flame.Compiler.UniqueTag,System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,System.Tuple`2{Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow}})">
+      <summary>
+ Checks if the given block has been filled yet. A block is called
+ 'filled' when its body has been visited, i.e. its locals have
+ can rewritten in SSA form.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.canSealBlock(Flame.Compiler.Flow.BasicBlock,System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,System.Tuple`2{Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow}})">
+      <summary>
+ Checks if the given basic block can be sealed.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.sealBlocks(System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,System.Tuple`2{Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow}},Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Seals all blocks that can be sealed at this time.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.GlobalSSAConstructionVisitor.fillBlock(Flame.Compiler.Flow.BasicBlock,System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,System.Tuple`2{Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow}},Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Fills the given block.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.GlobalSSAConstructionVisitor.IsEligible">
+      <summary>
+ A delegate that determines whether a given variable can be
+ promoted to an SSA variable - assuming said variable has not been
+ blacklisted.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstructSSAPass.IsEligible(Flame.Compiler.IVariable)">
+      <summary>
+ Tells if the given variable can be replaced by an SSA variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstructSSAPass.CreateSSAVariable(Flame.Compiler.IVariable)">
+      <summary>
+ Creates a new SSA variable from the given variable's signature.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ConstructSSAPass.GetInnerVariable(Flame.Compiler.IVariable)">
+      <summary>
+ Gets the given variable's inner variable, which can either be
+ the variable itself, or the variable it is bound to, if it is
+ a late-bound variable.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SSACopyPropagatingVisitor">
+      <summary>
+ A node visitor that propagates SSA variable copies, but does not
+ detect them.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSACopyPropagatingVisitor.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSACopyPropagatingVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSACopyPropagatingVisitor.Copies">
+      <summary>
+ A dictionary that maps SSA variables to the SSA variables they
+ are copied of.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.CopyPropagationPass">
+      <summary>
+ A pass that propagates SSA variable copies.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.CopyPropagationPass.TryGetLoadedVariable(Flame.Compiler.IExpression)">
+      <summary>
+ Tries to extract the SSA variable that this expression loads.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.CopyPropagationPass.GetRecursiveCopy(Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.Variables.SSAVariable,Flame.Compiler.Variables.SSAVariable})">
+      <summary>
+ Finds out which variable the given variable is a copy of,
+ recursively.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.CopyPropagationPass.FindCopies(System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.Variables.SSAVariable,Flame.Compiler.IExpression})">
+      <summary>
+ Produces a dictionary of SSA variables that are really just copies
+ of another variable.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.CopyPropagationPass.CopyPropagationPassName">
+      <summary>
+ This pass' name.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.FirstSourceLocationFinder">
+      <summary>
+ A node visitor that finds the first source location that contains
+ a non-constant expression or non-empty statement.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.FirstSourceLocationFinder.FoundLocation">
+      <summary>
+ Tells if a first source location has been found. FirstLocation
+ is null if and only if this evaluates to false.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.FirstSourceLocationFinder.FirstLocation">
+      <summary>
+ The first source location belonging to a non-constant expression
+ or a non-empty statement.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.DeadBlockEliminationVisitor">
+      <summary>
+ A flow graph visitor that eliminates dead blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadBlockEliminationVisitor.WarnDeadBlock(Flame.Compiler.Flow.BasicBlock)">
+      <summary>
+ Emits a warning that informs the user that the given basic
+ block is unreachable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadBlockEliminationVisitor.WarnMissingReturn">
+      <summary>
+ Emits a warning that advises the user to insert a flow-terminating
+ statement, such as a "return".
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DeadBlockEliminationVisitor.Log">
+      <summary>
+ Gets this dead block eliminating visitor's associated
+ compiler log, which it uses to issue diagnostics.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DeadBlockEliminationVisitor.DeclaringMethod">
+      <summary>
+ Gets the declaring method.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.DeadBlockEliminationPass">
+      <summary>
+ A pass that eliminates dead blocks from flow graphs. A warning is
+ issued for dead blocks that contain non-empty source statements or
+ non-constant source expressions.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.DeadBlockEliminationPass.DeadBlockEliminationPassName">
+      <summary>
+ This pass' name string.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.DeadStoreEliminatingVisitor">
+      <summary>
+ A visitor that removed (but does not recognize) dead stores from
+ a flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadStoreEliminatingVisitor.#ctor(Flame.Compiler.Flow.FlowGraph,System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable})">
+      <summary>
+ Creates a dead store eliminating visitor from the given
+ control flow graph and set of live variables.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadStoreEliminatingVisitor.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadStoreEliminatingVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DeadStoreEliminatingVisitor.Graph">
+      <summary>
+ Gets the flow graph this visitor is removing dead stores from.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.DeadStoreEliminatingVisitor.LiveVariables">
+      <summary>
+ Gets the set of live variables in this dead store eliminating
+ visitor's flow graph.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.DeadStoreEliminationPass">
+      <summary>
+ A pass that eliminates SSA variable definitions that are never used.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadStoreEliminationPass.MarkLive(Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable},System.Collections.Generic.Dictionary`2{Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable}})">
+      <summary>
+ Adds the given variable to the set of used variables.
+ If this variable depends on any other variables, then those
+ are marked as used, too.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeadStoreEliminationPass.GetLiveVariables(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Computes the set of live variables in the given flow graph.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.DeadStoreEliminationPass.DeadStoreEliminationPassName">
+      <summary>
+ This pass' name.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.LinearLabelFlowBuilder">
+      <summary>
+ A class that constructs a fairly linear tree of instructions
+ that use branches to model basic block flow.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LinearLabelFlowBuilder.HasPlaced(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets a boolean value that tells whether the basic block with
+ the given tag has been placed yet or not.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LinearLabelFlowBuilder.GetLabel(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the label that belongs to the given tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LinearLabelFlowBuilder.EmitStatement(Flame.Compiler.IStatement)">
+      <summary>
+ Adds the given statement to the statement tree.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LinearLabelFlowBuilder.EmitBranch(Flame.Compiler.UniqueTag,Flame.Compiler.IExpression)">
+      <summary>
+ Adds a conditional branch to the given block to the statement tree.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LinearLabelFlowBuilder.EmitBranch(Flame.Compiler.UniqueTag)">
+      <summary>
+ Adds an unconditional branch to the given block to the statement tree.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.LinearLabelFlowBuilder.PlaceBlock(Flame.Compiler.Flow.BasicBlock)">
+      <summary>
+ Places the given block's contents in the statement tree.
+ Its location is marked with a label, which allows branches to use it
+ as a target.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.LinearLabelFlowBuilder.Result">
+      <summary>
+ Gets the generated statement tree.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.DeconstructFlowGraphPass">
+      <summary>
+ A pass that deconstructs control-flow graphs into a tree
+ of instructions that include labels and branches.
+ This is suitable for back-ends that support branch instructions.
+ </summary>
+      <remarks>
+ The SSA deconstruction pass is run on the flow graph before it
+ is lowered to an instruction tree.
+ </remarks>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructFlowGraphPass.EmitJumpToBlock(Flame.Compiler.UniqueTag,Flame.Compiler.Flow.FlowGraph,Flame.Optimization.LinearLabelFlowBuilder)">
+      <summary>
+ Emits a "jump" to the given block. This method will try to
+ simulate jumps with fallthrough whenever possible.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SSALivenessData">
+      <summary>
+ Contains all SSA local variable liveness data for a single block.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.RegisterDefinition(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Registers a definition action for the given variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.RegisterAccess(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Registers a get-value action for the given variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.MarkImport(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Marks the given variable as "imported", which means that
+ it is defined elsewhere.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.MarkParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Marks the given variable as a parameter: a locally defined
+ variable that is assigned in parallel with the other parameters.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.MarkArgument(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Marks the given variable as an argument for this block.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.MarkExport(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ "Exports" the given variable: its final access it set to the
+ maximal value, which basically makes it immortal within the
+ context of this block.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.Defines(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Checks if this block defines the given variable locally, i.e.
+ it is defined within the block's body, or it is one of the block's
+ parameters.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.DefinesOrImports(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Checks if this block defines or imports the given variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.GetDefinitionIndex(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Gets an index that describes the point at which the given variable
+ is defined.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.GetLastAccessIndex(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Gets an index that describes the point at which the given variable
+ is accessed for the last time.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSALivenessData.IsLive(Flame.Compiler.Variables.SSAVariable,System.Int32)">
+      <summary>
+ Checks if the given variable is live at the given point in execution,
+ which is encoded as an integer.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSALivenessData.UsedVariables">
+      <summary>
+ Gets the set of all variables whose values are loaded by this block.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SSALiveRangeVisitor">
+      <summary>
+ A node visitor that discovers live ranges.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SSAGraphLiveness">
+      <summary>
+ A data structure that contains live ranges for a control-flow graph,
+ as well as a related variable map.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SSAGraphLiveness.GetRelatedVariables(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Gets the given variable's set of related variables.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSAGraphLiveness.LiveRanges">
+      <summary>
+ Gets the graph's block tag - live ranges map.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSAGraphLiveness.DefinitionBlocks">
+      <summary>
+ Gets a dictionary that maps SSA variables to their set of definition
+ points, which are either assignments, or arguments.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SSAGraphLiveness.Related">
+      <summary>
+ Gets the graph's related variable set map.
+ Coalescing these variables should result in less variable copying.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.DeconstructSSAPass">
+      <summary>
+ Defines a pass that deconstructs SSA form.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.PropagateImport(Flame.Compiler.UniqueTag,Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.UniqueTag,System.Collections.Generic.IEnumerable`1{System.Tuple`2{Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable}}}},System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,Flame.Optimization.SSALivenessData})">
+      <summary>
+ Checks if the live range for the block with the given tag defines
+ or imports the given SSA variable. If not, then that variable is
+ imported, and this method is applied recursively to its
+ predecessor blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.ComputeLiveness(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Computes live ranges, as well as related variables, for the given
+ flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.IsLiveAtDef(Flame.Compiler.Variables.SSAVariable,Flame.Compiler.Variables.SSAVariable,Flame.Optimization.SSAGraphLiveness)">
+      <summary>
+ Checks if the first variable is live at any of the definition
+ points of the second variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.LivenessIntersects(Flame.Compiler.Variables.SSAVariable,Flame.Compiler.Variables.SSAVariable,Flame.Optimization.SSAGraphLiveness)">
+      <summary>
+ Checks if the liveness of the given variables intersects.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.CanCoalesce(Flame.Compiler.IVariable,Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable},Flame.Optimization.SSAGraphLiveness)">
+      <summary>
+ Checks if the given variable can share the given register with the
+ given set of already-allocated variables.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.HasIntersectionElements(System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable},System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable})">
+      <summary>
+ Checks if the intersection of the given sets is nonempty.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.AllocateRegisters(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Performs register allocation on the given flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.RewriteConditionalBranch(Flame.Compiler.Flow.BlockBranch,Flame.Compiler.Flow.FlowGraph,System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.Variables.SSAVariable,Flame.Compiler.IVariable},Flame.Compiler.Flow.BlockBuilder,System.Collections.Generic.Dictionary`2{Flame.IType,Flame.Compiler.IVariable})">
+      <summary>
+ Rewrites the given conditional branch so that it doesn't
+ take any arguments. A new basic block is
+ created if this is deemed necessary.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.DeconstructSSAPass.RewriteBlock(Flame.Compiler.Flow.BasicBlock,Flame.Compiler.Flow.FlowGraph,System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.Variables.SSAVariable,Flame.Compiler.IVariable},Flame.Compiler.INodeVisitor,Flame.Compiler.Flow.BlockBuilder,System.Collections.Generic.Dictionary`2{Flame.IType,Flame.Compiler.IVariable})">
+      <summary>
+ Turns the given block into a parameterless block that performs
+ argumentless branches.
+ </summary>
     </member>
     <member name="T:Flame.Optimization.SpeculativeFlowState">
       <summary>
@@ -191,18 +919,6 @@
  This pass' name string.
  </summary>
     </member>
-    <member name="T:Flame.Optimization.SpillableExpression">
-      <summary>
- Defines an expression that can be "spilled", i.e. store its value in
- a temporary local, retrieve it, and get rid of the local.
- </summary>
-    </member>
-    <member name="M:Flame.Optimization.SpillableExpression.Spill(Flame.Optimization.InsertStatement,Flame.Optimization.InsertStatement)">
-      <summary>
- "Spills" this expression to the given initialization and finalization
- statements.
- </summary>
-    </member>
     <member name="T:Flame.Optimization.ImperativeCodeRewriter">
       <summary>
  A node visitor that rewrites nodes such that they are legal
@@ -326,25 +1042,37 @@
  Finds out whether a call to the given method can be inlined.
  </summary>
     </member>
-    <member name="T:Flame.Optimization.InsertStatement">
+    <member name="T:Flame.Optimization.JumpThreadingVisitor">
       <summary>
- Defines an insert statement: a statement that can later be populated
- with other statements.
+ A branch visitor that tries to replace argumentless indirect branches
+ with more direct branches.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.InsertStatement.#ctor">
+    <member name="M:Flame.Optimization.JumpThreadingVisitor.#ctor(System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.UniqueTag,Flame.Compiler.Flow.BlockBranch})">
       <summary>
- Creates a new insert statement.
+ Creates a jump-threading visitor from the given threaded jumps dictionary.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.InsertStatement.Insert(Flame.Compiler.IStatement)">
+    <member name="P:Flame.Optimization.JumpThreadingVisitor.ThreadedJumps">
       <summary>
- Inserts the given statement.
+ A dictionary that maps block tags to the branch they eventually
+ and unambiguously execute.
  </summary>
     </member>
-    <member name="P:Flame.Optimization.InsertStatement.Statements">
+    <member name="T:Flame.Optimization.JumpThreadingPass">
       <summary>
- Gets all inserted statements.
+ A pass that applies simple jump threading to flow graphs.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.JumpThreadingPass.FlattenIndirectJumps(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Populates a dictionary with block tags that are really just
+ direct jumps, and maps them to their eventual target block.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.JumpThreadingPass.JumpThreadingPassName">
+      <summary>
+ This pass' name.
  </summary>
     </member>
     <member name="T:Flame.Optimization.LambdaCapturedValueVisitor">
@@ -365,11 +1093,11 @@
     </member>
     <member name="T:Flame.Optimization.LambdaCapturedValueRewriter">
       <summary>
- A type of node visitor that modifies the capture listindices of
+ A type of node visitor that modifies the capture list indices of
  captured value expressions.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.LambdaCapturedValueRewriter.#ctor(System.Collections.Generic.IReadOnlyDictionary`2{System.Int32,System.Int32})">
+    <member name="M:Flame.Optimization.LambdaCapturedValueRewriter.#ctor(Flame.Compiler.Expressions.LambdaHeader,Flame.Compiler.Expressions.LambdaBoundHeaderBlock,System.Collections.Generic.IReadOnlyDictionary`2{System.Int32,System.Int32})">
       <summary>
  Creates a new captured value rewriter from the given
  captured value index mapping.
@@ -379,6 +1107,77 @@
       <summary>
  Gets a mapping of source captured value indices to target captured
  value indices.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.LambdaCapturedValueRewriter.Header">
+      <summary>
+ Gets the lambda header to use.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.LambdaCapturedValueRewriter.BoundHeaderBlock">
+      <summary>
+ Gets the bound header block to use.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.NodeOptimizationPass">
+      <summary>
+ A pass that calls the `Optimize` method on statements and expression
+ nodes.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.NodeOptimizationPass.NodeOptimizationPassName">
+      <summary>
+ This pass' name.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.ArgumentRemovingVisitor">
+      <summary>
+ Defines a branch visitor that removes arguments to trivial parameters.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ArgumentRemovingVisitor.#ctor(Flame.Compiler.Flow.FlowGraph,System.Collections.Generic.IEnumerable`1{Flame.Compiler.Variables.SSAVariable})">
+      <summary>
+ Creates a trivial argument removing visitor from the given
+ control flow graph and marked variable set.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.ArgumentRemovingVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.ArgumentRemovingVisitor.Graph">
+      <summary>
+ Gets the control flow graph this trivial argument removing visitor
+ uses to resolve basic block tags.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.ArgumentRemovingVisitor.MarkedVariables">
+      <summary>
+ Gets a set of SSA parameters that have been marked for removal.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.RemoveTrivialPhiPass">
+      <summary>
+ A pass that removes trivial SSA argument/parameter pairs.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.RemoveTrivialPhiPass.tryRemoveTrivialPhi(Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.Dictionary`2{Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable}},System.Collections.Generic.Dictionary`2{Flame.Compiler.Variables.SSAVariable,System.Collections.Generic.HashSet`1{Flame.Compiler.Variables.SSAVariable}},System.Collections.Generic.Dictionary`2{Flame.Compiler.Variables.SSAVariable,Flame.Compiler.IExpression})">
+      <summary>
+ Tries to mark trivial SSA local parameters as trivial.
+ </summary>
+      <remarks>
+ The following phi statements are trivial:
+
+     x := phi(y)
+     x := phi(x, y)
+     x := phi()
+
+ </remarks>
+    </member>
+    <member name="F:Flame.Optimization.RemoveTrivialPhiPass.RemoveTrivialPhiPassName">
+      <summary>
+ This pass' name.
  </summary>
     </member>
     <member name="T:Flame.Optimization.SimplifyFlowPass">
@@ -402,6 +1201,32 @@
    * Convert 'do...while' blocks that end in 'break' statements
      into tagged statements, and try to reduce those to sequential flow.
  </remarks>
+    </member>
+    <member name="T:Flame.Optimization.SimplifySelectFlowPass">
+      <summary>
+ A pass that simplifies 'select' control flow where the 'select' condition
+ can be evaluated at compile-time.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SimplifySelectFlowPass.Simplify(Flame.Compiler.Flow.BasicBlock)">
+      <summary>
+ Tries to simplify the given basic block's outgoing flow.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SimplifySelectFlowPass.Apply(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Applies this pass to the given flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SimplifySelectFlowPass.Apply(Flame.Compiler.IStatement)">
+      <summary>
+ Recursively applies this pass to the given statement.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.SimplifySelectFlowPass.SimplifySelectFlowPassName">
+      <summary>
+ This pass' name.
+ </summary>
     </member>
     <member name="T:Flame.Optimization.SizeVisitor">
       <summary>
@@ -473,12 +1298,17 @@
  This pass' name string.
  </summary>
     </member>
+    <member name="F:Flame.Optimization.SlimLambdaPass.SlimLambdaTypesRemarkName">
+      <summary>
+ The remark name that turns on type remarks.
+ </summary>
+    </member>
     <member name="T:Flame.Optimization.SpeculativeStatement">
       <summary>
  Defines a speculative statement: a statement that can first be defined
  and inserted into the node tree, and later be marked "alive" or "dead".
- "Dead" speculative statements are equivalent to the empty statement.
- "Alive" speculative statements are equivalent to the statement they contain.
+ "Dead" speculative statements are equivalent to the "dead" inner statement.
+ "Alive" speculative statements are equivalent to their "live" inner statement.
  </summary>
     </member>
     <member name="M:Flame.Optimization.SpeculativeStatement.#ctor(Flame.Compiler.IStatement)">
@@ -493,15 +1323,97 @@
  a boolean that determines whether it is alive or dead.
  </summary>
     </member>
-    <member name="P:Flame.Optimization.SpeculativeStatement.Contents">
+    <member name="M:Flame.Optimization.SpeculativeStatement.#ctor(Flame.Compiler.IStatement,Flame.Compiler.IStatement)">
       <summary>
- Gets the speculative statement's inner statement.
+ Creates a speculative statement that is marked "alive". Its "live"
+ and "dead" inner statements are given.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SpeculativeStatement.LiveContents">
+      <summary>
+ Gets the speculative statement's inner statement when this statement
+ is alive.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SpeculativeStatement.DeadContents">
+      <summary>
+ Gets this speculative statement's inner statement when this statement
+ is dead.
  </summary>
     </member>
     <member name="P:Flame.Optimization.SpeculativeStatement.IsAlive">
       <summary>
  Gets or sets a boolean flag that tells if this speculative statement
  is "alive" or "dead".
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.SpeculativeExpression">
+      <summary>
+ The expression equivalent of SpeculativeStatement.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.SpeculativeExpression.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a speculative expression that is marked "alive". Its "live"
+ and "dead" inner statements are given.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SpeculativeExpression.LiveContents">
+      <summary>
+ Gets the speculative expression's inner expression when this statement
+ is alive.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SpeculativeExpression.DeadContents">
+      <summary>
+ Gets this speculative expression's inner expression when this statement
+ is dead.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.SpeculativeExpression.IsAlive">
+      <summary>
+ Gets or sets a boolean flag that tells if this speculative expression
+ is "alive" or "dead".
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.BlockStackIntrinsicsPlacingVisitor">
+      <summary>
+ A visitor that attempts to replace SSA locals by stack
+ intrinsics.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.BlockStackIntrinsicsPlacingVisitor.CheckCompleted">
+      <summary>
+ Checks that this stack intrinsics pass has run to completion.
+ This is intended for debug purposes, and need not be called on
+ release builds.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.BlockStackIntrinsicsPlacingVisitor.Variable">
+      <summary>
+ Gets the variable to replace by stack intrinsics.
+ </summary>
+    </member>
+    <member name="P:Flame.Optimization.BlockStackIntrinsicsPlacingVisitor.LoadCount">
+      <summary>
+ Gets the number of this this visitor's associated SSA variable
+ is loaded.
+ </summary>
+    </member>
+    <member name="T:Flame.Optimization.StackIntrinsicsPass">
+      <summary>
+ A pass that tries to replace SSA variables by stack intrinsics.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.StackIntrinsicsPass.ComputeBlockLocalVariables(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Finds all variables in the given flow graph that are used only
+ in the block that defines them.
+ </summary>
+    </member>
+    <member name="F:Flame.Optimization.StackIntrinsicsPass.StackIntrinsicsPassName">
+      <summary>
+ This pass' name.
  </summary>
     </member>
     <member name="T:Flame.Optimization.StatementRewriter">
@@ -617,6 +1529,26 @@
  The pass name string for the tail recursion pass.
  </summary>
     </member>
+    <member name="T:Flame.Optimization.UnwrapBoundVariablesPass">
+      <summary>
+ A pass that replaces late bound variables by their contents.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.UnwrapBoundVariablesPass.CanSubstituteVariable(Flame.Compiler.IVariable)">
+      <summary>
+ Determines whether the given variable can be substituted or not.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.UnwrapBoundVariablesPass.SubstituteVariable(Flame.Compiler.IVariable)">
+      <summary>
+ Substitutes the given variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Optimization.UnwrapBoundVariablesPass.Apply(Flame.Compiler.IStatement)">
+      <summary>
+ Applies this pass to the given statement.
+ </summary>
+    </member>
     <member name="T:Flame.Optimization.Variables.AccessCount">
       <summary>
  Records how many times a variable or variable definition has been accessed.
@@ -729,7 +1661,7 @@
  Has this variable definition "react" to definition access metrics.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.ConstantVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.ConstantVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Has this variable definition "react" to a change in another definition's chain:
  it gets an opportunity to use the other variable's previous value.
@@ -761,7 +1693,7 @@
  Has this variable definition "react" to definition access metrics.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.CopyVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.CopyVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Has this variable definition "react" to a change in another definition's chain:
  it gets an opportunity to use the other variable's previous value.
@@ -790,7 +1722,7 @@
  once.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.DependentVariableDefinition.#ctor(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.PropagationDependencies,Flame.Compiler.IExpression,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.DependentVariableDefinition.#ctor(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.PropagationDependencies,Flame.Compiler.IExpression,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Creates a new dependent variable definition from the given arguments.
  </summary>
@@ -805,7 +1737,7 @@
  Has this variable definition "react" to definition access metrics.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.DependentVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.DependentVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Has this variable definition "react" to a change in another definition's chain:
  it gets an opportunity to use the other variable's previous value.
@@ -922,7 +1854,7 @@
  Has this variable definition make use of definition access metrics.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.IVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.IVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Has this variable definition "react" to a change in another definition's chain:
  it gets an opportunity to use the other variable's previous value.
@@ -1035,7 +1967,7 @@
  Has this variable definition "react" to definition access metrics.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.LocalVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.LocalVariableDefinition.ReactTo(Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Has this variable definition "react" to a change in another definition's chain:
  it gets an opportunity to use the other variable's previous value.
@@ -1466,18 +2398,18 @@
  Gets or sets the current flow state.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Succeed(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Succeed(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Creates a variable definition that "succeeds" the old variable definition.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Transfer(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Transfer(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  "Transfers" the old variable definition's value to the new one.
  Both definition reaches are registered with the definition chain.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Materialize(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Materialize(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  "Materializes" the given variable definition, using an insertion point.
  If the given variable definition has an underlying variable, it
@@ -1486,13 +2418,13 @@
  value.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.MakeVolatile(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.MakeVolatile(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Marks the given variable definition as volatile.
  This will disable most, if not all, optimizations.
  </summary>
     </member>
-    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Phi(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Optimization.InsertStatement)">
+    <member name="M:Flame.Optimization.Variables.VariableFlowHelpers.Phi(Flame.Optimization.Variables.VariableDefinitionChain,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement,Flame.Optimization.Variables.VariableDefinitionReach,Flame.Compiler.Statements.InsertStatement)">
       <summary>
  Selects one of two variable definitions. If the given variable definitions
  are the same definition, said variable definition is returned.

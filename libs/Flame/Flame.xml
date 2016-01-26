@@ -243,13 +243,6 @@
  Defines a common interface for methods.
  </summary>
     </member>
-    <member name="M:Flame.IMethod.Invoke(Flame.IBoundObject,System.Collections.Generic.IEnumerable`1{Flame.IBoundObject})">
-      <summary>
- Invokes the method with the provided caller and arguments.
- </summary>
-      <param name="Arguments" />
-      <returns />
-    </member>
     <member name="P:Flame.IMethod.IsConstructor">
       <summary>
  Gets a boolean value that indicates if this method is a constructor.
@@ -268,6 +261,26 @@
     <member name="P:Flame.IMethod.BaseMethods">
       <summary>
  Gets the method's base methods.
+ </summary>
+    </member>
+    <member name="T:Flame.IInvocableMethod">
+      <summary>
+ Supplies an interface that defines invocable methods.
+ </summary>
+    </member>
+    <member name="M:Flame.IInvocableMethod.Invoke(Flame.IBoundObject,System.Collections.Generic.IEnumerable`1{Flame.IBoundObject})">
+      <summary>
+ Invokes the method with the provided caller and arguments.
+ </summary>
+      <param name="Arguments" />
+      <returns>
+ A bound object if the invocation was successful.
+ Otherwise, null.
+ </returns>
+    </member>
+    <member name="T:Flame.IAccessor">
+      <summary>
+ Defines common behavior for property accessor methods.
  </summary>
     </member>
     <member name="P:Flame.IAccessor.AccessorType">
@@ -386,10 +399,22 @@
     </member>
     <member name="M:Flame.MemberExtensions.GetParent(Flame.IType)">
       <summary>
- Gets the type's parent type.
+ Gets the type's parent type, which is the first non-interface type
+ in the type's base type list. Null is returned if no such type
+ exists.
  </summary>
       <param name="Other" />
       <returns />
+    </member>
+    <member name="M:Flame.MemberExtensions.GetInterfaces(Flame.IType)">
+      <summary>
+ Gets all interfaces implemented by the given type.
+ </summary>
+    </member>
+    <member name="M:Flame.MemberExtensions.GetAllBaseTypes(Flame.IType)">
+      <summary>
+ Recursively finds all direct and indirect base types for this type.
+ </summary>
     </member>
     <member name="M:Flame.MemberExtensions.MakeArrayType(Flame.IType,System.Int32)">
       <summary>
@@ -419,6 +444,11 @@
       <summary>
  Determines if this type is a "pure interface", i.e. an interface whose
  base types are all pure interfaces.
+ </summary>
+    </member>
+    <member name="P:Flame.MemberExtensions.IsStaticType">
+      <summary>
+ Determines if the given type has a 'static type' attribute.
  </summary>
     </member>
     <member name="M:Flame.MemberLookup.GetAllFields(Flame.IType)">
@@ -978,13 +1008,6 @@
  Defines a base class for generic method instances.
  </summary>
     </member>
-    <member name="M:Flame.GenericMethodBase.Invoke(Flame.IBoundObject,System.Collections.Generic.IEnumerable`1{Flame.IBoundObject})">
-      <summary>
- Invokes the method with the provided caller and arguments.
- </summary>
-      <param name="Arguments" />
-      <returns />
-    </member>
     <member name="P:Flame.GenericMethodBase.Resolver">
       <summary>
  Gets the generic resolver that belongs to this generic method.
@@ -1080,6 +1103,53 @@
     <member name="P:Flame.INamespaceTree.Namespaces">
       <summary>
  Gets this namespace tree's nested namespaces.
+ </summary>
+    </member>
+    <member name="M:Flame.SingletonExtensions.GetSingletonMember(Flame.IType)">
+      <summary>
+ Gets the given type's singleton member, which may be either
+ a property or a field.
+ </summary>
+    </member>
+    <member name="M:Flame.SingletonExtensions.GetAssociatedTypes(Flame.IType)">
+      <summary>
+ Gets the sequence of all associated types of the given
+ type.
+ </summary>
+    </member>
+    <member name="M:Flame.SingletonExtensions.GetAssociatedSingletons(Flame.IType)">
+      <summary>
+ Gets all singleton types that are associated with the
+ given type.
+ </summary>
+    </member>
+    <member name="M:Flame.SingletonExtensions.GetAssociatedSingleton(Flame.IType)">
+      <summary>
+ Gets the given type's single associated singleton type,
+ if any. Otherwise, null is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.SingletonExtensions.IsAssociatedSingletonOf(Flame.IType,Flame.IType)">
+      <summary>
+ Checks if the first type is an associated singleton
+ of the given target type.
+ </summary>
+    </member>
+    <member name="M:Flame.SingletonExtensions.GetAssociatedSingletonOwner(Flame.IType)">
+      <summary>
+ Gets the "owner" of this associated singleton type.
+ Null is returned if no owner could be found.
+ </summary>
+    </member>
+    <member name="M:Flame.SingletonExtensions.IsAssociatedSingleton(Flame.IType)">
+      <summary>
+ Checks if the given type is the associated singleton of
+ some other type.
+ </summary>
+    </member>
+    <member name="P:Flame.SingletonExtensions.IsSingleton">
+      <summary>
+ Tests if the given type is a singleton.
  </summary>
     </member>
     <member name="T:Flame.IGenericConstraint">
@@ -1219,7 +1289,10 @@
  Invokes the method with the provided caller and arguments.
  </summary>
       <param name="Arguments" />
-      <returns />
+      <returns>
+ A bound object if the invocation was successful.
+ Otherwise, null.
+ </returns>
     </member>
     <member name="M:Flame.PrimitiveTypes.GetPrimitiveMagnitude(Flame.IType)">
       <summary>
@@ -1377,7 +1450,10 @@
  Invokes the method with the provided caller and arguments.
  </summary>
       <param name="Arguments" />
-      <returns />
+      <returns>
+ A bound object if the invocation was successful.
+ Otherwise, null.
+ </returns>
     </member>
     <member name="P:Flame.Primitives.PrimitiveParameter.FullName">
       <summary>
@@ -1415,7 +1491,10 @@
  Invokes the method with the provided caller and arguments.
  </summary>
       <param name="Arguments" />
-      <returns />
+      <returns>
+ A bound object if the invocation was successful.
+ Otherwise, null.
+ </returns>
     </member>
     <member name="M:Flame.Primitives.StringPrimitiveType.GetDefaultValue">
       <summary>
@@ -1557,13 +1636,6 @@
       <summary>
  Gets the default value for this type.
  </summary>
-    </member>
-    <member name="M:Flame.Build.DescribedMethod.Invoke(Flame.IBoundObject,System.Collections.Generic.IEnumerable`1{Flame.IBoundObject})">
-      <summary>
- Invokes the method with the provided caller and arguments.
- </summary>
-      <param name="Arguments" />
-      <returns />
     </member>
     <member name="P:Flame.Build.DescribedMethod.GenericParameters">
       <summary>

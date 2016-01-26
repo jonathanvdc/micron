@@ -418,8 +418,8 @@
     </member>
     <member name="T:Flame.Compiler.ILambdaNode`1">
       <summary>
- Defines common functionality for lambda nodes: nodes that
- contain nodes that belong to a different method than the outer method.
+ Defines common functionality for lambda nodes: nodes whose contents
+ belong to a separate method.
  </summary>
     </member>
     <member name="P:Flame.Compiler.ILambdaNode`1.Signature">
@@ -447,16 +447,6 @@
  Gets the method's body statement.
  </summary>
       <returns />
-    </member>
-    <member name="T:Flame.Compiler.IDynamicEnvironment">
-      <summary>
- Represents an environment capable of dynamic code execution.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.IDynamicEnvironment.InvokeDynamic(Flame.Compiler.IBodyMethod,Flame.IBoundObject,System.Collections.Generic.IEnumerable`1{Flame.IBoundObject})">
-      <summary>
- Invokes the provided method dynamically.
- </summary>
     </member>
     <member name="M:Flame.Compiler.PrimitiveExpressionExtensions.IsPrimitiveExpressionType(Flame.IType)">
       <summary>
@@ -611,6 +601,13 @@
  visitor.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.IFlowExpression.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow expression. An SSA local variable is returned that
+ contains this expression's result.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.IFlowExpression.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
       <summary>
  Accepts and interacts with a flow visitor.
@@ -620,6 +617,12 @@
       <summary>
  Defines a control flow statement: a statement that interacts with a control flow
  visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.IFlowStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
  </summary>
     </member>
     <member name="M:Flame.Compiler.IFlowStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
@@ -1287,6 +1290,31 @@
  }
  </example>
     </member>
+    <member name="P:Flame.Compiler.Warnings.MissingReturnWarning">
+      <summary>
+ The warning name for missing return statements.
+ </summary>
+      <example>
+ public static int Herp()
+                   ^~~~
+ {
+
+ }
+ </example>
+    </member>
+    <member name="P:Flame.Compiler.Warnings.DeadCodeWarning">
+      <summary>
+ The warning name for dead (unreachable) code.
+ </summary>
+      <example>
+ public static int Derp()
+ {
+     return 6;
+     return 4;
+     ^~~~~~~~~
+ }
+ </example>
+    </member>
     <member name="P:Flame.Compiler.Warnings.UnusedOption">
       <summary>
  A warning name for unused compiler options. Note, however, that
@@ -1303,6 +1331,16 @@
     <member name="P:Flame.Compiler.Warnings.MissingDependency">
       <summary>
  A warning name for missing library dependencies.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Warnings.UnknownRuntime">
+      <summary>
+ A warning name for unknown/unresolved runtime specifications.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Warnings.UnknownEnvironment">
+      <summary>
+ A warning name for unknown/unresolved environment specifications.
  </summary>
     </member>
     <member name="P:Flame.Compiler.Warnings.Unused">
@@ -1635,6 +1673,13 @@
  the given variable member if it doesn't.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.CodeGeneratorExtensions.GetOrDeclareSSALocal(Flame.Compiler.Emit.ISSACodeGenerator,Flame.Compiler.UniqueTag,Flame.Compiler.IVariableMember)">
+      <summary>
+ Gets the SSA local variable with the given tag if it
+ exists already, or creates one with the given tag based on
+ the given variable member if it doesn't.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.IVariableMember">
       <summary>
  Defines a variable member: a (fairly) complete description of a variable.
@@ -1850,6 +1895,75 @@
     <member name="P:Flame.Compiler.Emit.IMethodStructureGenerator.Method">
       <summary>
  Gets the method this code generator belongs to.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Emit.ISSACodeGenerator">
+      <summary>
+ Defines a code generator that supports the creation of SSA locals.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.ISSACodeGenerator.GetSSALocal(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the SSA local variable with the given unique tag, if there is
+ such a variable. Otherwise, null is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.ISSACodeGenerator.DeclareSSALocal(Flame.Compiler.UniqueTag,Flame.Compiler.IVariableMember)">
+      <summary>
+ Declares a new SSA local variable based on the given unique tag and
+ variable member. Declaring two variables with the same tag
+ results in an exception.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Emit.IEmitBasicBlock">
+      <summary>
+ Defines a fairly opaque interface for back-end-specific basic
+ block structures.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Emit.IEmitBasicBlock.Tag">
+      <summary>
+ Gets this basic block's tag.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Emit.IBlockCodeGenerator">
+      <summary>
+ Defines a code generator interface for code generators that can create
+ flow graphs that consist of basic blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IBlockCodeGenerator.EmitBasicBlock(Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable},Flame.Compiler.ICodeBlock,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a basic block from the given unique tag, contents and
+ block flow. A parameter list is also given.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IBlockCodeGenerator.EmitFlowGraph(Flame.Compiler.UniqueTag,System.Collections.Generic.IEnumerable`1{Flame.Compiler.Emit.IEmitBasicBlock})">
+      <summary>
+ Creates a flow graph code block from the given entry point tag
+ and sequence of basic blocks.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Emit.IStackCodeGenerator">
+      <summary>
+ A code generator interface for stack-based (virtual) machines.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IStackCodeGenerator.EmitPush(Flame.Compiler.ICodeBlock)">
+      <summary>
+ Pushes the value that the given code block produces on
+ top of the stack. Results in a void value.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IStackCodeGenerator.EmitPeek(Flame.IType)">
+      <summary>
+ Peeks at the value that is currently on top of the stack,
+ which is of the given type.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Emit.IStackCodeGenerator.EmitPop(Flame.IType)">
+      <summary>
+ Pops the top of the stack, which is of the given type.
  </summary>
     </member>
     <member name="T:Flame.Compiler.Emit.IUnmanagedMethodStructureGenerator">
@@ -2396,6 +2510,17 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.BinaryExpression">
+      <summary>
+ A base class for expressions that apply some binary
+ operator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.BinaryExpression.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression from the given operand expressions.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.BinaryExpression.AcceptPredicate(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts the predicate node visitor.
@@ -2414,13 +2539,6 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.BinaryExpression.Evaluate">
-      <summary>
- Performs a compile-time evaluation of the expression.
- If it cannot be evaluated, null is returned.
- </summary>
-      <returns />
-    </member>
     <member name="M:Flame.Compiler.Expressions.BinaryExpression.Optimize">
       <summary>
  Returns an optimized version of the expression.
@@ -2432,24 +2550,75 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.BinaryOperatorExpression.ConvertMembers(Flame.Compiler.MemberConverter)">
+    <member name="M:Flame.Compiler.Expressions.BinaryExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
       <summary>
- Converts the node's members with the given member converter.
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.BinaryOperatorExpression.GetOpOverload">
+    <member name="M:Flame.Compiler.Expressions.BinaryExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Gets the operator overload for this binary expression if an overload exists. Otherwise, null.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.BinaryOperatorExpression.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Expressions.BinaryExpression.Evaluate">
       <summary>
- Creates a code block that captures this code node.
+ Performs a compile-time evaluation of the expression.
+ If it cannot be evaluated, null is returned.
+ </summary>
+      <returns />
+    </member>
+    <member name="P:Flame.Compiler.Expressions.BinaryExpression.Op">
+      <summary>
+ Gets this binary expression's operator.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Expressions.BinaryOperatorExpression.OperatorOverload">
+    <member name="P:Flame.Compiler.Expressions.BinaryExpression.Type">
       <summary>
- Gets the operator overload for this binary expression if an overload exists. Otherwise, null.
+ Gets this binary expression's type.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.BinaryExpression.IsConstant">
+      <summary>
+ Checks if this binary expression is constant.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.BinaryExpression.LeftOperand">
+      <summary>
+ Gets the binary expression's left operand.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.BinaryExpression.RightOperand">
+      <summary>
+ Gets the binary expression's right operand.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.PrimitiveBinaryExpression">
+      <summary>
+ Defines a binary expression that does not know how to evaluate itself,
+ and simply instructs the code generator to create a binary block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PrimitiveBinaryExpression.#ctor(Flame.Compiler.IExpression,Flame.Operator,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a primitive binary expression from the given operands and
+ operator. The result type is assumed to be the type of the left
+ operand.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PrimitiveBinaryExpression.#ctor(Flame.Compiler.IExpression,Flame.Operator,Flame.Compiler.IExpression,Flame.IType)">
+      <summary>
+ Creates a primitive binary expression from the given operands,
+ operator and result type.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PrimitiveBinaryExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.PrimitiveBinaryExpression.Evaluate">
@@ -2459,49 +2628,22 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.PrimitiveBinaryExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.PrimitiveBinaryExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Expressions.PrimitiveBinaryExpression.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
     </member>
     <member name="T:Flame.Compiler.Expressions.DirectBinaryExpression">
       <summary>
- Defines a binary expression that selects the most appropriate operator
- or overload for the given arguments, and will try to lower itself to
- a more primitive expression if possible.
+ A helper class that can be used to create optimal built-in
+ binary expressions.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.DirectBinaryExpression.Evaluate">
+    <member name="M:Flame.Compiler.Expressions.DirectBinaryExpression.Create(Flame.Compiler.IExpression,Flame.Operator,Flame.Compiler.IExpression)">
       <summary>
- Performs a compile-time evaluation of the expression.
- If it cannot be evaluated, null is returned.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Expressions.DirectBinaryExpression.Optimize">
-      <summary>
- Returns an optimized version of the expression.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Expressions.DirectBinaryExpression.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Expressions.DirectBinaryExpression.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
+ Creates a new binary expression from the given left operand,
+ operator and right operand.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.InitializedExpression.AcceptPredicate(Flame.Compiler.INodeVisitor)">
@@ -2540,6 +2682,17 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.DereferencePointerExpression">
+      <summary>
+ A unary expression that dereferences a pointer expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.DereferencePointerExpression.#ctor(Flame.Compiler.IExpression)">
+      <summary>
+ Creates an expression that dereferences the pointer created by the
+ given expression.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.DereferencePointerExpression.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
@@ -2572,6 +2725,11 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
+    <member name="P:Flame.Compiler.Expressions.DereferencePointerExpression.Expression">
+      <summary>
+ Gets this pointer-dereferencing expression's operand.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.Expressions.DelegateInstanceExpression">
       <summary>
  Defines an expression type that provides delegate expression functionality
@@ -2582,6 +2740,11 @@
     <member name="M:Flame.Compiler.Expressions.DelegateInstanceExpression.#ctor(Flame.Compiler.IExpression)">
       <summary>
  Creates a new delegate instance expression from the given delegate.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.DelegateInstanceExpression.Lower">
+      <summary>
+ Lowers this expression to a semantically equivalent expression.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.DelegateInstanceExpression.CreateInvocationExpression(System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
@@ -3128,9 +3291,25 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.NewObjectExpression.ConvertMembers(Flame.Compiler.MemberConverter)">
+    <member name="T:Flame.Compiler.Expressions.NewObjectExpression">
       <summary>
- Converts the node's members with the given member converter.
+ A type of expression that creates new object instances,
+ based on a type and a sequence of arguments.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.NewObjectExpression.#ctor(Flame.IType)">
+      <summary>
+ Creates an expression that produces an instance of the given
+ type, by invoking its parameterless constructor (or by taking its
+ default value, if the type is a value type).
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.NewObjectExpression.#ctor(Flame.IType,System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
+      <summary>
+ Creates an expression that produces an instance of the given
+ type, by invoking one of its constructors with the given arguments
+ (or by taking its default value, if the type is a value type,
+ and the sequence of arguments is empty).
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.NewObjectExpression.Accept(Flame.Compiler.INodeVisitor)">
@@ -3149,6 +3328,19 @@
  </summary>
       <returns />
     </member>
+    <member name="M:Flame.Compiler.Expressions.NewObjectExpression.LowerSoft">
+      <summary>
+ Attempts to lower this new-object expression.
+ If that cannot be done, then this instance
+ is simply returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.NewObjectExpression.Lower">
+      <summary>
+ Lowers this new-object expression.
+ If that cannot be done, then an exception is thrown.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.NewObjectExpression.Optimize">
       <summary>
  Returns an optimized version of the expression.
@@ -3158,6 +3350,47 @@
     <member name="M:Flame.Compiler.Expressions.NewObjectExpression.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.NewObjectExpression.Constructor">
+      <summary>
+ Gets the constructor this new-object expression will use when
+ lowering itself. If no such constructor can be found, then null
+ is returned.
+ </summary>
+      <remarks>
+ This expression can still be semantically valid, even if the
+ constructor is null, provided the instance type is a value type,
+ and the argument list is empty.
+ </remarks>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.NewObjectExpression.IsConstructorCall">
+      <summary>
+ Tests if this new-object expression will be lowered to a constructor
+ call expression.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.NewObjectExpression.IsDefaultValue">
+      <summary>
+ Tests if this new-object expression will be lowered to a default
+ value expression.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.NewObjectExpression.IsError">
+      <summary>
+ Tests if this new-object expression is erroneous: it cannot be
+ lowered to another expression.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.NewObjectExpression.Arguments">
+      <summary>
+ Gets this new-object expression's argument list.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.NewObjectExpression.Type">
+      <summary>
+ Gets the type this new-object expression will create an instance
+ of.
  </summary>
     </member>
     <member name="T:Flame.Compiler.Expressions.IsExpression">
@@ -3299,11 +3532,6 @@
  returns a new node with the same structure as this node, but with
  the updated children.
  If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Expressions.LambdaExpression.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
-      <summary>
- Accepts and interacts with a flow visitor.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.LambdaExpression.IsCapturedValueExpression(Flame.Compiler.IExpression)">
@@ -3519,16 +3747,16 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Expressions.UnaryExpression.Optimize">
+      <summary>
+ Returns an optimized version of the expression.
+ </summary>
+      <returns />
+    </member>
     <member name="M:Flame.Compiler.Expressions.UnaryExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
  If it cannot be evaluated, null is returned.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Expressions.UnaryExpression.Optimize">
-      <summary>
- Returns an optimized version of the expression.
  </summary>
       <returns />
     </member>
@@ -3553,11 +3781,6 @@
  Initializes this unary operator expression with the given expression.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.UnaryOperatorExpression.GetOpOverload">
-      <summary>
- Gets the operator overload for this unary expression if an overload exists. Otherwise, null.
- </summary>
-    </member>
     <member name="M:Flame.Compiler.Expressions.UnaryOperatorExpression.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
@@ -3568,57 +3791,39 @@
  Gets the unary operator that this expression applies to its operand.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Expressions.UnaryOperatorExpression.OperatorOverload">
+    <member name="T:Flame.Compiler.Expressions.PrimitiveUnaryExpression">
       <summary>
- Gets the operator overload for this unary expression if an overload exists. Otherwise, null.
+ Defines a unary expression that does not know how to evaluate itself,
+ and simply instructs the code generator to create a unary operator block.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Expressions.DirectUnaryExpression">
+    <member name="M:Flame.Compiler.Expressions.PrimitiveUnaryExpression.#ctor(Flame.Operator,Flame.Compiler.IExpression)">
       <summary>
- A type of unary expressions whose default behavior is to reduce themselves
- to specialized implementations if at all possible. Otherwise,
- a default unary operator code sequence is generated.
+ Initializes this unary operator expression with the given expression
+ and operator.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.#ctor(Flame.Operator,Flame.Compiler.IExpression)">
-      <summary>
- Creates a unary expression that applies the given
- unary operator to the given operand.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.Evaluate">
+    <member name="M:Flame.Compiler.Expressions.PrimitiveUnaryExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
  If it cannot be evaluated, null is returned.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.Optimize">
-      <summary>
- Returns an optimized version of the expression.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Expressions.DirectUnaryExpression.Op">
+    <member name="P:Flame.Compiler.Expressions.PrimitiveUnaryExpression.Op">
       <summary>
  Gets the unary operator that this expression applies to its operand.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Expressions.DirectUnaryExpression.LoweredExpression">
+    <member name="T:Flame.Compiler.Expressions.DirectUnaryExpression">
       <summary>
- Gets the potentially more specialized expression this unary
- expression is "lowered" to.
+ A helper class that can be used to create optimal built-in
+ unary expressions.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Expressions.DirectUnaryExpression.CanLower">
+    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.Create(Flame.Operator,Flame.Compiler.IExpression)">
       <summary>
- Gets a boolean value that indicates whether this unary expression
- can be lowered to a specialized unary expression.
+ Creates a unary expression from the given operation and operand.
  </summary>
     </member>
     <member name="T:Flame.Compiler.Expressions.UnknownExpression">
@@ -3702,6 +3907,11 @@
  </summary>
       <returns />
     </member>
+    <member name="T:Flame.Compiler.Expressions.AddExpression">
+      <summary>
+ A type that represents addition expressions.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.AddExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -3715,6 +3925,25 @@
  </summary>
       <returns />
     </member>
+    <member name="M:Flame.Compiler.Expressions.AddExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates an operator application code block from the given
+ operands, with the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.AddExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.SubtractExpression">
+      <summary>
+ A type of expression that subtracts its right-hand operand from
+ its left-hand operand.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.SubtractExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -3722,15 +3951,32 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.SubtractExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.SubtractExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SubtractExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.MemberlessExpression.Lower">
+      <summary>
+ Lowers this expression to a semantically equivalent expression.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.MemberlessExpression.ConvertMembers(Flame.Compiler.MemberConverter)">
       <summary>
  Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.MultiplyExpression">
+      <summary>
+ A type of expression that computes the product of its operands.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.MultiplyExpression.Evaluate">
@@ -3746,6 +3992,25 @@
  </summary>
       <returns />
     </member>
+    <member name="M:Flame.Compiler.Expressions.MultiplyExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates an operator application code block from the given
+ operands, with the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.MultiplyExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.DivideExpression">
+      <summary>
+ Defines a type of expression that computes the quotient of its
+ operands.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.DivideExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -3758,6 +4023,19 @@
  Returns an optimized version of the expression.
  </summary>
       <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.DivideExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates an operator application code block from the given
+ operands, with the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.DivideExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
     </member>
     <member name="T:Flame.Compiler.Expressions.DynamicCastExpression">
       <summary>
@@ -3791,6 +4069,18 @@
  Tells if this conversion expression is a compile-time constant.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.ConditionalExpression">
+      <summary>
+ Defines a base type for condition expressions: expressions with
+ a boolean return type, regardless of their argument types.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.LessThanExpression">
+      <summary>
+ A type of expression that tests if its left-hand operand is less
+ than its right operand.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.LessThanExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -3798,11 +4088,24 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.LessThanExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.LessThanExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LessThanExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.LessThanOrEqualsExpression">
+      <summary>
+ A type of expression that tests if its left-hand operand is less
+ than or equal to its right operand.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.LessThanOrEqualsExpression.Evaluate">
       <summary>
@@ -3811,11 +4114,24 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.LessThanOrEqualsExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.LessThanOrEqualsExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LessThanOrEqualsExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.GreaterThanExpression">
+      <summary>
+ A type of expression that tests if its left-hand operand is greater
+ than its right operand.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.GreaterThanExpression.Evaluate">
       <summary>
@@ -3824,11 +4140,24 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.GreaterThanExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.GreaterThanExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.GreaterThanExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.GreaterThanOrEqualsExpression">
+      <summary>
+ A type of expression that tests if its left-hand operand is greater
+ than or equal to its right operand.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.GreaterThanOrEqualsExpression.Evaluate">
       <summary>
@@ -3837,11 +4166,23 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.GreaterThanOrEqualsExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.GreaterThanOrEqualsExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.GreaterThanOrEqualsExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.EqualityExpression">
+      <summary>
+ Defines a type of expression that compares its arguments for equality.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.EqualityExpression.Evaluate">
       <summary>
@@ -3850,11 +4191,18 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.EqualityExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.EqualityExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.EqualityExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
     </member>
     <member name="T:Flame.Compiler.Expressions.LogEntryExpression">
       <summary>
@@ -3958,6 +4306,12 @@
  Creates a new instance of this expression type.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.AndExpression">
+      <summary>
+ Defines a type of expression that computes the bitwise 'and' of its
+ operands.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.AndExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -3965,11 +4319,18 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.AndExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.AndExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.AndExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
     </member>
     <member name="T:Flame.Compiler.Expressions.AsInstanceExpression">
       <summary>
@@ -4003,6 +4364,12 @@
  Tells if this conversion expression is a compile-time constant.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.OrExpression">
+      <summary>
+ Defines a type of expression that computes the bitwise 'or' of its
+ operands.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.OrExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -4010,11 +4377,89 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.OrExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.OrExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates an operator application code block from the given
+ operands, with the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.OrExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.PopStackExpressionBase">
+      <summary>
+ A base type for expressions that pop or peek values from the evaluation
+ stack.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PopStackExpressionBase.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PopStackExpressionBase.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PopStackExpressionBase.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PopStackExpressionBase.Evaluate">
+      <summary>
+ Performs a compile-time evaluation of the expression.
+ If it cannot be evaluated, null is returned.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PopStackExpressionBase.Optimize">
       <summary>
  Returns an optimized version of the expression.
  </summary>
       <returns />
+    </member>
+    <member name="P:Flame.Compiler.Expressions.PopStackExpressionBase.Type">
+      <summary>
+ The type of value to pop.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.PopStackExpression">
+      <summary>
+ An expression that pops the value that is currently on top
+ of the stack.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PopStackExpression.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.PeekStackExpression">
+      <summary>
+ An expression that peeks at the value that is currently on top
+ of the stack, but does not pop it.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PeekStackExpression.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.XorExpression">
+      <summary>
+ A type of expression that computes the bitwise exclusive 'or' of its
+ operands.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.XorExpression.Evaluate">
       <summary>
@@ -4023,15 +4468,29 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.XorExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.XorExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.XorExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
     </member>
     <member name="T:Flame.Compiler.Expressions.ShortCircuitBinaryExpression">
       <summary>
  A base class for short-circuiting binary expressions.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.ShortCircuitBinaryExpression.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow expression. An SSA local variable is returned that
+ contains this expression's result.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.ShortCircuitBinaryExpression.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
@@ -4050,6 +4509,17 @@
  If it cannot be evaluated, null is returned.
  </summary>
       <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LazyAndExpression.Lower">
+      <summary>
+ Lowers this logical 'and' expression by creating an equivalent
+ selection expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LazyAndExpression.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Reduces this logical 'and' expression to a sequence of basic blocks.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.LazyAndExpression.GetFlattenedOperands">
       <summary>
@@ -4072,6 +4542,19 @@
  </summary>
       <returns />
     </member>
+    <member name="M:Flame.Compiler.Expressions.LazyAndExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates an operator application code block from the given
+ operands, with the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LazyAndExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.Expressions.LazyOrExpression">
       <summary>
  Defines a short-circuiting boolean 'or' operator.
@@ -4084,15 +4567,44 @@
  </summary>
       <returns />
     </member>
+    <member name="M:Flame.Compiler.Expressions.LazyOrExpression.Lower">
+      <summary>
+ Lowers this logical 'or' expression by creating an equivalent
+ selection expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LazyOrExpression.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Reduces this logical 'or' expression to a sequence of basic blocks.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.LazyOrExpression.Optimize">
       <summary>
  Returns an optimized version of the expression.
  </summary>
       <returns />
     </member>
+    <member name="M:Flame.Compiler.Expressions.LazyOrExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates an operator application code block from the given
+ operands, with the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LazyOrExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.PropertyGetExpression.GetVariable">
       <summary>
  Gets the variable node's underlying variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.PropertyGetExpression.Lower">
+      <summary>
+ Lowers this expression to a semantically equivalent expression.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.PropertyGetExpression.AcceptPredicate(Flame.Compiler.INodeVisitor)">
@@ -4347,6 +4859,55 @@
  Gets the source statement's location.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.SpillableExpression">
+      <summary>
+ Defines an expression that can be "spilled", i.e. store its value in
+ a temporary (SSA) local and retrieve that local's value.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SpillableExpression.#ctor(Flame.Compiler.IExpression)">
+      <summary>
+ Creates a spillable expression from the given value.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SpillableExpression.Spill(Flame.Compiler.Statements.InsertStatement)">
+      <summary>
+ "Spills" this expression to the given initialization statement.
+ An SSA local variable is created if necessary.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SpillableExpression.Optimize">
+      <summary>
+ Returns an optimized version of the expression.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SpillableExpression.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SpillableExpression.Evaluate">
+      <summary>
+ Performs a compile-time evaluation of the expression.
+ If it cannot be evaluated, null is returned.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SpillableExpression.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Expressions.SpillableExpression.Value">
+      <summary>
+ Gets the value this spillable expression computes.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.Expressions.StaticCastExpression">
       <summary>
  An expression that represents a static cast.
@@ -4374,6 +4935,12 @@
  Creates a code block for this conversion expression.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.InequalityExpression">
+      <summary>
+ Defines a type of expression that ascertains if its operands
+ are not equal.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.InequalityExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -4381,11 +4948,23 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.InequalityExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.InequalityExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.InequalityExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.RemainderExpression">
+      <summary>
+ A type of expression that computes the remainder of its operands.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.RemainderExpression.Evaluate">
       <summary>
@@ -4394,11 +4973,18 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.RemainderExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.RemainderExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.RemainderExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.HashExpression.Evaluate">
       <summary>
@@ -4412,11 +4998,6 @@
  Returns an optimized version of the expression.
  </summary>
       <returns />
-    </member>
-    <member name="M:Flame.Compiler.Expressions.HashExpression.GetOpOverload">
-      <summary>
- Gets the operator overload for this unary expression if an overload exists. Otherwise, null.
- </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.InitializedArrayExpression.ConvertMembers(Flame.Compiler.MemberConverter)">
       <summary>
@@ -4500,6 +5081,12 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Expressions.LeftShiftExpression">
+      <summary>
+ Defines a type of expression that shifts its left-hand operand to the
+ left by the number of positions indicated by its right-hand operand.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.LeftShiftExpression.Evaluate">
       <summary>
  Performs a compile-time evaluation of the expression.
@@ -4507,11 +5094,24 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.LeftShiftExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.LeftShiftExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.LeftShiftExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.RightShiftExpression">
+      <summary>
+ Defines a type of expression that shifts its left-hand operand to the
+ right by the number of positions indicated by its right-hand operand.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.RightShiftExpression.Evaluate">
       <summary>
@@ -4520,11 +5120,18 @@
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Expressions.RightShiftExpression.Optimize">
+    <member name="M:Flame.Compiler.Expressions.RightShiftExpression.EmitPrimitive(Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeBlock,Flame.Compiler.ICodeGenerator)">
       <summary>
- Returns an optimized version of the expression.
+ Creates an operator application code block from the given
+ operands, with the given code generator.
  </summary>
-      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Expressions.RightShiftExpression.Create(Flame.Compiler.IExpression,Flame.Compiler.IExpression)">
+      <summary>
+ Creates a binary expression of this expression type from the given
+ operands. These expressions are guaranteed to have the same type
+ as the operands of this expression.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.ConcatExpression.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
@@ -4673,6 +5280,27 @@
  Converts the node's members with the given member converter.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Expressions.RelaxedInvocation.Lower">
+      <summary>
+ Lowers this expression to a semantically equivalent expression.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Expressions.ComplexExpressionBase">
+      <summary>
+ A base class for high-level expressions that lower themselves to
+ lower-level expressions.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.ComplexExpressionBase.#ctor">
+      <summary>
+ Initializes a complex expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.ComplexExpressionBase.Lower">
+      <summary>
+ Lowers this expression to a semantically equivalent expression.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Expressions.ComplexExpressionBase.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
@@ -4698,6 +5326,11 @@
  Performs a compile-time evaluation of the expression. If it cannot be evaluated, null is returned.
  </summary>
       <returns />
+    </member>
+    <member name="P:Flame.Compiler.Expressions.ComplexExpressionBase.LoweredExpression">
+      <summary>
+ Gets this expression's semantically equivalent lowered expression.
+ </summary>
     </member>
     <member name="P:Flame.Compiler.Expressions.ComplexExpressionBase.IsConstant">
       <summary>
@@ -4734,6 +5367,11 @@
     <member name="M:Flame.Compiler.Expressions.ReturnValueGetExpression.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Expressions.SelectExpression.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Converts this select-expression to a series of blocks.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Expressions.SelectExpression.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
@@ -4836,11 +5474,6 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Expressions.DirectUnaryExpression.Static_Singleton.CreateUnaryExpression(Flame.Operator,Flame.Compiler.IExpression)">
-      <summary>
- Creates a unary expression from the given operation and operand.
- </summary>
-    </member>
     <member name="M:Flame.Compiler.Expressions.SourceExpression.Static_Singleton.Create(Flame.Compiler.IExpression,Flame.Compiler.SourceLocation)">
       <summary>
  Creates a source expression based on the given expression and location.
@@ -4853,12 +5486,535 @@
  Reduces the binary concatenation expression to a simpler expression.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.GlobalFlowStatementBase">
+    <member name="T:Flame.Compiler.Flow.BasicBlock">
       <summary>
- Defines common functionality for statements that end a function call.
+ Defines a basic block: a data structure that executes a number of
+ instructions in sequence, before transferring control to another basic
+ block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.GlobalFlowStatementBase.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Flow.BasicBlock.#ctor(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a basic block from the given components.
+ The created block does not take any parameters.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BasicBlock.#ctor(Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable},Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a basic block from the given components.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BasicBlock.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Applies the given node visitor to this basic block's contents and
+ final flow statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BasicBlock.Accept(Flame.Compiler.Flow.IBasicBlockVisitor)">
+      <summary>
+ Applies the given node visitor to this basic block's contents and
+ final flow statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BasicBlock.Optimize">
+      <summary>
+ Applies simple optimizations to this basic block's contents.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BasicBlock.IsConstant">
+      <summary>
+ Checks if this basic block has no side-effects.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BasicBlock.Tag">
+      <summary>
+ Gets a tag that uniquely identifies this block.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BasicBlock.Parameters">
+      <summary>
+ Gets this basic block's parameter list. Arguments are stored in
+ SSA locals. This parameter list is the moral equivalent of a
+ list of phi statements.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BasicBlock.Contents">
+      <summary>
+ Gets the basic block's contents as a statement tree, whose children
+ are executed in sequential order.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BasicBlock.Flow">
+      <summary>
+ Gets this basic block's terminating control flow statement.
+ It is executed right after the body has been executed, and
+ transfers control to some other basic block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.ToFlowGraph(Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates a flow graph from this block builder, with the given
+ entry point tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.Next">
+      <summary>
+ Proceeds to the next block by setting the current block tag to
+ the next block tag, and creating a new unique tag for the next block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.GetBlock(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the basic block identified by the given tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.GetOrCreateTag(System.Collections.Generic.Dictionary`2{Flame.Compiler.UniqueTag,Flame.Compiler.UniqueTag},Flame.Compiler.UniqueTag,System.String)">
+      <summary>
+ Gets or creates a unique tag value in the given dictionary.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.GetBreakTag(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets a block tag that uniquely identifies the `continue` destination
+ block of the block that owns the given tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.GetContinueTag(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets a block tag that uniquely identifies the `break` destination
+ block of the block that owns the given tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.RegisterBlock(Flame.Compiler.Flow.BasicBlock)">
+      <summary>
+ Adds the given basic block to the created blocks list.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.CreateCurrentBlock(System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable},Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates the current block by assigning it the given parameters,
+ contents and flow.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.CreateCurrentBlock(Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates the current block by assigning it the given contents and flow.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.CreateBlock(Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable},Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a new basic block, registers it and returns its unique
+ tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.CreateBlock(System.String,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable},Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a new basic block, registers it and returns its unique
+ tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.CreateBlock(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a new basic block, registers it and returns its unique
+ tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.CreateBlock(System.String,Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a new basic block, registers it and returns its unique
+ tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.Redirect(Flame.Compiler.UniqueTag,Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates a block identified by the first tag that simply jumps to the
+ block identified by the second tag. The destination tag must not
+ take any parameters.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBuilder.RedirectCurrent(Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates the current block, and have it jump to the
+ block identified by the given tag.
+ The destination tag must not take any parameters.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockBuilder.Blocks">
+      <summary>
+ Gets a sequence of all blocks that have been built by this block
+ builder so far.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockBuilder.CurrentBlockTag">
+      <summary>
+ Gets or sets a tag that uniquely identifies the current basic block.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockBuilder.NextBlockTag">
+      <summary>
+ Gets or sets a tag that uniquely identifies the next basic block.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.BlockBranch">
+      <summary>
+ A data structure that represents a branch to a basic block, which is
+ identified by a unique tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBranch.#ctor(Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates a block branch node that branches to the block
+ identified by the given unique tag. No arguments are given.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBranch.#ctor(Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable})">
+      <summary>
+ Creates a block branch node that branches to the block
+ identified by the given unique tag, and passes the given
+ SSA locals as arguments.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockBranch.#ctor(Flame.Compiler.UniqueTag,Flame.Compiler.Variables.SSAVariable[])">
+      <summary>
+ Creates a block branch node that branches to the block
+ identified by the given unique tag, and passes the given
+ SSA locals as arguments.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockBranch.TargetTag">
+      <summary>
+ Gets the block tag that uniquely identifies this block branch's
+ destination block.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockBranch.Arguments">
+      <summary>
+ Gets this block branch node's argument list.
+ These arguments are given as SSA locals.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.BlockFlow">
+      <summary>
+ Defines a base class for basic block control flow nodes.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockFlow.Accept(Flame.Compiler.Flow.IBasicBlockVisitor)">
+      <summary>
+ Accepts the given basic block visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockFlow.Optimize">
+      <summary>
+ Optimizes this control flow node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockFlow.GetSuccessors(Flame.Compiler.Flow.BasicBlock(Flame.Compiler.UniqueTag))">
+      <summary>
+ Gets a sequence of potential direct successor blocks for this
+ basic block flow node. A delegate is given that maps
+ block tags to their associated basic blocks.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockFlow.Branches">
+      <summary>
+ Gets a sequence of potential block branches for this
+ basic block flow statement.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockFlow.IsConstant">
+      <summary>
+ Checks if this control flow node has no side-effects.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockFlow.SuccessorTags">
+      <summary>
+ Gets a sequence of successor block tags for this basic
+ block flow node.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.FlowGraph">
+      <summary>
+ Defines a control flow graph: a self-contained sequence of basic
+ blocks, with an entry point.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.#ctor(Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.UniqueTag,Flame.Compiler.Flow.BasicBlock})">
+      <summary>
+ Creates a new flow graph from the given entry point tag and
+ tag-basic block mapping.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.#ctor(Flame.Compiler.UniqueTag,System.Collections.Generic.IEnumerable`1{Flame.Compiler.Flow.BasicBlock})">
+      <summary>
+ Creates a new flow graph from the given entry point tag and sequence
+ of basic blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.GetBlock(Flame.Compiler.UniqueTag)">
+      <summary>
+ Gets the block associated with the given tag in this control flow
+ graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts the given node visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.Optimize">
+      <summary>
+ Applies simple optimizations to this control flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.GetPredecessors">
+      <summary>
+ Creates a dictionary that maps basic block tags to sequences of
+ (predecessor block tag, argument list) pairs.
+ </summary>
+      <remarks>
+ This is O(n*m), where n represents the number of blocks,
+ and m is equal to the number of branches per block.
+ </remarks>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.MarkReachable(Flame.Compiler.UniqueTag,System.Collections.Generic.HashSet`1{Flame.Compiler.UniqueTag})">
+      <summary>
+ Marks the block identified by the given tag - and all blocks that
+ are reachable from this block - as reachable by adding them to
+ the given set.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.FindReachableBlocks">
+      <summary>
+ Computes the set of all reachable blocks in this flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.FlowGraph.EliminateUnreachable">
+      <summary>
+ Creates a flow graph that contains all blocks that are
+ reachable in this flow graph.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.FlowGraph.Blocks">
+      <summary>
+ Gets the sequence of all blocks in this control flow graph.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.FlowGraph.BlockTags">
+      <summary>
+ Gets the sequence of all block tags in this control flow graph.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.FlowGraph.EntryPointBlock">
+      <summary>
+ Gets this control flow graph's entry point graph.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.FlowGraph.IsEmpty">
+      <summary>
+ Tests if this flow graph is "empty" from the perspective of a statement:
+ all reachable blocks have empty bodies.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.FlowGraph.EntryPointTag">
+      <summary>
+ Gets the unique tag that identifies the entry point block in
+ this control flow graph.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.IBasicBlockVisitor">
+      <summary>
+ Defines common functionality for visitors that can visit basic blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.IBasicBlockVisitor.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.IBasicBlockVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.BranchVisitorBase">
+      <summary>
+ Gets a type of basic block visitor that visits branches, and ignores
+ everything else.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BranchVisitorBase.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BranchVisitorBase.Visit(Flame.Compiler.IExpression)">
+      <summary>
+ Visits an expression: an expression is taken as input and
+ transformed into another expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BranchVisitorBase.Visit(Flame.Compiler.IStatement)">
+      <summary>
+ Visits a statement: an statement is taken as input and
+ transformed into another statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BranchVisitorBase.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.EmulatedBasicBlockVisitor">
+      <summary>
+ A type of basic block visitor that is the identity function for
+ block parameters and branches, and applies a node visitor
+ to statements and expressions.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.EmulatedBasicBlockVisitor.Visit(Flame.Compiler.IExpression)">
+      <summary>
+ Visits an expression: an expression is taken as input and
+ transformed into another expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.EmulatedBasicBlockVisitor.Visit(Flame.Compiler.IStatement)">
+      <summary>
+ Visits a statement: an statement is taken as input and
+ transformed into another statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.EmulatedBasicBlockVisitor.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.EmulatedBasicBlockVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.EmulatedBasicBlockVisitor.Visitor">
+      <summary>
+ Gets the underlying node visitor that is applied to statements
+ and expressions.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.JumpFlow">
+      <summary>
+ A type of basic block control flow node that unconditionally
+ transfers control to another block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.JumpFlow.#ctor(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Creates a basic block flow statement that unconditionally
+ performs the given branch.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.JumpFlow.Accept(Flame.Compiler.Flow.IBasicBlockVisitor)">
+      <summary>
+ Accepts the given basic block visitor.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.JumpFlow.IsConstant">
+      <summary>
+ Checks if this control flow node has no side-effects.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.JumpFlow.Branch">
+      <summary>
+ Gets the block branch that describes this jump flow node's
+ contents.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.SelectFlow">
+      <summary>
+ A type of basic block control flow statement that transfers control
+ to one of two basic blocks, based on a condition.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.SelectFlow.#ctor(Flame.Compiler.IExpression,Flame.Compiler.Flow.BlockBranch,Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Creates a basic block flow node that performs the first branch
+ if the given boolean expression evaluates to true, and performs
+ the second branch otherwise.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.SelectFlow.Optimize">
+      <summary>
+ Optimizes this control flow node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.SelectFlow.Accept(Flame.Compiler.Flow.IBasicBlockVisitor)">
+      <summary>
+ Accepts the given basic block visitor.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.SelectFlow.IsConstant">
+      <summary>
+ Checks if this control flow node has no side-effects.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.SelectFlow.Condition">
+      <summary>
+ Gets a boolean expression this conditional branch relies on to
+ to select a basic block.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.SelectFlow.ThenBranch">
+      <summary>
+ Gets the basic block branch that will be executed if the condition
+ local evaluates to true.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.SelectFlow.ElseBranch">
+      <summary>
+ Gets the basic block branch that will be executed if the condition
+ local evaluates to false.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.TerminatedFlowBase">
+      <summary>
+ A base class for basic block flow that has no successors.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.TerminatedFlowBase.Accept(Flame.Compiler.Flow.IBasicBlockVisitor)">
+      <summary>
+ Accepts the given basic block visitor.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.TerminatedFlowBase.IsConstant">
+      <summary>
+ Checks if this control flow node has no side-effects.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.UnreachableFlow">
+      <summary>
+ A type of basic block flow that flags the end of the basic block
+ as unreachable. It has no successors.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Flow.TerminatedFlow">
+      <summary>
+ A type of basic block flow that flags the end of the basic block as
+ unreachable, because the basic block's body terminates control flow.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.AssertStatement">
+      <summary>
+ Defines a statement that checks if an expression evaluates to `true`.
+ If not, the user is notified in an implementation-defined manner.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.AssertStatement.#ctor(Flame.Compiler.IExpression)">
+      <summary>
+ Creates an assertion statement from the given expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.AssertStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -4867,337 +6023,82 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.GlobalFlowStatementBase.Optimize">
+    <member name="M:Flame.Compiler.Statements.AssertStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.GlobalFlowStatementBase.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.AssertStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.GlobalFlowStatementBase.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
+    <member name="P:Flame.Compiler.Statements.AssertStatement.Expression">
+      <summary>
+ Gets the expression that is tested for equality to `true`.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.LocalFlowStatementBase">
+      <summary>
+ Defines common functionality for statements that terminate the current
+ iteration of a tagged local flow block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
       <summary>
  Accepts and interacts with a flow visitor.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.ReturnStatement">
+    <member name="P:Flame.Compiler.Statements.LocalFlowStatementBase.Target">
       <summary>
- Defines a statement that sets the function's return value,
- and then terminates the function's execution.
+ Gets the tag of the tagged block whose iteration is to be terminated.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ReturnStatement.#ctor">
+    <member name="T:Flame.Compiler.Statements.BreakStatement">
       <summary>
- Creates a return statement that returns `void`.
+ A statement type that represents the notion of a "break" statement that
+ targets a specific tagged block.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ReturnStatement.#ctor(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Statements.BreakStatement.#ctor(Flame.Compiler.UniqueTag)">
       <summary>
- Creates a return statement that returns the given value.
+ Creates a "break" statement that targets the given block tag.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ReturnStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.BreakStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
       <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ReturnStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.ReturnStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Statements.ReturnStatement.Value">
-      <summary>
- Gets the value that is returned by this statement.
- </summary>
-    </member>
-    <member name="T:Flame.Compiler.Statements.IfElseStatement">
-      <summary>
- Defines an if-else statement, which selects a path to execute at run-time,
- based on the result of a condition expression.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IStatement)">
-      <summary>
- Creates an if-else statement based on the given condition and 'if' body.
- The 'else' body is assumed to be the empty statement.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IStatement,Flame.Compiler.IStatement)">
-      <summary>
- Creates an if-else statement based on the given condition, 'if' body
- and 'else' body.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.Simplify">
-      <summary>
- Tries to determine statically which path will be taken.
- If this can be done, the selected path is returned.
- Otherwise, this statement is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
-      <summary>
- Accepts and interacts with a flow visitor.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.IfElseStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Statements.IfElseStatement.Condition">
-      <summary>
- Gets the if-else statement's condition expression, which determines
- which path is taken.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Statements.IfElseStatement.IfBody">
-      <summary>
- Gets the if-else statement's 'if' body. This path will be taken
- if the condition expression evaluates to `true`.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Statements.IfElseStatement.ElseBody">
-      <summary>
- Gets the if-else statement's 'else' body. This path will be taken
- if the condition expression evaluates to `false`.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.WhileStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
-      <summary>
- Accepts and interacts with a flow visitor.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.WhileStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.WhileStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.WhileStatement.Lower">
-      <summary>
- Lowers this while block to an equivalent tagged block IR tree.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.WhileStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.GetVariable">
-      <summary>
- Gets the variable node's underlying variable.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ThisSetStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ThisSetStatement.GetVariable">
-      <summary>
- Gets the variable node's underlying variable.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ThisSetStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.ThisSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.GetVariable">
-      <summary>
- Gets the variable node's underlying variable.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.GetVariable">
-      <summary>
- Gets the variable node's underlying variable.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="T:Flame.Compiler.Statements.EmptyStatement">
-      <summary>
- The empty statement singleton, which compiles down to the same code block
- as a void expression. It does not have any side-effects.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.EmptyStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.EmptyStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.EmptyStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ForStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.ForStatement.AcceptPredicate(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts the predicate node visitor.
- Said visitor promises not to modify this node or any of its contents.
- Furthermore, calling 'AcceptPredicate' must always produce the same state changes
- as calling 'Accept' when using the same visitor, but may do so
- more efficiently.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ForStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
-      <summary>
- Accepts and interacts with a flow visitor.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ForStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ForStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ComplexStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ComplexStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.ComplexStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.BreakStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
@@ -5252,120 +6153,6 @@
  Gets this block statement's sequence of child statements.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.ExpressionStatement">
-      <summary>
- Defines a type of statement that evaluates its inner expression, and then
- discards its value.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ExpressionStatement.#ctor(Flame.Compiler.IExpression)">
-      <summary>
- Creates an expression statement that wraps the given expression.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ExpressionStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ExpressionStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.ExpressionStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Statements.ExpressionStatement.Expression">
-      <summary>
- Gets the expression statement's inner expression.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.LateBoundVariableSetStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.LateBoundVariableSetStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.LateBoundVariableSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.LateBoundVariableReleaseStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.FieldSetStatement.ConvertMembers(Flame.Compiler.MemberConverter)">
-      <summary>
- Converts the node's members with the given member converter.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.FieldSetStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.FieldSetStatement.GetVariable">
-      <summary>
- Gets the variable node's underlying variable.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.FieldSetStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.FieldSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ContainerElementSetStatement.AcceptPredicate(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts the predicate node visitor.
- Said visitor promises not to modify this node or any of its contents.
- Furthermore, calling 'AcceptPredicate' must always produce the same state changes
- as calling 'Accept' when using the same visitor, but may do so
- more efficiently.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ContainerElementSetStatement.Accept(Flame.Compiler.INodeVisitor)">
-      <summary>
- Accepts a node visitor.
- This method is applies the visitor to this node's children and
- returns a new node with the same structure as this node, but with
- the updated children.
- If this node has no children, this node is returned.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ContainerElementSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
-      <summary>
- Creates a code block that captures this code node.
- </summary>
-    </member>
     <member name="T:Flame.Compiler.Statements.CodeBlockStatement">
       <summary>
  Defines a type of statement that wraps a code block directly, which is
@@ -5402,18 +6189,22 @@
  Gets the code block that is wrapped by this code block statement.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.LocalFlowStatementBase">
+    <member name="T:Flame.Compiler.Statements.CollectionElement">
       <summary>
- Defines common functionality for statements that terminate the current
- iteration of a tagged local flow block.
+ A collection element in a foreach loop.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="T:Flame.Compiler.Statements.CommentedStatement">
       <summary>
- Creates a code block that captures this code node.
+ A statement that has a comment attached to it.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.CommentedStatement.#ctor(System.String,Flame.Compiler.IStatement)">
+      <summary>
+ Creates a new commented statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.CommentedStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5422,34 +6213,43 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.Optimize">
+    <member name="M:Flame.Compiler.Statements.CommentedStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.LocalFlowStatementBase.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
+    <member name="M:Flame.Compiler.Statements.CommentedStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
- Accepts and interacts with a flow visitor.
+ Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Statements.LocalFlowStatementBase.Target">
+    <member name="P:Flame.Compiler.Statements.CommentedStatement.Comment">
       <summary>
- Gets the tag of the tagged block whose iteration is to be terminated.
+ Gets the comment to print.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.BreakStatement">
+    <member name="P:Flame.Compiler.Statements.CommentedStatement.Statement">
       <summary>
- A statement type that represents the notion of a "break" statement that
- targets a specific tagged block.
+ Gets the actual statement to emit.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.BreakStatement.#ctor(Flame.Compiler.UniqueTag)">
+    <member name="M:Flame.Compiler.Statements.ComplexStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
- Creates a "break" statement that targets the given block tag.
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.BreakStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.ComplexStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.ComplexStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
@@ -5465,7 +6265,71 @@
  Creates a "continue" statement that targets the given block tag.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Statements.ContinueStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Statements.ContinueStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.AcceptPredicate(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts the predicate node visitor.
+ Said visitor promises not to modify this node or any of its contents.
+ Furthermore, calling 'AcceptPredicate' must always produce the same state changes
+ as calling 'Accept' when using the same visitor, but may do so
+ more efficiently.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.ContractBodyStatement.IsEmptyContract">
+      <summary>
+ Tests if this contract's preconditions and postconditions are
+ actually both empty.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ContainerElementSetStatement.AcceptPredicate(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts the predicate node visitor.
+ Said visitor promises not to modify this node or any of its contents.
+ Furthermore, calling 'AcceptPredicate' must always produce the same state changes
+ as calling 'Accept' when using the same visitor, but may do so
+ more efficiently.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ContainerElementSetStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ContainerElementSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
@@ -5476,6 +6340,12 @@
  and in successive iterations, executes it only if a condition evaluates
  to `true`. This is equivalent to a `do...while` statement in the C family
  of languages.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.DoWhileStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Statements.DoWhileStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
@@ -5532,25 +6402,7 @@
  Gets the do...while statement's body.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.TaggedStatement">
-      <summary>
- Defines a tagged statement: the statement equivalent of a
- code generator's tagged block.
- Tagged statements are potential targets for "break" and "continue"
- statements.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.#ctor(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
-      <summary>
- Creates a new tagged statement from the given tag and body.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
-      <summary>
- Accepts and interacts with a flow visitor.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.EmitVariableSetStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5559,36 +6411,24 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.Simplify">
-      <summary>
- Tries to simplify this tagged statement into sequential flow.
- If there are no 'break' and 'continue' statements to this tagged statement,
- it is converted into sequenial flow. Otherwise, this tagged statement
- is returned unchanged.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.Optimize">
+    <member name="M:Flame.Compiler.Statements.EmitVariableSetStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.TaggedStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.EmitVariableSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Statements.TaggedStatement.Tag">
+    <member name="T:Flame.Compiler.Statements.EmptyStatement">
       <summary>
- Gets the tag that identifies this tagged statement.
+ The empty statement singleton, which compiles down to the same code block
+ as a void expression. It does not have any side-effects.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Statements.TaggedStatement.Body">
-      <summary>
- Gets this tagged statement's body.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.YieldReturnStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.EmptyStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5597,18 +6437,29 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.YieldReturnStatement.Optimize">
+    <member name="M:Flame.Compiler.Statements.EmptyStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.YieldReturnStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.EmptyStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.YieldBreakStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="T:Flame.Compiler.Statements.ExpressionStatement">
+      <summary>
+ Defines a type of statement that evaluates its inner expression, and then
+ discards its value.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ExpressionStatement.#ctor(Flame.Compiler.IExpression)">
+      <summary>
+ Creates an expression statement that wraps the given expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ExpressionStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5617,15 +6468,85 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.YieldBreakStatement.Optimize">
+    <member name="M:Flame.Compiler.Statements.ExpressionStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.YieldBreakStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.ExpressionStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.ExpressionStatement.Expression">
+      <summary>
+ Gets the expression statement's inner expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FieldSetStatement.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FieldSetStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FieldSetStatement.GetVariable">
+      <summary>
+ Gets the variable node's underlying variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FieldSetStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.FieldSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.FlowGraphStatement">
+      <summary>
+ A statement that contains a control flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowGraphStatement.#ctor(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Creates a statement that wraps the given control flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowGraphStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowGraphStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowGraphStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.FlowGraphStatement.Graph">
+      <summary>
+ Gets this statement's control flow graph.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Statements.ForeachStatement.Copy">
@@ -5646,6 +6567,12 @@
  Furthermore, calling 'AcceptPredicate' must always produce the same state changes
  as calling 'Accept' when using the same visitor, but may do so
  more efficiently.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ForeachStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Statements.ForeachStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TDelta})">
@@ -5678,22 +6605,33 @@
  Reduces the foreach statements to more primitive statements.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.CollectionElement">
+    <member name="M:Flame.Compiler.Statements.ForStatement.Optimize">
       <summary>
- A collection element in a foreach loop.
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.ForStatement.AcceptPredicate(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts the predicate node visitor.
+ Said visitor promises not to modify this node or any of its contents.
+ Furthermore, calling 'AcceptPredicate' must always produce the same state changes
+ as calling 'Accept' when using the same visitor, but may do so
+ more efficiently.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.CommentedStatement">
+    <member name="M:Flame.Compiler.Statements.ForStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
       <summary>
- A statement that has a comment attached to it.
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.CommentedStatement.#ctor(System.String,Flame.Compiler.IStatement)">
+    <member name="M:Flame.Compiler.Statements.ForStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
       <summary>
- Creates a new commented statement.
+ Accepts and interacts with a flow visitor.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.CommentedStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.ForStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5702,33 +6640,42 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.CommentedStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.CommentedStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.ForStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Statements.CommentedStatement.Comment">
+    <member name="T:Flame.Compiler.Statements.IfElseStatement">
       <summary>
- Gets the comment to print.
+ Defines an if-else statement, which selects a path to execute at run-time,
+ based on the result of a condition expression.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Statements.CommentedStatement.Statement">
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IStatement)">
       <summary>
- Gets the actual statement to emit.
+ Creates an if-else statement based on the given condition and 'if' body.
+ The 'else' body is assumed to be the empty statement.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.RawExpressionStatement">
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.#ctor(Flame.Compiler.IExpression,Flame.Compiler.IStatement,Flame.Compiler.IStatement)">
       <summary>
- A statement wrapper for expressions.
+ Creates an if-else statement based on the given condition, 'if' body
+ and 'else' body.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.RawExpressionStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.Simplify">
+      <summary>
+ Tries to determine statically which path will be taken.
+ If this can be done, the selected path is returned.
+ Otherwise, this statement is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
+      <summary>
+ Accepts and interacts with a flow visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5737,16 +6684,40 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.RawExpressionStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
       <summary>
- Creates a code block that captures this code node.
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.RawExpressionStatement.Optimize">
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.IfElseStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.IfElseStatement.Condition">
+      <summary>
+ Gets the if-else statement's condition expression, which determines
+ which path is taken.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.IfElseStatement.IfBody">
+      <summary>
+ Gets the if-else statement's 'if' body. This path will be taken
+ if the condition expression evaluates to `true`.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.IfElseStatement.ElseBody">
+      <summary>
+ Gets the if-else statement's 'else' body. This path will be taken
+ if the condition expression evaluates to `false`.
+ </summary>
     </member>
     <member name="M:Flame.Compiler.Statements.LateBoundLabelBranchStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
@@ -5788,17 +6759,7 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.ThrowStatement">
-      <summary>
- Defines a type of statement that throws the given exception expression.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ThrowStatement.#ctor(Flame.Compiler.IExpression)">
-      <summary>
- Creates a new throw statement from the given exception expression.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.ThrowStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.LateBoundVariableSetStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5807,35 +6768,29 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ThrowStatement.Optimize">
+    <member name="M:Flame.Compiler.Statements.LateBoundVariableSetStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.ThrowStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.LateBoundVariableSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Statements.ThrowStatement.Exception">
+    <member name="M:Flame.Compiler.Statements.LateBoundVariableReleaseStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
- Gets the expression that creates the exception object this statement
- throws.
+ Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Statements.AssertStatement">
+    <member name="T:Flame.Compiler.Statements.PushStackStatement">
       <summary>
- Defines a statement that checks if an expression evaluates to `true`.
- If not, the user is notified in an implementation-defined manner.
+ A statement that pushes the value that the given expression yields
+ on top of the evaluation stack.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.AssertStatement.#ctor(Flame.Compiler.IExpression)">
-      <summary>
- Creates an assertion statement from the given expression.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Statements.AssertStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.PushStackStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5844,20 +6799,122 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.AssertStatement.Optimize">
+    <member name="M:Flame.Compiler.Statements.PushStackStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.PushStackStatement.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.AssertStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="P:Flame.Compiler.Statements.PushStackStatement.Expression">
+      <summary>
+ Gets the expression whose value will be pushed onto the
+ evaluation stack by this statement.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.RawExpressionStatement">
+      <summary>
+ A statement wrapper for expressions.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.RawExpressionStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.RawExpressionStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="P:Flame.Compiler.Statements.AssertStatement.Expression">
+    <member name="M:Flame.Compiler.Statements.RawExpressionStatement.Optimize">
       <summary>
- Gets the expression that is tested for equality to `true`.
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="T:Flame.Compiler.Statements.FlowTerminatingStatementBase">
+      <summary>
+ Defines common functionality for statements that end a function call.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowTerminatingStatementBase.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowTerminatingStatementBase.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowTerminatingStatementBase.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowTerminatingStatementBase.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a basic block that represents this flow-terminating statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowTerminatingStatementBase.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
+      <summary>
+ Accepts and interacts with a flow visitor.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.ReturnStatement">
+      <summary>
+ Defines a statement that sets the function's return value,
+ and then terminates the function's execution.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ReturnStatement.#ctor">
+      <summary>
+ Creates a return statement that returns `void`.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ReturnStatement.#ctor(Flame.Compiler.IExpression)">
+      <summary>
+ Creates a return statement that returns the given value.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ReturnStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ReturnStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.ReturnStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.ReturnStatement.Value">
+      <summary>
+ Gets the value that is returned by this statement.
  </summary>
     </member>
     <member name="T:Flame.Compiler.Statements.SourceStatement">
@@ -5910,6 +6967,153 @@
  Gets the source statement's location.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.GetVariable">
+      <summary>
+ Gets the variable node's underlying variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.StoreAtAddressStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.TaggedStatement">
+      <summary>
+ Defines a tagged statement: the statement equivalent of a
+ code generator's tagged block.
+ Tagged statements are potential targets for "break" and "continue"
+ statements.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.#ctor(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement)">
+      <summary>
+ Creates a new tagged statement from the given tag and body.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Converts this tagged statement to a sequence of basic blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
+      <summary>
+ Accepts and interacts with a flow visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.Simplify">
+      <summary>
+ Tries to simplify this tagged statement into sequential flow.
+ If there are no 'break' and 'continue' statements to this tagged statement,
+ it is converted into sequenial flow. Otherwise, this tagged statement
+ is returned unchanged.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.TaggedStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.TaggedStatement.Tag">
+      <summary>
+ Gets the tag that identifies this tagged statement.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.TaggedStatement.Body">
+      <summary>
+ Gets this tagged statement's body.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThisSetStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThisSetStatement.GetVariable">
+      <summary>
+ Gets the variable node's underlying variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThisSetStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThisSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.ThrowStatement">
+      <summary>
+ Defines a type of statement that throws the given exception expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThrowStatement.#ctor(Flame.Compiler.IExpression)">
+      <summary>
+ Creates a new throw statement from the given exception expression.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThrowStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThrowStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.ThrowStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.ThrowStatement.Exception">
+      <summary>
+ Gets the expression that creates the exception object this statement
+ throws.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Statements.TryStatement.ConvertMembers(Flame.Compiler.MemberConverter)">
       <summary>
  Converts the node's members with the given member converter.
@@ -5944,16 +7148,30 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.AcceptPredicate(Flame.Compiler.INodeVisitor)">
+    <member name="T:Flame.Compiler.Statements.UnwrapStatement">
       <summary>
- Accepts the predicate node visitor.
- Said visitor promises not to modify this node or any of its contents.
- Furthermore, calling 'AcceptPredicate' must always produce the same state changes
- as calling 'Accept' when using the same visitor, but may do so
- more efficiently.
+ Defines a base class for transient statements that "unwrap" themselves.
+ Their contents are assumed to be mutable, so no caching is done.
+ </summary>
+      <remarks>
+ This type of statement will "unwrap" itself as soon as possible, and
+ is mainly intended for use in node visitors that reorder the
+ statement/expression tree.
+ </remarks>
+    </member>
+    <member name="M:Flame.Compiler.Statements.UnwrapStatement.Unwrap">
+      <summary>
+ "Unwraps" this statement: the (optional) layer of mutability this
+ statement offers is removed, and its contents are returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="M:Flame.Compiler.Statements.UnwrapStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.UnwrapStatement.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5962,18 +7180,81 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.Optimize">
-      <summary>
- Returns an optimized version of the statement.
- </summary>
-      <returns />
-    </member>
-    <member name="M:Flame.Compiler.Statements.ContractBodyStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.UnwrapStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.EmitVariableSetStatement.Accept(Flame.Compiler.INodeVisitor)">
+    <member name="T:Flame.Compiler.Statements.InsertStatement">
+      <summary>
+ Defines an insert statement: a statement that can later be populated
+ with other statements.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.InsertStatement.#ctor">
+      <summary>
+ Creates a new insert statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.InsertStatement.Insert(Flame.Compiler.IStatement)">
+      <summary>
+ Inserts the given statement: it is appended to the insert statement's
+ list of inner statements.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.InsertStatement.Unwrap">
+      <summary>
+ "Unwraps" this statement: the (optional) layer of mutability this
+ statement offers is removed, and its contents are returned.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.InsertStatement.Statements">
+      <summary>
+ Gets all inserted statements.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.MovableStatement">
+      <summary>
+ Defines a movable statement: a statement that can later be neutralized,
+ and have its contents appended to an insert statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.MovableStatement.#ctor(Flame.Compiler.IStatement)">
+      <summary>
+ Creates a movable statement with the given statement as its
+ contents.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.MovableStatement.Move(Flame.Compiler.Statements.InsertStatement)">
+      <summary>
+ "Moves" this statement's inner statement to the given insert
+ statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.MovableStatement.Unwrap">
+      <summary>
+ "Unwraps" this statement: the (optional) layer of mutability this
+ statement offers is removed, and its contents are returned.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.MovableStatement.Statement">
+      <summary>
+ Gets this movable statement's inner statement, which defines
+ this statement's semantics.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.GetVariable">
+      <summary>
+ Gets the variable node's underlying variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.Accept(Flame.Compiler.INodeVisitor)">
       <summary>
  Accepts a node visitor.
  This method is applies the visitor to this node's children and
@@ -5982,13 +7263,132 @@
  If this node has no children, this node is returned.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Statements.EmitVariableSetStatement.Optimize">
+    <member name="M:Flame.Compiler.Statements.VariableSetStatementBase`1.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.GetVariable">
+      <summary>
+ Gets the variable node's underlying variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.Optimize">
       <summary>
  Returns an optimized version of the statement.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Statements.EmitVariableSetStatement.Emit(Flame.Compiler.ICodeGenerator)">
+    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.VariableReleaseStatementBase`1.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Statements.WhileStatement">
+      <summary>
+ Defines a type of flow statement that represents a 'while' statement in
+ C family programming languages.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.WhileStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.WhileStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
+      <summary>
+ Accepts and interacts with a flow visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.WhileStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.WhileStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.WhileStatement.Lower">
+      <summary>
+ Lowers this while block to an equivalent tagged block IR tree.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.WhileStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.WhileStatement.Tag">
+      <summary>
+ Gets this while statement's unique tag.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.WhileStatement.Condition">
+      <summary>
+ Gets this while statement's condition expression. The while loop
+ will execute the body for as long as this expression evalutes
+ to true.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Statements.WhileStatement.Body">
+      <summary>
+ Gets this while statement's body, which will be executed as long
+ as the condition expression evaluates to true.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.YieldReturnStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.YieldReturnStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.YieldReturnStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.YieldBreakStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.YieldBreakStatement.Optimize">
+      <summary>
+ Returns an optimized version of the statement.
+ </summary>
+      <returns />
+    </member>
+    <member name="M:Flame.Compiler.Statements.YieldBreakStatement.Emit(Flame.Compiler.ICodeGenerator)">
       <summary>
  Creates a code block that captures this code node.
  </summary>
@@ -6165,41 +7565,48 @@
  Creates a code block that captures this code node.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.LateBoundVariable.BindVariable(Flame.Compiler.Emit.IMethodStructureGenerator)">
+    <member name="T:Flame.Compiler.Variables.ManuallyBoundVariable">
       <summary>
- Assigns a real variable to this late-bound variable.
+ A type of variable that can be bound to another variable, which it
+ then uses to generate code blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.BindVariable(Flame.Compiler.Emit.IMethodStructureGenerator)">
+      <summary>
+ Automatically assigns a real variable to this late-bound variable,
+ based on the given method structure generator.
  </summary>
       <param name="Generator" />
     </member>
-    <member name="M:Flame.Compiler.Variables.LateBoundVariable.BindVariable(Flame.Compiler.Emit.IEmitVariable)">
+    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.BindVariable(Flame.Compiler.Emit.IEmitVariable)">
       <summary>
  Assigns an emit variable to this late-bound variable.
  </summary>
       <param name="Generator" />
     </member>
-    <member name="M:Flame.Compiler.Variables.LateBoundVariable.BindVariable(Flame.Compiler.IVariable)">
+    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.BindVariable(Flame.Compiler.IVariable)">
       <summary>
  Assigns a "real" variable to this late-bound variable.
  </summary>
       <param name="Generator" />
     </member>
-    <member name="M:Flame.Compiler.Variables.LateBoundVariable.CreateGetExpression">
+    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.CreateGetExpression">
       <summary>
  Creates an expression that returns this variable's value.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.LateBoundVariable.CreateSetStatement(Flame.Compiler.IExpression)">
+    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.CreateSetStatement(Flame.Compiler.IExpression)">
       <summary>
  Creates a statement that assigns the given value to this variable.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.LateBoundVariable.CreateAddressOfExpression">
+    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.CreateAddressOfExpression">
       <summary>
  Creates an expression that returns the address in memory of this variable.
  </summary>
       <returns />
     </member>
-    <member name="M:Flame.Compiler.Variables.LateBoundVariable.CreateReleaseStatement">
+    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.CreateReleaseStatement">
       <summary>
  Creates a release statement for this variable. Release statements
  flag this variable for re-use within the scope of the current method.
@@ -6207,18 +7614,12 @@
  prerogative.
  </summary>
     </member>
-    <member name="M:Flame.Compiler.Variables.ManuallyBoundVariable.BindVariable(Flame.Compiler.Emit.IMethodStructureGenerator)">
-      <summary>
- Assigns a real variable to this late-bound variable.
- </summary>
-      <param name="Generator" />
-    </member>
     <member name="T:Flame.Compiler.Variables.LocalVariable">
       <summary>
  A type for local variables.
  </summary>
       <remarks>
- This type is intended to someday replace LateBoundVariable.
+ This type of variable replaces LateBoundVariable.
  </remarks>
     </member>
     <member name="M:Flame.Compiler.Variables.LocalVariable.#ctor(Flame.Compiler.IVariableMember,Flame.Compiler.UniqueTag)">
@@ -6623,6 +8024,117 @@
  prerogative.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Variables.SSAVariable">
+      <summary>
+ Defines a class for local variables that are in single-static-assignment
+ (SSA) form. The main property of these variables is that they are
+ assigned to exactly once.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.#ctor(Flame.Compiler.IVariableMember,Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates an SSA local variable from the given variable member and
+ unique tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.#ctor(Flame.Compiler.IVariableMember)">
+      <summary>
+ Creates an SSA local variable from the given variable member.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.#ctor(Flame.IType)">
+      <summary>
+ Creates an SSA local variable from the given type.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.#ctor(System.String,Flame.IType)">
+      <summary>
+ Creates an SSA local variable from the given name and type.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.GetEmitVariable(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Gets the emit variable for this SSA local variable, in
+ the given code generator.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.ConvertType(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts this local variable's type by applying the given
+ member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.CreateGetExpression">
+      <summary>
+ Creates an expression that returns this variable's value.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.CreateSetStatement(Flame.Compiler.IExpression)">
+      <summary>
+ Creates a statement that assigns the given value to this variable.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAVariable.CreateReleaseStatement">
+      <summary>
+ Creates a release statement for this variable. Release statements
+ flag this variable for re-use within the scope of the current method.
+ The actual re-use of the variable is the variable and the code generator's
+ prerogative.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Variables.SSAVariable.Type">
+      <summary>
+ Gets this SSA local variable's type.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Variables.SSAVariable.Tag">
+      <summary>
+ Gets this SSA local variable's unique tag.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Variables.SSAVariable.Member">
+      <summary>
+ Gets this SSA local variable's associated variable member.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAGetExpression.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAGetExpression.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSAGetExpression.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSADefineStatement.Accept(Flame.Compiler.INodeVisitor)">
+      <summary>
+ Accepts a node visitor.
+ This method is applies the visitor to this node's children and
+ returns a new node with the same structure as this node, but with
+ the updated children.
+ If this node has no children, this node is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSADefineStatement.ConvertMembers(Flame.Compiler.MemberConverter)">
+      <summary>
+ Converts the node's members with the given member converter.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.SSADefineStatement.Emit(Flame.Compiler.ICodeGenerator)">
+      <summary>
+ Creates a code block that captures this code node.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.Variables.ConstantVariable">
       <summary>
  Describes a variable that has a constant value which may be evaluated at compile time by get expressions.
@@ -6695,6 +8207,18 @@
  flag this variable for re-use within the scope of the current method.
  The actual re-use of the variable is the variable and the code generator's
  prerogative.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Variables.VariableHelpers">
+      <summary>
+ Exposes a number of variable-related helper methods.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Variables.VariableHelpers.CreateParallelSetStatement(System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.IVariable,Flame.Compiler.IVariable},System.Collections.Generic.Dictionary`2{Flame.IType,Flame.Compiler.IVariable})">
+      <summary>
+ Creates a statement that performs a parallel assignment, as specified
+ by the given destination variable-source variable map. A mutable
+ dictionary of temporaries by type is also given.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Variables.ThisVariable.Static_Singleton.GetThisType(Flame.IType)">
@@ -6831,6 +8355,95 @@
     <member name="M:Flame.Compiler.Visitors.FunctionPredicateVisitor.Satisfies(Flame.Compiler.INode)">
       <summary>
  Finds out whether the given node satisfies the predicate.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.ConstructFlowGraphPass">
+      <summary>
+ A statement pass that converts tree-based IR nodes into a CFG-based
+ representation.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.ConstructFlowGraphPass.Apply(Flame.Compiler.IStatement)">
+      <summary>
+ Applies this pass to the given value.
+ </summary>
+    </member>
+    <member name="F:Flame.Compiler.Visitors.ConstructFlowGraphPass.ConstructFlowGraphPassName">
+      <summary>
+ The pass name for the control-flow graph construction pass.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.FlowGraphVisitorBase">
+      <summary>
+ A base class for flow graph visitors.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.FlowGraphVisitorBase.Visit(Flame.Compiler.Flow.FlowGraph)">
+      <summary>
+ Visits the given flow graph.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.BlockBuildingVisitor">
+      <summary>
+ A visitor class that converts control-flow statements and expressions
+ into basic blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.#ctor(Flame.Compiler.Flow.BlockBuilder)">
+      <summary>
+ Creates a basic block constructing visitor from the given block
+ builder.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.#ctor">
+      <summary>
+ Creates a basic block constructing visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.Spill">
+      <summary>
+ "Spills" all unspilled statements and expressions into the current
+ basic block.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateCurrentBlock(Flame.Compiler.IStatement)">
+      <summary>
+ Creates the current block from the given statement.
+ This statement may contain control-flow nodes: they will
+ be lowered to basic blocks. The created block will jump
+ to the next block when it is done.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateCurrentBlock(Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates the current block from the given statement and final flow.
+ This statement may contain control-flow nodes: they will
+ be lowered to basic blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateBlock(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a block with the given tag, body and block flow.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateBlock(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement,Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates a block with the given tag, body and destination tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateBlock(System.String,Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a block with the given name, body and block flow.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateBlock(System.String,Flame.Compiler.IStatement,Flame.Compiler.UniqueTag)">
+      <summary>
+ Creates a block with the given name, body and destination tag.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.BlockBuildingVisitor.Builder">
+      <summary>
+ Gets this visitor's basic block builder.
  </summary>
     </member>
     <member name="T:Flame.Compiler.Visitors.IBodyPassEnvironment">
@@ -7075,6 +8688,11 @@
  times.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Visitors.DeadCodeVisitor.SimplifyStatement(Flame.Compiler.IStatement)">
+      <summary>
+ Tries to simplify the given statement.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Visitors.DeadCodeVisitor.VisitBody(Flame.Compiler.IExpression,Flame.IMethod)">
       <summary>
  Visits the given expression, which logically belongs to the given method.
@@ -7088,7 +8706,7 @@
     <member name="P:Flame.Compiler.Visitors.DeadCodeVisitor.TerminatedFlow">
       <summary>
  Gets a flow delta that represents flow termination:
- sequential flow that succeeds it will never be executed.
+ sequential flow that trails it will never be executed.
  </summary>
     </member>
     <member name="T:Flame.Compiler.Visitors.EmptyPass`1">
@@ -7202,6 +8820,89 @@
  and expressions.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Visitors.LowerContractPass">
+      <summary>
+ A method body pass that lowers contract statements into assertions.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.LowerContractPass.Apply(Flame.Compiler.Visitors.BodyPassArgument)">
+      <summary>
+ Applies this pass to the given value.
+ </summary>
+    </member>
+    <member name="F:Flame.Compiler.Visitors.LowerContractPass.LowerContractPassName">
+      <summary>
+ Stores the lower contract pass' name.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.LowerContractVisitor">
+      <summary>
+ A node visitor that lowers contract statements into assertions.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.LowerContractVisitor.LowerContractStatement(Flame.Compiler.Statements.ContractBodyStatement)">
+      <summary>
+ Lowers the given contract statement.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.PostconditionInsertingVisitor">
+      <summary>
+ A statement visitor that inserts postcondition checks whenever
+ a value is returned.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.PostconditionInsertingVisitor.#ctor(System.Collections.Generic.IEnumerable`1{Flame.Compiler.IExpression})">
+      <summary>
+ Creates a new postcondition inserting visitor from the given
+ sequence of postconditions.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.PostconditionInsertingVisitor.Postconditions">
+      <summary>
+ Gets a sequence of postconditions to insert.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.ReturnValueRewritingVisitor">
+      <summary>
+ Defines a return value access rewriting visitor that replaces
+ return value access expressions with get-expressions from the given
+ variables.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.ReturnValueRewritingVisitor.#ctor(Flame.Compiler.IVariable)">
+      <summary>
+ Creates a return value access rewriting visitor that replaces
+ return value access expressions with get-expressions from the given
+ variables.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.ReturnValueRewritingVisitor.ReturnValueVariable">
+      <summary>
+ Gets the return value variable that is used to replace return value
+ access expressions with.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.LowerLambdaPass">
+      <summary>
+ Lowers `LambdaExpression`s to closure classes.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.LowerLambdaPass.Apply(Flame.Compiler.Visitors.BodyPassArgument)">
+      <summary>
+ Applies this pass to the given value.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.SubstituteLambdaDependentExprClosure.ThisDelegate">
+      <summary>
+ Gets an expression that creates a delegate for this
+ lambda function.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.SubstituteLambdaDependentExprClosure.CapturedValues">
+      <summary>
+ Gets the captured value list.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.Visitors.LowerYieldPassBase">
       <summary>
  A pass that reduces methods with yield return/yield break statements to
@@ -7234,27 +8935,6 @@
  Finds out whether the given node satisfies the predicate.
  </summary>
     </member>
-    <member name="T:Flame.Compiler.Visitors.LowerLambdaPass">
-      <summary>
- Lowers `LambdaExpression`s to closure classes.
- </summary>
-    </member>
-    <member name="M:Flame.Compiler.Visitors.LowerLambdaPass.Apply(Flame.Compiler.Visitors.BodyPassArgument)">
-      <summary>
- Applies this pass to the given value.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Visitors.SubstituteLambdaDependentExprClosure.ThisDelegate">
-      <summary>
- Gets an expression that creates a delegate for this
- lambda function.
- </summary>
-    </member>
-    <member name="P:Flame.Compiler.Visitors.SubstituteLambdaDependentExprClosure.CapturedValues">
-      <summary>
- Gets the captured value list.
- </summary>
-    </member>
     <member name="M:Flame.Compiler.Visitors.MemberNodeVisitor.VisitBody(Flame.Compiler.IExpression,Flame.IMethod)">
       <summary>
  Visits the given expression, which logically belongs to the given method.
@@ -7263,6 +8943,84 @@
     <member name="M:Flame.Compiler.Visitors.MemberNodeVisitor.VisitBody(Flame.Compiler.IStatement,Flame.IMethod)">
       <summary>
  Visits the given statement, which logically belongs to the given method.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.MemberSignaturePassArgument`1">
+      <summary>
+ Defines a data structure that holds information
+ pertaining to member signature passes.
+ </summary>
+      <typeparam name="T" />
+    </member>
+    <member name="M:Flame.Compiler.Visitors.MemberSignaturePassArgument`1.#ctor(T,Flame.Compiler.Visitors.IBodyPassEnvironment)">
+      <summary>
+ Creates a new member signature pass argument
+ from the given member and pass environment.
+ </summary>
+      <param name="PassEnvironment" />
+    </member>
+    <member name="P:Flame.Compiler.Visitors.MemberSignaturePassArgument`1.Log">
+      <summary>
+ Gets the compiler log.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.MemberSignaturePassArgument`1.Environment">
+      <summary>
+ Gets the environment.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.MemberSignaturePassArgument`1.Member">
+      <summary>
+ Gets the member signature this pass is
+ being applied to.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.MemberSignaturePassArgument`1.PassEnvironment">
+      <summary>
+ Gets the pass environment for this pass.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.MemberSignaturePassResult">
+      <summary>
+ Gets the result of a member signature pass.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.MemberSignaturePassResult.#ctor">
+      <summary>
+ Creates a member signature pass result with a null name
+ and no additional attributes.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.MemberSignaturePassResult.#ctor(System.String)">
+      <summary>
+ Creates a member signature pass result from the given
+ name.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.MemberSignaturePassResult.#ctor(System.String,System.Collections.Generic.IEnumerable`1{Flame.IAttribute})">
+      <summary>
+ Creates a member signature pass result from the given
+ name and additional attributes.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.MemberSignaturePassResult.Combine(Flame.Compiler.Visitors.MemberSignaturePassResult)">
+      <summary>
+ Combines the given member signature pass result with this one.
+ The other's name is preferred over this instance's name.
+ </summary>
+      <param name="Other" />
+      <returns />
+    </member>
+    <member name="P:Flame.Compiler.Visitors.MemberSignaturePassResult.Name">
+      <summary>
+ Gets the member's (new) name, if any.
+ Otherwise, null.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Visitors.MemberSignaturePassResult.AdditionalAttributes">
+      <summary>
+ Gets a sequence of additional attributes that have
+ been inferred.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Visitors.NodeVisitorBase.Visit(Flame.Compiler.IExpression)">
@@ -7324,6 +9082,28 @@
       <summary>
  Defines a base class for node visitors that care only about statements.
  Expressions are ignored.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.StripAssertPass">
+      <summary>
+ A pass that removes all assertions, as well as any
+ precondition and postcondition checks from a method's body.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.StripAssertPass.Apply(Flame.Compiler.Visitors.BodyPassArgument)">
+      <summary>
+ Applies this pass to the given value.
+ </summary>
+    </member>
+    <member name="F:Flame.Compiler.Visitors.StripAssertPass.StripAssertPassName">
+      <summary>
+ Stores the assertion-stripping pass' name.
+ </summary>
+    </member>
+    <member name="T:Flame.Compiler.Visitors.StripAssertVisitor">
+      <summary>
+ A node visitor that removes all assertions, as well as any
+ precondition and postcondition checks.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Visitors.VariableCapturingVisitor.SubstituteVariableRecursivelyOrNull(Flame.Compiler.IVariable)">
