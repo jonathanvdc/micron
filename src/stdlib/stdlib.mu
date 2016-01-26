@@ -84,7 +84,7 @@ let return value = returnIO value
 let fail errorMessage = failIO errorMessage
 
 // Monadic map
-let mapIO m f =
+let mapIO f m =
     let binder x = return (f x) in
     m >>= binder
 
