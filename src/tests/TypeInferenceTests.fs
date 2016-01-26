@@ -101,7 +101,7 @@ type TypeInferenceTests () =
         // is well-typed
 
         let idunnoty = UnknownType()
-        let local = LateBoundVariable(idunnoty)
+        let local = LocalVariable(idunnoty)
         let stmt = local.CreateSetStatement(local.CreateGetExpression())
         let expr = InitializedExpression(stmt, VoidExpression.Instance)
         let constraints = TypeInference.findConstraints [] expr
