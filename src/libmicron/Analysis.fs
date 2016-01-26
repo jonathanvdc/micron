@@ -346,6 +346,11 @@ module Analysis =
         | _ ->
             ()
         let newFunctions = Map.add name func defined.functions
+
+        if log.Options.GetOption<bool>("print-types", false) then
+            let ty = NameHelpers.nameType (MethodType.Create(func))
+            log.LogMessage(LogEntry(sprintf "%s :: %s" func.Name ty))
+
         { defined with functions = newFunctions }
 
     /// A warning for badly formatted mangled names.
