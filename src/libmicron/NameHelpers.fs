@@ -38,6 +38,7 @@ module NameHelpers =
                 match ty with
                 | :? GenericType as ty ->
                     GenericNameExtensions.ChangeTypeArguments(nameType (ty.Declaration), (ty.GenericArguments |> Seq.map nameType))
+                | _ when ty.GetIsGenericParameter() -> ty.Name
                 | _ -> ty.FullName
             | signature -> nameFunction signature.ReturnType (signature.Parameters.GetTypes() |> List.ofSeq)
 
