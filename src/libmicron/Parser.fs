@@ -256,15 +256,13 @@ module Parser =
             | items, suf -> 
                 // Look for the "topmost" operator in the tree, i.e. the one with the lowest precedence.
                 let _, minPrec = List.minBy (fun (_, op) -> precedence (prec op.contents)) items
-                let exprComp  (expr, op) = if op.contents = minPrec.contents then Some expr else None
-                let lTree, rTree = 
+                let exprComp (expr, op) = if op.contents = minPrec.contents then Some expr else None
+                let splitter =
                     match prec minPrec.contents with
-                    | InfixLeft _ -> 
-                        let ls, mid, rs = Option.get (ListHelpers.splitAtFirst exprComp items)
-                        subReassociate (ls, mid), subReassociate (rs, suf)
-                    | InfixRight _ ->
-                        let ls, mid, rs = Option.get (ListHelpers.splitAtLast exprComp items)
-                        subReassociate (ls, mid), subReassociate (rs, suf)
+                    | InfixLeft _  -> ListHelpers.splitAtLast   // ((a + b) + c) {+} d
+                    | InfixRight _ -> ListHelpers.splitAtFirst  // a {+} (b + (c + d))
+                let ls, mid, rs = Option.get (splitter exprComp items)
+                let lTree, rTree = subReassociate (ls, mid), subReassociate (rs, suf)
 
                 ProductionNode("operator", [lTree; TerminalLeaf minPrec; rTree])
 
