@@ -7,6 +7,6 @@ let echo u =
     readLine >>= writeLine
              >>= echo
 
-// Main function just kicks the 'echo'
+// Main function just brings the 'echo'
 // function into action.
 let main = echo unit
