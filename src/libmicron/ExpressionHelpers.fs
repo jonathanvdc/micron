@@ -206,8 +206,8 @@ module ExpressionHelpers =
             match expr with
             | :? PartialApplication as expr ->
                 let parameters = expr.TargetSignature.Parameters.GetTypes() 
+                                    |> Seq.take (List.length expr.Arguments)
                                     |> List.ofSeq
-                                    |> List.take (List.length expr.Arguments)
                 let recurriedArgs = List.zip parameters expr.Arguments
                                     |> List.map ((<||) recurryType)
                 PartialApplication(expr.Target, recurriedArgs) :> IExpression
