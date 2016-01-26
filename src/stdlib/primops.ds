@@ -83,6 +83,18 @@ public module primops
         return l + r;
     }
 
+    // String emptiness test
+    public bool stringIsEmpty(string s)
+    {
+        return string.IsNullOrEmpty(s);
+    }
+
+    // Trims whitespace around the given string
+    public string stringTrim(string s)
+    {
+        return s.Trim(null);
+    }
+
     // Conversion functions
     public string conv_i4_s(int Value)
     {
