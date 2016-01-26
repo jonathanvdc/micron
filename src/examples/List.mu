@@ -13,4 +13,4 @@ let writeSortedList l =
 // Reads a line from stdin, parse it as a list of integers,
 // and write its sorted counterpart to stdout.
 let main =
-    (mapIO readLine parseList) >>= writeSortedList
+    mapIO parseList readLine >>= writeSortedList
