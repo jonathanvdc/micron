@@ -173,6 +173,11 @@ let range a b =
 let maximum l = foldr max (head l) (tail l)
 let minimum l = foldr min (head l) (tail l)
 
+// Return if a condition holds for all/any/none of the elements in a list.
+let all p l = let f acc x = acc && p x in foldl f true l
+let any p l = let f acc x = acc || p x in foldl f false l
+let none p l = let notp x = not (p x) in all notp l
+
 // Take the first n elements from a list.
 let take n l =
   if (n <= 0 || isNil l)
