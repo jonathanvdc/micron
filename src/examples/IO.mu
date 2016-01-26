@@ -1,10 +1,5 @@
 open stdlib
-
-/// Computes the nth fibonacci number.
-let fib n =
-    if n == 0 || n == 1
-        then 1
-        else fib (n - 1) + fib (n - 2)
+open fib
 
 let main =
     let binder line =
@@ -15,4 +10,4 @@ let main =
         let msg = showInt (fib num) in
         // Print that string.
         composeIO (writeLine "The fibonacci number you asked for is:") (writeLine msg) in
-    composeIO (writeLine "Hello, world!") (readLine >>= binder)
+    composeIO (writeLine "Which fibonacci number would you like to compute?") (readLine >>= binder)
