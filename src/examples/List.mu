@@ -1,7 +1,16 @@
 open stdlib
 
+// Parses the given string as a list of integers.
+let parseList line =
+    map parseInt (splitString line nil)
+
+// Sorts the given list, converts it to a string, and prints it.
+let writeSortedList l =
+    l |> sort (<=)
+      |> showIntList 
+      |> writeLine
+
+// Reads a line from stdin, parse it as a list of integers,
+// and write its sorted counterpart to stdout.
 let main =
-  let nums = range 1 10 in
-  writeLine (showIntList (map square nums));
-  writeLine (showInt <| sum nums);
-  writeLine (showIntList <| sort (<=) <| 1::7::4::5::2::9::3::6::8::nil)
+    (mapIO readLine parseList) >>= writeSortedList
