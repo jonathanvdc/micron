@@ -55,7 +55,7 @@ let max x y = if x > y then x else y
 let min x y = if x < y then x else y
 
 // String concatenation
-let infixl(5) l ++ r = sconcat l r
+let infixl(5) l ~ r = sconcat l r
 
 // Boolean constants
 // Note: these have to stay here, because
@@ -120,8 +120,8 @@ let showListWith show l =
   let helper comma l =
     if isNil l
       then "]"
-      else (if comma then ", " else "") ++ show (head l) ++ helper true (tail l)
-  in "[" ++ helper false l
+      else (if comma then ", " else "") ~ show (head l) ~ helper true (tail l)
+  in "[" ~ helper false l
 
 // Show a list of integers.
 let showIntList l = showListWith showInt l
@@ -158,7 +158,7 @@ let length l =
   in foldr g 0 l
 
 // List concatenation.
-let infixl(7) x :+ y = foldr (::) y x
+let infixl(7) x ++ y = foldr (::) y x
 
 // Create a list of n copies of some element.
 let repeat n a =
@@ -172,11 +172,6 @@ let range a b =
 // These functions assume the list is non-empty!
 let maximum l = foldr max (head l) (tail l)
 let minimum l = foldr min (head l) (tail l)
-
-// Return if a condition holds for all/any/none of the elements in a list.
-let all p l = let f acc x = acc && p x in foldl f true l
-let any p l = let f acc x = acc || p x in foldl f false l
-let none p l = let notp x = not (p x) in all notp l
 
 // Take the first n elements from a list.
 let take n l =
@@ -197,4 +192,4 @@ let sort leq xs =
        let t = tail xs in
        let isLesser x = leq x h in
        let isGreater x = not (leq x h) in
-       sort leq (filter isLesser t) :+ (h :: sort leq (filter isGreater t))
+       sort leq (filter isLesser t) ++ (h :: sort leq (filter isGreater t))
