@@ -8,8 +8,8 @@ let showIntList xs =
   in "[" ++ helper false xs
 
 let map f xs =
-  if isNil xs then nil else f (head xs) :- map f (tail xs)
+  if isNil xs then nil else f (head xs) :: map f (tail xs)
 
 let square x = x * x
 
-let main = writeLine (showIntList (map square (1 :- 2 :- 3 :- nil)))
+let main = writeLine (showIntList (map square (1 :: 2 :: 3 :: nil)))

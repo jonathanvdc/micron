@@ -94,7 +94,7 @@ let unit = getUnit
 ///////////////////////////////////////
 // List functions
 
-let infixr(1) x :- y = l_cons x y
+let infixr(1) x :: y = l_cons x y
 let isNil = l_isNil
 let head = l_head
 let tail = l_tail
