@@ -462,6 +462,9 @@ module Analysis =
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
                 match analyzeLetDefinition defined scope name.contents name parameterTokens value srcLoc moduleType with
                 | Success result ->
+                    // Log errors/warnings in the method body first.
+                    result.Body <- LogPass.Apply result.Body scope.Log
+                    // Then proceed to add the method to the module.
                     moduleType.AddMethod result
                     defined <- addMethod scope.Log result.Name result defined
                 | Error msg ->
@@ -482,6 +485,9 @@ module Analysis =
                 let mangledName = NameHelpers.mangleOperatorName name.contents fixitySpec
                 match analyzeLetDefinition defined scope mangledName name parameterTokens value srcLoc moduleType with
                 | Success result ->
+                    // Log errors/warnings in the method body first.
+                    result.Body <- LogPass.Apply result.Body scope.Log
+                    // Then proceed to add the method to the module.
                     moduleType.AddMethod result
                     defined <- addMethod scope.Log name.contents result defined
                     // Update precedence map as well

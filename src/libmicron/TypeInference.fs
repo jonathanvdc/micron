@@ -40,29 +40,34 @@ module TypeInference =
     | Instance(genType, args) ->
         Instance (substitute ty constr genType, args |> List.map (substitute ty constr))
 
+    /// An active pattern for types. It tries to decompose
+    /// the given type into either a method type, a generic
+    /// instance type, an unknown (variable) type or a simple
+    /// (constant) type.
+    let (|MethodTy|GenericTy|UnknownTy|SimpleTy|) (ty : IType) =
+        match MethodType.GetMethod ty with
+        | null ->
+            match ty with
+            | :? UnknownType as ty -> UnknownTy ty
+            | :? GenericType as ty -> GenericTy ty
+            | _ -> SimpleTy ty
+        | m ->
+            MethodTy m
+
     /// Checks if the given type is or contains
     /// an unknown type.
     let rec containsUnknown : IType -> bool = function
-    | :? UnknownType -> true
-    | :? GenericType as ty ->
-        containsUnknown ty.Declaration || Seq.exists containsUnknown ty.GenericArguments
-    | ty ->
-        match MethodType.GetMethod ty with
-        | null -> false
-        | m -> containsUnknown m.ReturnType || Seq.exists containsUnknown (m.Parameters.GetTypes() |> List.ofSeq)
+    | UnknownTy _ -> true
+    | GenericTy ty -> containsUnknown ty.Declaration || Seq.exists containsUnknown ty.GenericArguments
+    | MethodTy m -> containsUnknown m.ReturnType || Seq.exists containsUnknown (m.Parameters.GetTypes() |> List.ofSeq)
+    | SimpleTy _ -> false
 
     /// Converts the given type to a type constraint.
     let rec toConstraint : IType -> TypeConstraint = function
-    | :? GenericType as ty ->
-        Instance(toConstraint ty.Declaration, ty.GenericArguments |> Seq.map toConstraint |> List.ofSeq)
-    | :? UnknownType as ty ->
-        Variable ty
-    | ty ->
-        match MethodType.GetMethod ty with
-        | null ->
-            Constant ty
-        | m ->
-            toFunctionConstraint m.ReturnType (m.Parameters.GetTypes() |> List.ofSeq)
+    | MethodTy m -> toFunctionConstraint m.ReturnType (m.Parameters.GetTypes() |> List.ofSeq)
+    | UnknownTy ty -> Variable ty
+    | GenericTy ty -> Instance(toConstraint ty.Declaration, ty.GenericArguments |> Seq.map toConstraint |> List.ofSeq)
+    | SimpleTy ty -> Constant ty
     /// Creates a function constraint from the given return type
     /// and parameter type list.
     and toFunctionConstraint retType = function

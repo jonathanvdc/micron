@@ -61,19 +61,12 @@ type MicronProjectHandler() =
                     // but we'll enable it at -O1 or above, because this optimization
                     // is essential for functional programming languages.
                     PassCondition(TailRecursionPass.TailRecursionPassName, fun optInfo -> optInfo.OptimizeMinimal)
-                    // Run -fcheck-nodes no matter what
-                    PassCondition("check-nodes", fun _ -> true)
                     // Run -fdead-code-elimination at -O1 or above, or if -g is enabled.
                     PassCondition(PassExtensions.EliminateDeadCodePassName, fun optInfo -> optInfo.OptimizeMinimal || optInfo.OptimizeDebug)
                     // Run -finfinite-recursion if it is useful (i.e. the warning it is associated with is active) 
                     PassCondition(InfiniteRecursionPass.InfiniteRecursionPassName, fun optInfo -> InfiniteRecursionPass.IsUseful(optInfo.Log))
                     ],
                 seq [
-                    // A pass that logs errors/warnings in method bodies.
-                    PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(
-                        LogPass(),
-                        "check-nodes")
-
                     // A pass that removes dead code, and logs a warning
                     // when it finds unreachable source code.
                     PassInfo<IStatement * IMethod * ICompilerLog, IStatement>(

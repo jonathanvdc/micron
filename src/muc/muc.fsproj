@@ -1,11 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>b77e014d-010f-410b-b982-4e456fe00541</ProjectGuid>
+    <ProjectGuid>{B77E014D-010F-410B-B982-4E456FE00541}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>muc</RootNamespace>
     <AssemblyName>muc</AssemblyName>
@@ -25,6 +24,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Debug\muc.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <Commandlineparameters>Test.mu -platform clr</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -36,6 +36,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>bin\Release\muc.XML</DocumentationFile>
     <Prefer32Bit>true</Prefer32Bit>
+    <Commandlineparameters>stdlib.mu primops.flo -platform ir -indirect-platform clr</Commandlineparameters>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Flame">
@@ -103,7 +104,6 @@
     </Reference>
     <Reference Include="FSharp.Data">
       <HintPath>..\packages\FSharp.Data.2.2.5\lib\net40\FSharp.Data.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="libcontextfree">
       <HintPath>..\..\libs\libcontextfree\libcontextfree.dll</HintPath>
@@ -133,9 +133,6 @@
       <HintPath>..\..\libs\Flame\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Pixie">
       <HintPath>..\..\libs\Flame\Pixie.dll</HintPath>
     </Reference>
@@ -146,9 +143,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="FSharp.Core">
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LogPass.fs" />
     <Compile Include="MicronProjectHandler.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
@@ -157,8 +156,7 @@
   <ItemGroup>
     <ProjectReference Include="..\libmicron\libmicron.fsproj">
       <Name>libmicron</Name>
-      <Project>{e80ae7c3-d8b2-4b45-8178-170ba6d390a0}</Project>
-      <Private>True</Private>
+      <Project>{E80AE7C3-D8B2-4B45-8178-170BA6D390A0}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
