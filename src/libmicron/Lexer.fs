@@ -87,7 +87,6 @@ module Lexer =
                        // the identifier lexer takes care of that 
                        // (it's a precedence thing)
                        ",", TokenType.Comma
-                       ";", TokenType.Semicolon
                        ":", TokenType.Colon
                        "(", TokenType.LParen
                        ")", TokenType.RParen
@@ -270,7 +269,7 @@ module Lexer =
     /// A set of operator characters.
     let operatorCharacters = set ['!'; '='; '&'; '|'; '*'; '+'; '-'; '/'; 
                                   '%'; '@'; '^'; '<'; '>'; ':'; '~'; '?'; 
-                                  '.'; '$'; '\\']
+                                  '.'; '$'; '\\'; ';']
 
     /// Tries to read an operator token
     let tryReadOperatorToken (stream : SourceStream) : (Token * SourceStream) option =
