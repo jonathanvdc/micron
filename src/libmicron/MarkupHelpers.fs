@@ -18,20 +18,23 @@ module MarkupHelpers =
 
     /// Creates a node that references something, which is quoted and highlighted.
     /// A suffix and prefix may be provided.
-    let reference (prefix : string) (target : string) (suffix : string) : IMarkupNode =
-        let ref = sprintf "'%s'" target
-        match String.IsNullOrEmpty(prefix), String.IsNullOrEmpty(suffix) with
-        | true, true -> ref |> text |> highlight
-        | true, false -> group [text prefix; ref |> text |> highlight]
-        | false, true -> group [ref |> text |> highlight; text suffix]
-        | false, false -> group [text prefix; ref |> text |> highlight; text suffix]
+    let refer (prefix : string) (target : string) (suffix : string) : IMarkupNode =
+        group [text (prefix + "'"); target |> text |> highlight; text ("'" + suffix)]
 
     /// Creates a node that references something, which is quoted and highlighted.
     /// A prefix may be provided.
-    let referencePrefix (prefix : string) (target : string) : IMarkupNode =
-        reference prefix target ""
+    let referPrefix (prefix : string) (target : string) : IMarkupNode =
+        refer prefix target ""
 
     /// Creates a node that references something, which is quoted and highlighted.
     /// A suffix may be provided.
-    let referenceSuffix (target : string) (suffix : string) : IMarkupNode =
-        reference "" target suffix
+    let referSuffix (target : string) (suffix : string) : IMarkupNode =
+        refer "" target suffix
+
+    /// Creates a node that references two things.
+    let refer2 (prefix : string) (target1 : string) (infix : string) (target2 : string) (suffix : string) : IMarkupNode =
+        group [text (prefix + "'"); 
+               target1 |> text |> highlight; 
+               text ("'" + infix + "'"); 
+               target2 |> text |> highlight; 
+               text ("'" + suffix)]
