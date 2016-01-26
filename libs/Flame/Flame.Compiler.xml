@@ -5902,6 +5902,29 @@
  and expressions.
  </summary>
     </member>
+    <member name="T:Flame.Compiler.Flow.BlockRenamingVisitor">
+      <summary>
+ A basic block visitor that renames basic blocks by consulting a unique tag
+ dictionary.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockRenamingVisitor.#ctor(System.Collections.Generic.IReadOnlyDictionary`2{Flame.Compiler.UniqueTag,Flame.Compiler.UniqueTag})">
+      <summary>
+ Creates a block renaming visitor from the given renaming
+ dictionary.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Flow.BlockRenamingVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
+ </summary>
+    </member>
+    <member name="P:Flame.Compiler.Flow.BlockRenamingVisitor.Renamed">
+      <summary>
+ Gets a dictionary that maps original tags to their renamed
+ versions.
+ </summary>
+    </member>
     <member name="T:Flame.Compiler.Flow.JumpFlow">
       <summary>
  A type of basic block control flow node that unconditionally
@@ -6522,6 +6545,22 @@
     <member name="M:Flame.Compiler.Statements.FlowGraphStatement.#ctor(Flame.Compiler.Flow.FlowGraph)">
       <summary>
  Creates a statement that wraps the given control flow graph.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowGraphStatement.ToBlocks(Flame.Compiler.Visitors.BlockBuildingVisitor)">
+      <summary>
+ Creates a number of basic blocks that are semantically equivalent
+ to this flow statement.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowGraphStatement.AcceptFlow``2(Flame.Compiler.IFlowVisitor`2{TState,TFlow})">
+      <summary>
+ Accepts and interacts with a flow visitor.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Statements.FlowGraphStatement.Copy">
+      <summary>
+ Copies this flow graph statement.
  </summary>
     </member>
     <member name="M:Flame.Compiler.Statements.FlowGraphStatement.Accept(Flame.Compiler.INodeVisitor)">
@@ -8421,6 +8460,18 @@
  be lowered to basic blocks.
  </summary>
     </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateCurrentBlock(System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable},Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates the current block from the given statement and final flow.
+ This statement may contain control-flow nodes: they will
+ be lowered to basic blocks.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateBlock(Flame.Compiler.UniqueTag,System.Collections.Generic.IReadOnlyList`1{Flame.Compiler.Variables.SSAVariable},Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
+      <summary>
+ Creates a block with the given tag, parameter list, body and block flow.
+ </summary>
+    </member>
     <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateBlock(Flame.Compiler.UniqueTag,Flame.Compiler.IStatement,Flame.Compiler.Flow.BlockFlow)">
       <summary>
  Creates a block with the given tag, body and block flow.
@@ -8439,6 +8490,17 @@
     <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.CreateBlock(System.String,Flame.Compiler.IStatement,Flame.Compiler.UniqueTag)">
       <summary>
  Creates a block with the given name, body and destination tag.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.VisitParameter(Flame.Compiler.Variables.SSAVariable)">
+      <summary>
+ Visits the given SSA local variable, which will always be
+ a parameter definition.
+ </summary>
+    </member>
+    <member name="M:Flame.Compiler.Visitors.BlockBuildingVisitor.Visit(Flame.Compiler.Flow.BlockBranch)">
+      <summary>
+ Visits the given block branch instruction.
  </summary>
     </member>
     <member name="P:Flame.Compiler.Visitors.BlockBuildingVisitor.Builder">

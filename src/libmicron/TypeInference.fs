@@ -158,9 +158,10 @@ module TypeInference =
                     // Unifying these types would result in an infinite type.
                     // I suppose that is somewhat undesirable.
                     Error(LogEntry("Type error",
-                                   "Could not unify '" + show (Variable tVar) +
-                                   "' and '" + show other +
-                                   "' because the resulting type would be infinite.",
+                                   MarkupHelpers.refer2 
+                                       "Could not unify " (show (Variable tVar))
+                                       " and " (show other)
+                                       " because the resulting type would be infinite.",
                                    srcLoc))
                 | Variable tVar, other
                 | other, Variable tVar ->
@@ -185,8 +186,9 @@ module TypeInference =
                 | t1, t2 ->
                     // Incompatible constant types mean trouble.
                     Error(LogEntry("Type error",
-                                   "Could not unify incompatible types '" +
-                                   show t1 + "' and '" + show t2 + "'.",
+                                   MarkupHelpers.refer2
+                                       "Could not unify incompatible types "
+                                       (show t1) " and " (show t2) ".",
                                    srcLoc))
             | Error _ ->
                 results

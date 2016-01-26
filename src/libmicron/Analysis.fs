@@ -54,7 +54,7 @@ module Analysis =
 
                 AutoInvokeExpression(GetMethodExpression(func', null)) :> IExpression
             | None ->
-                unknownError (LogEntry("Unresolved " + nameType, sprintf "'%s' could not be resolved." name))
+                unknownError (LogEntry("Unresolved " + nameType, MarkupHelpers.referSuffix name " could not be resolved."))
 
     /// Tries to resolve an identifier.
     let resolveIdentifier = resolveName "identifier"
@@ -77,7 +77,7 @@ module Analysis =
         (match System.Int32.TryParse token.contents with
         | (true, i) -> EB.ConstantInt32 i
         | (false, _) -> EB.Error (LogEntry("Invalid integer literal",
-                                           sprintf "'%s' could not be parsed as a valid integer literal." token.contents))
+                                           MarkupHelpers.referSuffix token.contents " could not be parsed as a valid integer literal." ))
                                  (EB.ConstantInt32 0)
         ) |> EB.Source (TokenHelpers.sourceLocation token)
     | ProductionNode(Constant Parser.literalDoubleIdentifier,
@@ -86,7 +86,7 @@ module Analysis =
         (match System.Double.TryParse token.contents with
         | (true, d) -> EB.ConstantFloat64 d
         | (false, _) -> EB.Error (LogEntry("Invalid double literal",
-                                           sprintf "'%s' could not be parsed as a valid double literal." token.contents))
+                                           MarkupHelpers.referSuffix token.contents " could not be parsed as a valid double literal."))
                                  (EB.ConstantFloat64 0.0)
         ) |> EB.Source (TokenHelpers.sourceLocation token)
     | ProductionNode(Constant Parser.literalStringIdentifier,
@@ -200,12 +200,12 @@ module Analysis =
         // Unimplemented node type.
         // This just means that a construct has been defined in the grammar,
         // and that the semantic analysis pass does not support it yet.
-        EB.VoidError (LogEntry("Unimplemented node type", sprintf "'%s' nodes have not been implemented yet." nonterm))
+        EB.VoidError (LogEntry("Unimplemented node type", MarkupHelpers.referSuffix nonterm " nodes have not been implemented yet."))
             |> EB.Source (TokenHelpers.treeSourceLocation node)
     | TerminalLeaf(term) ->
         // Unexpected terminal leaf.
         // This points to an error in the grammar.
-        EB.VoidError (LogEntry("Unexpected raw token", sprintf "Token '%s' was completely unexpected here." term.contents))
+        EB.VoidError (LogEntry("Unexpected raw token", MarkupHelpers.refer "Token " term.contents " was completely unexpected here."))
             |> EB.Source (TokenHelpers.sourceLocation term)
 
     /// Analyzes a let-definition.
@@ -325,7 +325,7 @@ module Analysis =
             // <diagnostic>
             // <remark>
 
-            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "'%s' is defined more than once in the same module. " name) :> IMarkupNode
+            let message = MarkupHelpers.referSuffix name " is defined more than once in the same module. "
             let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
             let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
             log.LogError(LogEntry("Redefinition", seq [message; diagnostics; remark]))
@@ -338,7 +338,7 @@ module Analysis =
             // <diagnostic>
             // <remark>
 
-            let message = MarkupNode(NodeConstants.TextNodeType, sprintf "This definition of '%s' shadows a previous one. " name) :> IMarkupNode
+            let message = MarkupHelpers.refer "This definition of " name " shadows a previous one. "
             let cause = Warnings.Instance.Shadow.CauseNode
             let diagnostics = CompilerLogExtensions.CreateDiagnosticsNode(func.GetSourceLocation())
             let remark = CompilerLogExtensions.CreateRemarkDiagnosticsNode(predef.GetSourceLocation(), "Previous definition: ")
@@ -361,7 +361,7 @@ module Analysis =
             // We couldn't resolve the given module name. That's too bad.
             // Create a log entry to report this.
             scope.Log.LogError(LogEntry("Unresolved module name", 
-                                        sprintf "Could not resolve module '%s'. Did you forget to link it or list it as a library dependency?" moduleName.contents, 
+                                        MarkupHelpers.refer "Could not resolve module " moduleName.contents ". Did you forget to link it or list it as a library dependency?", 
                                         TokenHelpers.sourceLocation moduleName))
             defined
         | _ ->
@@ -380,7 +380,7 @@ module Analysis =
                                              sprintf "Function '%s' in module '%s' looks like an operator, but its name was incorrectly formatted. Skipping it. " item.Name moduleName.contents)
                                 let remark = MarkupNode(NodeConstants.RemarksNodeType, e) :> IMarkupNode
                                 // Found an operator with badly mangled name. Can't do anything with this.
-                                scope.Log.LogWarning(LogEntry("Bad operator name", MarkupNode("#group", [| msg; remark |]), TokenHelpers.sourceLocation moduleName))
+                                scope.Log.LogWarning(LogEntry("Bad operator name", MarkupHelpers.group [| msg; remark |], TokenHelpers.sourceLocation moduleName))
                             defined
                     else
                         // Import this as a function.
@@ -407,7 +407,7 @@ module Analysis =
                 | (true, result) -> result
                 | (false, _) -> 
                     scope.Log.LogError(LogEntry("Invalid precedence specification",
-                                                sprintf "'%s' could not be parsed as a valid integer literal." precDecl.contents,
+                                                MarkupHelpers.referSuffix precDecl.contents " could not be parsed as a valid integer literal.",
                                                 TokenHelpers.sourceLocation precDecl))
                     9
             // Parse the fixity:
@@ -424,7 +424,7 @@ module Analysis =
             | _ ->
                 // Pick infixl if something goes wrong.
                 scope.Log.LogError(LogEntry("Invalid fixity specification",
-                                            sprintf "'%s' was not a valid fixity keyword." infixKeyword.contents,
+                                            MarkupHelpers.referSuffix infixKeyword.contents " was not a valid fixity keyword.",
                                             TokenHelpers.sourceLocation infixKeyword))
                 Parser.InfixLeft precInt
         | _ ->
@@ -506,11 +506,11 @@ module Analysis =
                 // Unimplemented node type.
                 // This just means that a construct has been defined in the grammar,
                 // and that the semantic analysis pass does not support it yet.
-                scope.Log.LogError(LogEntry("Unimplemented node type", sprintf "'%s' nodes have not been implemented yet." nonterm, TokenHelpers.treeSourceLocation node))
+                scope.Log.LogError(LogEntry("Unimplemented node type", MarkupHelpers.referSuffix nonterm " nodes have not been implemented yet.", TokenHelpers.treeSourceLocation node))
             | TerminalLeaf(term) ->
                 // Unexpected terminal leaf.
                 // This points to an error in the grammar.
-                scope.Log.LogError(LogEntry("Unexpected raw token", sprintf "Token '%s' was completely unexpected here." term.contents, term.sourceLocation))
+                scope.Log.LogError(LogEntry("Unexpected raw token", MarkupHelpers.refer "Token " term.contents " was completely unexpected here.", term.sourceLocation))
 
         moduleType :> IType
 
@@ -544,7 +544,7 @@ module Analysis =
             if EB.IsError accessedField then
                 // main function was bad. Log an error message.
                 scope.Log.LogError(LogEntry("Invalid 'main' value", 
-                                            sprintf "'main' should have been an IO monad. Instead, its type was '%s'." (NameHelpers.nameType mainCall.Type), 
+                                            MarkupHelpers.refer "'main' should have been an IO monad. Instead, its type was " (NameHelpers.nameType mainCall.Type) ".", 
                                             mainFunc.GetSourceLocation()))
                 None
             else
