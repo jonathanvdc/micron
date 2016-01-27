@@ -174,6 +174,9 @@ let drop n l =
     then l
     else drop (n-1) (tail l)
 
+// Indexes the list at the given position.
+let infixl(10) l !! i = head (drop i l)
+
 // If leq (≤) is a total order on the elements in the list, sort the list in ascending order.
 let sort leq xs =
   if isNil xs then nil
@@ -194,4 +197,3 @@ let showListWith show l = "[" ~ join ", " (map show l) ~ "]"
 
 // Show a list of integers.
 let showIntList l = showListWith showInt l
-
