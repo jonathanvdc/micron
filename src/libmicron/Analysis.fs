@@ -174,11 +174,11 @@ module Analysis =
     | ProductionNode(Constant Parser.identifierIdentifier,
                      [TerminalLeaf ident]) ->
         // Identifier
-        resolveIdentifier previousDefinitions scope ident 
+        resolveIdentifier previousDefinitions scope ident
             |> EB.Source (TokenHelpers.sourceLocation ident)
     | ProductionNode(Constant Parser.operatorIdentifier, _) as node ->
         // Operator application
-        let prec name = 
+        let prec name =
             match Map.tryFind name previousDefinitions.prec with
             | Some x -> x
             | None -> Parser.InfixLeft 9
@@ -187,14 +187,14 @@ module Analysis =
           when op.tokenType = TokenType.OperatorToken ->
             let leftExpr = analyzeExpression previousDefinitions scope left
             let rightExpr = analyzeExpression previousDefinitions scope right
-            let funcExpr = resolveOperator previousDefinitions scope op 
+            let funcExpr = resolveOperator previousDefinitions scope op
                             |> EB.Source (TokenHelpers.sourceLocation op)
             PartialApplication(funcExpr, [leftExpr; rightExpr])
                 |> EB.Source (TokenHelpers.treeSourceLocation node)
         | _ ->
             EB.VoidError (LogEntry("Something went wrong", "Invalid operator reassociation.", TokenHelpers.treeSourceLocation node))
     | ProductionNode(Constant Parser.parenOperatorIdentifier, [_; TerminalLeaf op; _]) as node ->
-        resolveOperator previousDefinitions scope op 
+        resolveOperator previousDefinitions scope op
          |> EB.Source (TokenHelpers.treeSourceLocation node)
     | ProductionNode(nonterm, _) as node ->
         // Unimplemented node type.
@@ -210,10 +210,10 @@ module Analysis =
 
     /// Analyzes a let-definition.
     let rec analyzeLetDefinition (previousDefinitions : DefinitionMap) (scope : GlobalScope)
-                                 (memberName : string) (name : Token) (parameterNames : Token list) 
-                                 (value : ParseTree<string, Token>) (srcLoc : SourceLocation) 
-                                 (declModule : IType) : Result<DescribedBodyMethod, LogEntry> =  
-                                 
+                                 (memberName : string) (name : Token) (parameterNames : Token list)
+                                 (value : ParseTree<string, Token>) (srcLoc : SourceLocation)
+                                 (declModule : IType) : Result<DescribedBodyMethod, LogEntry> =
+
         /// Sets the given described method's body statement, uncurrying
         /// its signature in the process.
         let setBody (target : DescribedBodyMethod) (body : IStatement) : unit =
@@ -258,7 +258,7 @@ module Analysis =
         let localScope = LocalScope(scope)
         // Register the parameter list as variables.
         let localScope = unknownParams |> List.mapi (fun i p -> i, p)
-                                       |> List.fold (fun (localScope : LocalScope) (i, p) -> 
+                                       |> List.fold (fun (localScope : LocalScope) (i, p) ->
                                            localScope.WithVariable (ArgumentVariable(p, i)) p.Name) localScope
         // Create a delegate to the (recursive) method we're building here.
         let recDeleg = RecursiveMethodExpression(descMethod, unknownRetType, unknownParams)
@@ -268,11 +268,11 @@ module Analysis =
         // Analyze the body expression's value.
         let bodyExpr = analyzeExpression previousDefinitions localScope value
 
-        let createFunction (knownTypes, unknownTypes) = 
+        let createFunction (knownTypes, unknownTypes) =
             // Add unknown parameter types if necessary
-            let unknownTypes = unknownParamDesc |> List.fold (fun unknownTypes (_, ty) -> 
-                if LinearMap.containsKey ty knownTypes 
-                    then unknownTypes 
+            let unknownTypes = unknownParamDesc |> List.fold (fun unknownTypes (_, ty) ->
+                if LinearMap.containsKey ty knownTypes
+                    then unknownTypes
                     else LinearSet.add ty unknownTypes) unknownTypes
 
             // Bind the free unknown types to generic parameters.
@@ -284,7 +284,7 @@ module Analysis =
             // Add all parameters to the method.
             for (name, ty) in unknownParamDesc do
                 descMethod.AddParameter(DescribedParameter(name, resolveType ty))
-                
+
             // Resolve and store the return type.
             descMethod.ReturnType <- resolveType unknownRetType
 
@@ -293,7 +293,7 @@ module Analysis =
 
             // Return the expression's value.
             setBody descMethod (bodyExpr |> EB.ReturnUnchecked
-                                         |> EB.Source (TokenHelpers.treeSourceLocation value) 
+                                         |> EB.Source (TokenHelpers.treeSourceLocation value)
                                          |> EB.ToStatement)
 
             descMethod
@@ -301,14 +301,14 @@ module Analysis =
         /// Constrain the function's return type to the
         /// function body's result type.
         let initConstraints = [TypeInference.Variable unknownRetType,
-                               TypeInference.toConstraint bodyExpr.Type, 
+                               TypeInference.toConstraint bodyExpr.Type,
                                srcLoc]
         // Run type inference.
         let inferredTypes = TypeInference.inferTypes initConstraints bodyExpr
 
         Result.map createFunction inferredTypes
 
-    
+
     // Add a method to a DefinitionMap, but raise a warning
     // if it already has a previous definition.
     let addMethod (log : ICompilerLog) (name : string) (func : IMethod) (defined : DefinitionMap) : DefinitionMap =
@@ -365,8 +365,8 @@ module Analysis =
         | null ->
             // We couldn't resolve the given module name. That's too bad.
             // Create a log entry to report this.
-            scope.Log.LogError(LogEntry("Unresolved module name", 
-                                        MarkupHelpers.refer "Could not resolve module " moduleName.contents ". Did you forget to link it or list it as a library dependency?", 
+            scope.Log.LogError(LogEntry("Unresolved module name",
+                                        MarkupHelpers.refer "Could not resolve module " moduleName.contents ". Did you forget to link it or list it as a library dependency?",
                                         TokenHelpers.sourceLocation moduleName))
             defined
         | _ ->
@@ -381,7 +381,7 @@ module Analysis =
                         | Error e ->
                             // This thing looked like an operator, but its name wasn't mangled correctly.
                             if badNameWarning.UseWarning(scope.Log.Options) then
-                                let msg = badNameWarning.CreateMessage( 
+                                let msg = badNameWarning.CreateMessage(
                                              sprintf "Function '%s' in module '%s' looks like an operator, but its name was incorrectly formatted. Skipping it. " item.Name moduleName.contents)
                                 let remark = MarkupNode(NodeConstants.RemarksNodeType, e) :> IMarkupNode
                                 // Found an operator with badly mangled name. Can't do anything with this.
@@ -398,19 +398,19 @@ module Analysis =
     /// Reads the fixity specification encoded in the given parse tree.
     let readFixitySpecification (scope : GlobalScope) (spec : ParseTree<string, Token>) : Parser.OpFixity =
         match spec with
-        | ProductionNode(Constant Parser.infixSpecifierIdentifier, 
+        | ProductionNode(Constant Parser.infixSpecifierIdentifier,
                          [ProductionNode(Constant Parser.infixKeywordIdentifier, [TerminalLeaf infixKeyword])
                           TerminalLeaf lParen
                           TerminalLeaf precDecl
                           TerminalLeaf rParen]) ->
             // Parse the fixity declaration's precedence:
-            //     
+            //
             //     infix?(?)
             //            ^
-            let precInt = 
+            let precInt =
                 match System.Int32.TryParse precDecl.contents with
                 | (true, result) -> result
-                | (false, _) -> 
+                | (false, _) ->
                     scope.Log.LogError(LogEntry("Invalid precedence specification",
                                                 MarkupHelpers.referSuffix precDecl.contents " could not be parsed as a valid integer literal.",
                                                 TokenHelpers.sourceLocation precDecl))
@@ -439,7 +439,7 @@ module Analysis =
                                         TokenHelpers.treeSourceLocation spec))
             Parser.InfixLeft 9
     /// Analyzes a module definition.
-    let analyzeModule (scope : GlobalScope) (name : string) (definitions : ParseTree<string, Token> list) (declNs : INamespace) 
+    let analyzeModule (scope : GlobalScope) (name : string) (definitions : ParseTree<string, Token> list) (declNs : INamespace)
                       : IType =
         // Let's start by creating a type to hold the module's contents...
         let moduleType = DescribedType(name, declNs)
@@ -482,7 +482,7 @@ module Analysis =
                               TerminalLeaf rightArg
                               TerminalLeaf eq
                               value]) ->
-                // Binary operator let-binding. We'll do the 
+                // Binary operator let-binding. We'll do the
                 // same analyze-add dance as above.
                 let parameterTokens = [leftArg; rightArg]
                 let srcLoc = TokenHelpers.sourceLocation letKeyword
@@ -500,7 +500,7 @@ module Analysis =
                     defined <- { defined with prec = newPrec }
                 | Error msg ->
                     scope.Log.LogError msg
-            | ProductionNode(Constant Parser.openModuleIdentifier, 
+            | ProductionNode(Constant Parser.openModuleIdentifier,
                              [TerminalLeaf openKeyword
                               TerminalLeaf name]) ->
                 // Try to import the module's contents. If something
@@ -519,16 +519,16 @@ module Analysis =
 
         moduleType :> IType
 
-    let topLevelModuleName = "<Program>"
+    let topLevelModuleName = "__program"
     let entryPointFunctionName = "__entry_point"
-    let IOMonadActionField = "Action" 
+    let IOMonadActionField = "Action"
 
     /// Tries to create an entry point.
     let tryCreateEntryPoint (scope : GlobalScope) (programModule : IType) : IMethod option =
         // We're looking for a parameterless static method called '__entry_point'.
         match programModule.GetMethod(true, [||]) with
         | null -> None
-        | mainFunc -> 
+        | mainFunc ->
             // Construct the following function:
             //
             // public static void __entry_point(string[] Args)
@@ -548,8 +548,8 @@ module Analysis =
             let accessedField = EB.AccessNamedMembers localScope IOMonadActionField (EB.GetAccessedExpression mainCall)
             if EB.IsError accessedField then
                 // main function was bad. Log an error message.
-                scope.Log.LogError(LogEntry("Invalid 'main' value", 
-                                            MarkupHelpers.refer "'main' should have been an IO monad. Instead, its type was " (NameHelpers.nameType mainCall.Type) ".", 
+                scope.Log.LogError(LogEntry("Invalid 'main' value",
+                                            MarkupHelpers.refer "'main' should have been an IO monad. Instead, its type was " (NameHelpers.nameType mainCall.Type) ".",
                                             mainFunc.GetSourceLocation()))
                 None
             else
@@ -570,7 +570,7 @@ module Analysis =
             Some (ident.contents, Parser.flattenList Parser.definitionListIdentifier contents)
         | _ ->
             None
-        
+
         // Create a namespace, which will contain everything in
         // this program.
         let namespaceHeader = FunctionalMemberHeader("")
@@ -578,10 +578,10 @@ module Analysis =
 
         // First, analyze all module declarations.
         let result = List.choose isModule flatDefs
-                        |> List.fold (fun (result : FunctionalNamespace) (name, contents) -> 
+                        |> List.fold (fun (result : FunctionalNamespace) (name, contents) ->
                             result.WithType(analyzeModule scope name contents)) result
-        
-        
+
+
         // Then, analyze top-level declarations.
         let topLevelDefs = List.filter (fun x -> Option.isNone (isModule x)) flatDefs
 
@@ -590,7 +590,7 @@ module Analysis =
             // then we're done here. Also, there is no entry point.
             result :> INamespaceBranch, None
         else
-            // Otherwise, create a `<Program>` module and
+            // Otherwise, create a `__program` module and
             // put them in there.
             let resultNs = result.WithType(analyzeModule scope topLevelModuleName topLevelDefs)
             let program = resultNs.GetAllTypes() |> Seq.find (fun (x : IType) -> x.Name = topLevelModuleName)
