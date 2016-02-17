@@ -7,6 +7,7 @@ open Flame.Compiler
 open Flame.Functional
 open Flame.Front
 open Flame.Front.Cli
+open Flame.Front.Options
 
 /// A compiled version of the micron program grammar.
 let parser = Parser.createParser Parser.programGrammar
@@ -105,7 +106,8 @@ let rec repl log input =
 
 [<EntryPoint>]
 let main argv =
-    use log = new ConsoleLog()
+    let options = BuildArguments.Parse(CompilerOptionExtensions.CreateOptionParser(), argv)
+    use log = new ConsoleLog(ConsoleEnvironment.AcquireConsole(options), options)
     repl log ""
     printfn ""
     0

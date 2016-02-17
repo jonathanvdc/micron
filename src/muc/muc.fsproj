@@ -146,6 +146,9 @@
     <Reference Include="FSharp.Core">
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\libs\Flame\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MicronProjectHandler.fs" />

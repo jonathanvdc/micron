@@ -383,7 +383,7 @@ module Analysis =
                             if badNameWarning.UseWarning(scope.Log.Options) then
                                 let msg = badNameWarning.CreateMessage(
                                              sprintf "Function '%s' in module '%s' looks like an operator, but its name was incorrectly formatted. Skipping it. " item.Name moduleName.contents)
-                                let remark = MarkupNode(NodeConstants.RemarksNodeType, e) :> IMarkupNode
+                                let remark = MarkupNode(NodeConstants.RemarksNodeType, e)
                                 // Found an operator with badly mangled name. Can't do anything with this.
                                 scope.Log.LogWarning(LogEntry("Bad operator name", MarkupHelpers.group [| msg; remark |], TokenHelpers.sourceLocation moduleName))
                             defined
