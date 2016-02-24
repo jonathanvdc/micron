@@ -11,4 +11,3 @@ let main argv =
     ProjectHandlers.RegisterHandler(muc.MicronProjectHandler())
     let compiler = ConsoleCompiler("muc", "the magnificent micron compiler", "https://github.com/jonathanvdc/micron/releases")
     compiler.Compile(argv)
-    0
