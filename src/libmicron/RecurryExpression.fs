@@ -20,7 +20,7 @@ type RecurryExpression(expr : IExpression, targetType : IType) =
 
     override this.Evaluate() : IBoundObject = lowered.Value.Evaluate()
     override this.Optimize() : IExpression = lowered.Value.Optimize()
-    override this.IsConstant : bool = lowered.Value.IsConstant
+    override this.IsConstantNode : bool = lowered.Value.IsConstantNode
     override this.Emit(cg : ICodeGenerator) : ICodeBlock = lowered.Value.Emit(cg)
 
     override this.ToString() =

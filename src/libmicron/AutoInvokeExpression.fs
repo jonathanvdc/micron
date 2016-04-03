@@ -47,7 +47,7 @@ type AutoInvokeExpression(target : IExpression) =
 
     interface IExpression with
         member this.Type = lowered.Value.Type
-        member this.IsConstant = lowered.Value.IsConstant
+        member this.IsConstantNode = lowered.Value.IsConstantNode
         member this.Optimize() = lowered.Value.Optimize()
         member this.Emit(cg) = lowered.Value.Emit(cg)
         member this.Evaluate() = lowered.Value.Evaluate()

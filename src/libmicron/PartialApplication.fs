@@ -142,7 +142,7 @@ type PartialApplication private(target : IExpression, args : IExpression list,
         // the lowered version.
         member this.Optimize() = this.Coalesced.Lowered.Optimize()
         member this.Evaluate() = lowered.Value.Evaluate()
-        member this.IsConstant = lowered.Value.IsConstant
+        member this.IsConstantNode = lowered.Value.IsConstantNode
         member this.Emit(cg) = lowered.Value.Emit(cg)
 
         member this.Type = lowered.Value.Type

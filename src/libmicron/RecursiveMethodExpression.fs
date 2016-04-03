@@ -56,7 +56,7 @@ type RecursiveMethodExpression(declMethod : IMethod, returnType : IType, paramet
     interface IExpression with
         member this.Optimize() = this.Lowered.Optimize()
         member this.Evaluate() = this.Lowered.Evaluate()
-        member this.IsConstant = this.Lowered.IsConstant
+        member this.IsConstantNode = this.Lowered.IsConstantNode
         member this.Emit(cg) = this.Lowered.Emit(cg)
 
         member this.Type = this.Type
